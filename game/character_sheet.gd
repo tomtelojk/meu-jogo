@@ -40,7 +40,10 @@ static func read(path: String, stabilize_frames: bool = false) -> Dictionary:
 		for mode in ["idle", "walk", "run"]:
 			var animation: String = mode + "_" + DIRECTIONS[row]
 			frames.add_animation(animation)
-			frames.set_animation_speed(animation, 12.0 if mode == "run" else 8.0)
+			# NPCs advance these poses by ground distance, not by this clock. Keep
+			# a useful preview cadence for tools that play the sheet directly.
+			var preview_fps := (8.0 if mode == "run" else 6.0) if stabilize_frames else (12.0 if mode == "run" else 8.0)
+			frames.set_animation_speed(animation, preview_fps)
 			var source_row := row + (4 if mode == "run" else 0)
 			for col in ([0] if mode == "idle" else [1, 2, 3, 4]):
 				var atlas := AtlasTexture.new()
@@ -53,6 +56,7 @@ static func read(path: String, stabilize_frames: bool = false) -> Dictionary:
 				atlas.region = Rect2(source)
 				if mask != null:
 					_align_frame(atlas, mask, source, Vector2i(cell))
+				atlas.filter_clip = true
 				frames.add_frame(animation, atlas)
 	return {"frames": frames, "cell": cell}
 

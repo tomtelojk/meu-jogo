@@ -210,23 +210,6 @@ func _test_character_import() -> void:
 	DirAccess.remove_absolute(path)
 
 func _test_wind() -> void:
-	for row in TreeAtlas.ROWS:
-		var kind := "tree" + str(row)
-		var library: SpriteFrames = game.world.libraries[kind]
-		var sources: Dictionary = {}
-		var indices: Array[int] = []
-		var duration := 0.0
-		for frame in library.get_frame_count("default"):
-			var texture: AtlasTexture = library.get_frame_texture("default", frame)
-			var index := TreeAtlas.COLUMN_EDGES.find(roundi(texture.region.position.x))
-			sources[index] = true
-			indices.append(index)
-			duration += library.get_frame_duration("default", frame) / library.get_animation_speed("default")
-		verify(sources.size() == 5 and not sources.has(-1) and duration >= 4.0, "árvore preserva cinco desenhos e balança devagar: " + kind)
-		var continuous := true
-		for frame in indices.size():
-			continuous = continuous and absi(indices[frame] - indices[(frame + 1) % indices.size()]) == 1
-		verify(continuous, "balanço retorna sem salto brusco entre extremos: " + kind)
 	for variant in 3:
 		var library: SpriteFrames = game.world.libraries["bush" + str(variant)]
 		var duration := 0.0

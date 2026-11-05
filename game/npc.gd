@@ -1,6 +1,11 @@
 class_name ForestNPC
 extends CharacterBody2D
 
+# Two alternating contacts make one full cycle. The supplied walking poses
+# span about 20 screen pixels between feet; running poses have a longer stride.
+const WALK_CYCLE_DISTANCE := 40.0
+const RUN_CYCLE_DISTANCE := 54.0
+
 var definition: Dictionary
 var current_schedule: Dictionary = {}
 var navigator: AStarGrid2D
@@ -17,6 +22,7 @@ var facing: String = "down"
 var waiting: float = 0.0
 var stalled: float = 0.0
 var custom_sprite: bool = false
+var gait_phase: float = 0.75
 
 func setup(profile: Dictionary, fallback: SpriteFrames, grid: AStarGrid2D, minute: float) -> void:
 	definition = profile
@@ -121,6 +127,7 @@ func _physics_process(delta: float) -> void:
 	if not active or sleeping:
 		velocity = Vector2.ZERO
 		sprite.play("idle_" + facing)
+		gait_phase = 0.75
 		return
 	if waiting > 0:
 		waiting -= delta
@@ -144,7 +151,7 @@ func _physics_process(delta: float) -> void:
 	velocity = direction * (speed * 1.2 if running else speed)
 	var previous := position
 	move_and_slide()
-	_animate_movement(get_real_velocity(), running)
+	_animate_movement(get_real_velocity(), running, position.distance_to(previous))
 	stalled = stalled + delta if position.distance_to(previous) < 0.15 else 0.0
 	if stalled > 1.0:
 		stalled = 0.0
@@ -153,10 +160,12 @@ func _physics_process(delta: float) -> void:
 func _idle() -> void:
 	velocity = Vector2.ZERO
 	sprite.play("idle_" + facing)
+	gait_phase = 0.75
 
-func _animate_movement(motion: Vector2, running: bool) -> void:
+func _animate_movement(motion: Vector2, running: bool, distance: float = 0.0) -> void:
 	if motion.length_squared() <= 1.0:
 		sprite.play("idle_" + facing)
+		gait_phase = 0.75
 		return
 	var horizontal := absf(motion.x)
 	var vertical := absf(motion.y)
@@ -169,18 +178,18 @@ func _animate_movement(motion: Vector2, running: bool) -> void:
 		use_horizontal = false
 	facing = ("right" if motion.x > 0 else "left") if use_horizontal else ("down" if motion.y > 0 else "up")
 	var animation := ("run_" if running else "walk_") + facing
-	if sprite.animation == animation:
-		sprite.play(animation)
-		return
 	var previous_animation := String(sprite.animation)
 	var keep_phase := previous_animation.begins_with("walk_") or previous_animation.begins_with("run_")
-	var phase := 0.0
 	if keep_phase:
-		phase = (sprite.frame + sprite.frame_progress) / sprite.sprite_frames.get_frame_count(previous_animation)
-	sprite.play(animation)
-	if keep_phase:
-		var frame_position := phase * sprite.sprite_frames.get_frame_count(animation)
-		sprite.set_frame_and_progress(floori(frame_position), fmod(frame_position, 1.0))
+		gait_phase = (sprite.frame + sprite.frame_progress) / sprite.sprite_frames.get_frame_count(previous_animation)
+	# Animation never runs ahead while a villager slows down or slides along a
+	# wall. Preserving phase also keeps left/right contacts intact through turns.
+	var stride := RUN_CYCLE_DISTANCE if running else WALK_CYCLE_DISTANCE
+	gait_phase = fposmod(gait_phase + maxf(0.0, distance) / stride, 1.0)
+	var frame_position := gait_phase * sprite.sprite_frames.get_frame_count(animation)
+	sprite.animation = animation
+	sprite.set_frame_and_progress(floori(frame_position), fmod(frame_position, 1.0))
+	sprite.pause()
 
 func face(point: Vector2) -> void:
 	var direction := point - position
@@ -189,6 +198,7 @@ func face(point: Vector2) -> void:
 	else:
 		facing = "down" if direction.y > 0 else "up"
 	sprite.play("idle_" + facing)
+	gait_phase = 0.75
 
 func load_original_sprite(path: String) -> bool:
 	var sheet := CharacterSheet.read(path, true)

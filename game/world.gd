@@ -2,22 +2,14 @@ class_name ForestWorld
 extends Node2D
 
 const DECOR_FRAMES := [Vector2(0, 78), Vector2(78, 68), Vector2(146, 87), Vector2(233, 87), Vector2(320, 101), Vector2(421, 97), Vector2(518, 73), Vector2(591, 79), Vector2(670, 92)]
-const TREE_SWAY_FPS: float = 2.0
 const BUSH_SWAY_FPS: float = 1.6
-const MOTHER_VITALITY_SHADER := """
-shader_type canvas_item;
-uniform float vitality : hint_range(0.0, 1.0) = 0.15;
-void fragment() {
-	float gray = dot(COLOR.rgb, vec3(0.299, 0.587, 0.114));
-	COLOR.rgb = mix(vec3(gray) * vec3(0.86, 0.87, 0.81), COLOR.rgb, vitality);
-}
-"""
 
 var data: Dictionary
 var entities: Node2D
 var mother_sprite: AnimatedSprite2D
 var mother_label: Label
 var mother_material: ShaderMaterial
+var tree_materials: Array[ShaderMaterial] = []
 var trees: Array[Dictionary] = []
 var seeds: Dictionary = {}
 var libraries: Dictionary = {}
@@ -32,9 +24,10 @@ func _ready() -> void:
 	data = WorldData.generate()
 	entities = $Entities
 	player = $Entities/Player
-	var tree_frames := TreeAtlas.read(TREE_SWAY_FPS)
+	var tree_frames := TreeAtlas.read()
 	for row in TreeAtlas.ROWS:
 		libraries["tree" + str(row)] = tree_frames[row]
+		tree_materials.append(TreeAtlas.make_wind_material(row))
 	var bush_texture: Texture2D = load("res://assets/environment/arbustos_vento.png")
 	for variant in 3:
 		libraries["bush" + str(variant)] = _frames(bush_texture, 4, 1024.0 / 12.0, 102.0, BUSH_SWAY_FPS, variant * 4)
@@ -210,9 +203,11 @@ func _add_tree(tree: Dictionary, mother: bool = false) -> void:
 	sprite.offset = -TreeAtlas.ANCHOR
 	sprite.position.y = 3.0
 	sprite.scale = Vector2.ONE * tree.size / TreeAtlas.REFERENCE_SIZE
-	sprite.play()
-	sprite.set_frame_and_progress(int(tree.phase), fposmod(tree.position.x * 0.01 + tree.position.y * 0.017, 1.0))
-	sprite.speed_scale = 0.9 + fposmod(tree.position.x * 0.013 + tree.position.y * 0.007, 0.14)
+	# Foliage moves by fractions of a texel. Local linear sampling avoids the
+	# entire crown snapping one pixel when a nearest-neighbor sample changes.
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	sprite.material = tree_materials[row]
+	sprite.stop()
 	body.add_child(sprite)
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
@@ -223,11 +218,7 @@ func _add_tree(tree: Dictionary, mother: bool = false) -> void:
 	trees.append({"body": body, "sprite": sprite, "size": tree.size})
 	if mother:
 		mother_sprite = sprite
-		mother_material = ShaderMaterial.new()
-		var shader := Shader.new()
-		shader.code = MOTHER_VITALITY_SHADER
-		mother_material.shader = shader
-		mother_material.set_shader_parameter("vitality", 0.15)
+		mother_material = TreeAtlas.make_wind_material(row, 0.15)
 		mother_sprite.material = mother_material
 		mother_label = Label.new()
 		mother_label.text = "Á R V O R E - M Ã E"

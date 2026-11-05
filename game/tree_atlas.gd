@@ -12,6 +12,8 @@ const ANCHOR := Vector2(120, 184)
 const SOURCE_BASELINE := 179.0
 const REFERENCE_SIZE := 160.0
 const CALM_ROW := 3
+const REST_COLUMN := 0
+const WIND_SHADER := "res://assets/environment/tree_wind.gdshader"
 # Lower-trunk centers measured in the original cells. The supplied poses move
 # their trunks as well as their crowns; padding anchors each to the same root.
 const TRUNK_X := [
@@ -24,23 +26,28 @@ const TRUNK_X := [
 	[105.0, 105.0, 101.0, 101.0, 101.0],
 	[106.0, 105.0, 103.0, 104.0, 102.5],
 ]
-const SEQUENCE := [0, 1, 2, 3, 4, 3, 2, 1]
-
-static func read(fps: float = 2.0) -> Array[SpriteFrames]:
+static func read() -> Array[SpriteFrames]:
 	var texture: Texture2D = load(PATH)
 	var result: Array[SpriteFrames] = []
 	for row in ROWS:
 		var frames := SpriteFrames.new()
-		frames.set_animation_speed("default", fps)
-		for column in SEQUENCE:
-			var atlas := AtlasTexture.new()
-			atlas.atlas = texture
-			atlas.region = cell_region(row, column)
-			atlas.margin = Rect2(ANCHOR - source_anchor(row, column), FRAME_SIZE - atlas.region.size)
-			atlas.filter_clip = true
-			frames.add_frame("default", atlas, 1.4 if column == 0 or column == COLUMNS - 1 else 1.0)
+		frames.set_animation_loop("default", false)
+		var atlas := AtlasTexture.new()
+		atlas.atlas = texture
+		atlas.region = cell_region(row, REST_COLUMN)
+		atlas.margin = Rect2(ANCHOR - source_anchor(row, REST_COLUMN), FRAME_SIZE - atlas.region.size)
+		atlas.filter_clip = true
+		frames.add_frame("default", atlas)
 		result.append(frames)
 	return result
+
+static func make_wind_material(row: int, vitality: float = 1.0) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = load(WIND_SHADER)
+	var source := cell_region(row, REST_COLUMN)
+	material.set_shader_parameter("frame_uv", Vector4(source.position.x / ATLAS_SIZE.x, source.position.y / ATLAS_SIZE.y, source.size.x / ATLAS_SIZE.x, source.size.y / ATLAS_SIZE.y))
+	material.set_shader_parameter("vitality", vitality)
+	return material
 
 static func cell_region(row: int, column: int) -> Rect2:
 	return Rect2(COLUMN_EDGES[column], row * ROW_HEIGHT, COLUMN_EDGES[column + 1] - COLUMN_EDGES[column], ROW_HEIGHT)

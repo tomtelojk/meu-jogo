@@ -2,7 +2,53 @@ extends RefCounted
 
 static func run(runner, game: ForestGame) -> void:
 	_test_alignment(runner, game.world)
+	await _test_cadence(runner, game)
 	await _test_motion(runner, game)
+
+static func _phase(sprite: AnimatedSprite2D) -> float:
+	return (sprite.frame + sprite.frame_progress) / sprite.sprite_frames.get_frame_count(sprite.animation)
+
+static func _phase_distance(a: float, b: float) -> float:
+	var difference := absf(a - b)
+	return minf(difference, 1.0 - difference)
+
+static func _test_cadence(runner, game: ForestGame) -> void:
+	var npc := ForestNPC.new()
+	game.world.entities.add_child(npc)
+	npc.setup(KingdomData.person("bento"), game.player.default_frames, game.world.navigator, 600)
+	npc.set_physics_process(false)
+	var phases: Array[float] = []
+	for frequency in [30, 60, 120]:
+		npc.sprite.play("walk_right")
+		npc.sprite.set_frame_and_progress(0, 0.0)
+		for tick in frequency:
+			npc._animate_movement(Vector2.RIGHT * 60.0, false, 60.0 / frequency)
+		phases.append(_phase(npc.sprite))
+	var independent := true
+	for phase in phases:
+		independent = independent and _phase_distance(phase, 0.5) < 0.0001
+	runner.verify(independent, "mesma distância mantém a passada em 30, 60 e 120 atualizações por segundo")
+	npc.sprite.play("walk_right")
+	npc.sprite.set_frame_and_progress(0, 0.0)
+	npc._animate_movement(Vector2.RIGHT * 46.0, false, 10.0)
+	var slow_phase := _phase(npc.sprite)
+	npc.sprite.set_frame_and_progress(0, 0.0)
+	npc._animate_movement(Vector2.RIGHT * 76.0, false, 10.0)
+	runner.verify(_phase_distance(slow_phase, 0.25) < 0.0001 and _phase_distance(_phase(npc.sprite), slow_phase) < 0.0001,
+		"NPCs lentos e rápidos usam a mesma passada por distância percorrida")
+	npc.sprite.play("run_right")
+	npc.sprite.set_frame_and_progress(0, 0.0)
+	npc._animate_movement(Vector2.RIGHT * 100.0, true, 27.0)
+	runner.verify(_phase_distance(_phase(npc.sprite), 0.5) < 0.0001,
+		"corrida usa passada mais longa em vez de acelerar a troca dos desenhos")
+	var stopped_phase := _phase(npc.sprite)
+	await runner.frames(18)
+	runner.verify(not npc.sprite.is_playing() and _phase_distance(_phase(npc.sprite), stopped_phase) < 0.0001,
+		"relógio da animação não move as pernas sem deslocamento real")
+	npc._animate_movement(Vector2.ZERO, false)
+	runner.verify(String(npc.sprite.animation).begins_with("idle_"), "parar a caminhada retorna à postura de repouso")
+	npc.queue_free()
+	await runner.frames(1)
 
 static func _head_center(atlas: AtlasTexture) -> float:
 	# Independently measure the head's alpha-weighted centroid in the displayed
@@ -99,6 +145,7 @@ static func _test_motion(runner, game: ForestGame) -> void:
 	npc.current_schedule = {"points": ["forge"], "activity": "Teste", "loop": false}
 	npc.set_physics_process(true)
 	var start := npc.position
+	var start_phase := _phase(npc.sprite)
 	var frames_seen: Dictionary = {}
 	var facing_stayed := true
 	for tick in 90:
@@ -107,6 +154,9 @@ static func _test_motion(runner, game: ForestGame) -> void:
 		facing_stayed = facing_stayed and npc.facing == "down"
 	runner.verify(npc.position.distance_to(start) > 60 and facing_stayed and frames_seen.size() == 4,
 		"rota diagonal real do AStar avança sem oscilação e completa os quatro quadros")
+	var expected_phase := fposmod(start_phase + npc.position.distance_to(start) / 40.0, 1.0)
+	runner.verify(_phase_distance(_phase(npc.sprite), expected_phase) < 0.001,
+		"NPC físico sincroniza as pernas com o chão durante a rota diagonal")
 	npc.position = origin
 	npc.route = PackedVector2Array([origin + Vector2(200, 0)])
 	npc.path_index = 0

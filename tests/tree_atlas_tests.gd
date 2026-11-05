@@ -9,26 +9,25 @@ static func run(runner, world: ForestWorld) -> void:
 	var only_original := true
 	var roots_aligned := true
 	var valid_regions := true
+	var continuous_wind := true
 	for row in TreeAtlas.ROWS:
 		var frames: SpriteFrames = world.libraries["tree" + str(row)]
-		var columns: Dictionary = {}
-		for index in frames.get_frame_count("default"):
-			var atlas: AtlasTexture = frames.get_frame_texture("default", index)
-			var column: int = TreeAtlas.SEQUENCE[index]
-			columns[column] = true
-			only_original = only_original and atlas.atlas.resource_path == TreeAtlas.PATH
-			valid_regions = valid_regions and atlas.region == TreeAtlas.cell_region(row, column) and atlas.get_size() == TreeAtlas.FRAME_SIZE
-			var root := _trunk_center(image, atlas.region)
-			roots_aligned = roots_aligned and absf(root + atlas.margin.position.x - TreeAtlas.ANCHOR.x) <= 1.5
-		runner.verify(columns.size() == 5, "cinco poses originais preservadas na variação de balanço " + str(row + 1))
+		var atlas: AtlasTexture = frames.get_frame_texture("default", 0)
+		only_original = only_original and atlas.atlas.resource_path == TreeAtlas.PATH
+		valid_regions = valid_regions and atlas.region == TreeAtlas.cell_region(row, TreeAtlas.REST_COLUMN) and atlas.get_size() == TreeAtlas.FRAME_SIZE
+		var root := _trunk_center(image, atlas.region)
+		roots_aligned = roots_aligned and absf(root + atlas.margin.position.x - TreeAtlas.ANCHOR.x) <= 1.5
+		runner.verify(frames.get_frame_count("default") == 1 and not frames.get_animation_loop("default"), "vento mantém a mesma silhueta sem trocar desenhos na variação " + str(row + 1))
 	for tree in world.trees:
 		var sprite: AnimatedSprite2D = tree.sprite
 		used_rows[sprite.get_meta("atlas_row", -1)] = true
 		only_original = only_original and sprite.sprite_frames in world.libraries.values()
 		roots_aligned = roots_aligned and not sprite.centered and sprite.offset == -TreeAtlas.ANCHOR and absf(sprite.position.y - 3.0) < 0.01
+		continuous_wind = continuous_wind and not sprite.is_playing() and sprite.texture_filter == CanvasItem.TEXTURE_FILTER_LINEAR and sprite.material is ShaderMaterial and sprite.material.shader.resource_path == TreeAtlas.WIND_SHADER
 	runner.verify(only_original and used_rows.size() == 8 and not used_rows.has(-1), "todas as árvores, inclusive a árvore-mãe, usam o atlas novo e suas oito variações")
 	runner.verify(valid_regions, "recortes inteiros evitam vizinhos e mantêm o mesmo tamanho entre quadros")
 	runner.verify(roots_aligned, "centro dos troncos permanece fixo durante o balanço")
+	runner.verify(continuous_wind and world.tree_materials.size() == TreeAtlas.ROWS, "árvores compartilham vento contínuo na copa sem executar flipbook")
 	var mother_frames := world.mother_sprite.sprite_frames
 	world.apply_progress({}, false)
 	runner.verify(is_equal_approx(world.mother_material.get_shader_parameter("vitality"), 0.15), "árvore-mãe debilitada usa dessaturação discreta em runtime")

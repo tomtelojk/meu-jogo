@@ -23,8 +23,8 @@ Para personalizar uma aparência, converse com o NPC e escolha
 As rotinas e os diálogos continuam funcionando com a prancha escolhida.
 
 ATUALIZAÇÃO VISUAL
-As árvores usam o novo atlas medieval enviado, com balanço lento.
-A caminhada dos moradores foi corrigida para evitar saltos entre os desenhos.
+As árvores usam o atlas medieval enviado, com vento contínuo na copa e troncos firmes.
+Os passos dos moradores acompanham sua velocidade e param quando eles param.
 """
 
 

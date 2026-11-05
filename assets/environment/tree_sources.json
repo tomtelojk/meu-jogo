@@ -1,7 +1,7 @@
 {
   "archive": "Atlas de Árvore Medieval em Movimento.zip",
   "archive_sha256": "358f14e244a64a2f32e3c65b362bbfb3917879863ed0b76490f3fc48fba0c062",
-  "note": "PNG original fornecido pelo usuário; copiado e renomeado sem alterar pixels ou bytes. As oito linhas mostram poses de balanço da mesma árvore verde; não há versões secas ou de outono neste atlas. Todas as árvores do jogo usam este arquivo. A árvore-mãe debilitada recebe apenas uma dessaturação discreta em runtime, removida após a restauração.",
+  "note": "PNG original fornecido pelo usuário; copiado e renomeado sem alterar pixels ou bytes. O atlas preserva quarenta poses da mesma árvore verde. O jogo usa uma pose neutra por linha e vento contínuo apenas na copa, mantendo a base do tronco fixa. A árvore-mãe debilitada recebe uma dessaturação em runtime, removida após a restauração.",
   "files": [
     {
       "source": "Atlas de Árvore Medieval em Movimento.png",
@@ -23,7 +23,7 @@
       1024
     ],
     "row_height": 192,
-    "animation": "0,1,2,3,4,3,2,1; 2 quadros por segundo, pausas de 1,4 nos extremos",
+    "animation": "Uma pose neutra fixa por linha, coluna zero, com deformação contínua de vento por shader e fases espaciais diferentes. Sem troca de desenhos durante o balanço.",
     "anchor": "Centro da base do tronco medido em cada quadro, linha local y=179; margens de AtlasTexture alinham a raiz sem deslocar a colisão nem modificar a imagem.",
     "normalized_frame": [
       240,
@@ -32,6 +32,7 @@
     "normalized_anchor": [
       120,
       184
-    ]
+    ],
+    "wind_shader": "assets/environment/tree_wind.gdshader"
   }
 }

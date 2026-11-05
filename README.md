@@ -75,13 +75,15 @@ Em telas menores ou dispositivos com toque, a interface oferece um controle de m
 
 ## Sprites e personagens
 
-As árvores usam o PNG original de `Atlas de Árvore Medieval em Movimento.zip`, preservado em `assets/environment/medieval_tree_atlas.png`. As oito linhas oferecem variações do balanço, com cinco poses por linha, raízes alinhadas e ciclos lentos de ida e volta. A árvore-mãe usa a mesma arte, com vitalidade reduzida antes da restauração. A origem e os hashes estão em `assets/environment/tree_sources.json`.
+As árvores usam o PNG original de `Atlas de Árvore Medieval em Movimento.zip`, preservado em `assets/environment/medieval_tree_atlas.png`. Cada uma das oito variantes mantém uma pose neutra e recebe vento contínuo na copa, com pequenas rajadas e fases espaciais diferentes. A base do tronco fica imóvel. O filtro suave se aplica apenas às árvores, permitindo deslocamentos menores que um pixel. A árvore-mãe usa a mesma arte, com vitalidade reduzida antes da restauração. A origem e os hashes estão em `assets/environment/tree_sources.json`.
 
 Os sete PNGs de `sprites_chao_arvores_vento.zip` continuam preservados sem alterações. Chão, arbustos e decoração usam esse pacote; as árvores anteriores ficam apenas arquivadas. Pequenas variações de fase e velocidade evitam que todas as plantas balancem em sincronia.
 
 **Escolher personagem**, na introdução ou no menu de pausa, abre um seletor de arquivo PNG nativo do Godot. Ele aceita as pranchas de cinco colunas e oito linhas das imagens enviadas. As primeiras quatro linhas representam frente, costas, direita e esquerda ao caminhar; as quatro seguintes representam corrida. A primeira coluna contém a pose parada, e as demais contêm os quatro quadros de movimento. Os sprites laterais não são espelhados.
 
 Nos NPCs, os recortes acompanham a distribuição real dos desenhos e usam uma âncora comum entre as poses. Isso corrige os saltos causados por dividir igualmente pranchas cujas figuras não estão igualmente espaçadas. As viradas durante percursos diagonais também mantêm uma direção estável.
+
+Os passos avançam conforme a distância realmente percorrida: moradores mais lentos têm uma passada mais calma, e a corrida usa um passo mais comprido. O ciclo para junto com o personagem e mantém a fase nas viradas, independentemente da taxa de quadros.
 
 O protagonista mantém a aparência provisória e permite importar uma prancha local. A imagem extra da aventureira ruiva recebida em `abc.zip` foi preservada em `assets/characters/adventurer.png`, com origem e hash no mesmo manifesto; ela não é aplicada automaticamente nesta atualização dos NPCs. A prancha selecionada pelo jogador é copiada, sem modificar o arquivo original, para `user://characters/selected.png`.
 
@@ -108,6 +110,10 @@ Executar os testes nativos:
 A suíte termina com código diferente de zero se uma verificação falhar e inclui regressões para a duração do vento, as raízes do atlas novo, o alinhamento dos passos, as viradas e a textura das ruas. Ela usa dados temporários, não altera a jornada do jogador e tem limite de 60 segundos. Verifica acessibilidade dos objetivos, movimento e colisões reais, travessia da ponte, interação pela tecla E, coleta única, plantio, vitória, salvamento em disco, validação dos dados, importação e quadros dos personagens, menus e controles de toque.
 
 `tests/capture_motion.gd` oferece uma conferência gráfica dos 128 quadros de caminhada dos NPCs, nas quatro direções, com guias de alinhamento.
+
+`tests/natural_motion_preview.gd` renderiza uma sequência temporal usando o controlador de passos dos oito NPCs e o material de vento do jogo. A simulação por instantes definidos permite conferir a cadência e o vento sem alterar o ritmo por causa do custo da gravação. As rotas e colisões reais são verificadas separadamente pela suíte nativa.
+
+[Ver a prévia animada](docs/movimento.gif) · [Vídeo da prévia](docs/movimento.mp4)
 
 Uma verificação gráfica opcional, em uma sessão com display ativo:
 
