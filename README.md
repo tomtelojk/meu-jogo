@@ -75,9 +75,13 @@ Em telas menores ou dispositivos com toque, a interface oferece um controle de m
 
 ## Sprites e personagens
 
-Os sete PNGs originais de `sprites_chao_arvores_vento.zip`, fornecidos pelo usuário, foram preservados em `assets/environment/`, sem alterações. Árvores usam cinco desenhos e arbustos usam quatro, com sequência de ida e volta, pausas suaves nos extremos e ciclos de aproximadamente quatro segundos. Pequenas variações por planta evitam que o bosque inteiro balance em sincronia. Chão e decoração vêm das pranchas do pacote. A prancha completa de referência foi mantida, mas não é carregada pelo jogo.
+As árvores usam o PNG original de `Atlas de Árvore Medieval em Movimento.zip`, preservado em `assets/environment/medieval_tree_atlas.png`. As oito linhas oferecem variações do balanço, com cinco poses por linha, raízes alinhadas e ciclos lentos de ida e volta. A árvore-mãe usa a mesma arte, com vitalidade reduzida antes da restauração. A origem e os hashes estão em `assets/environment/tree_sources.json`.
+
+Os sete PNGs de `sprites_chao_arvores_vento.zip` continuam preservados sem alterações. Chão, arbustos e decoração usam esse pacote; as árvores anteriores ficam apenas arquivadas. Pequenas variações de fase e velocidade evitam que todas as plantas balancem em sincronia.
 
 **Escolher personagem**, na introdução ou no menu de pausa, abre um seletor de arquivo PNG nativo do Godot. Ele aceita as pranchas de cinco colunas e oito linhas das imagens enviadas. As primeiras quatro linhas representam frente, costas, direita e esquerda ao caminhar; as quatro seguintes representam corrida. A primeira coluna contém a pose parada, e as demais contêm os quatro quadros de movimento. Os sprites laterais não são espelhados.
+
+Nos NPCs, os recortes acompanham a distribuição real dos desenhos e usam uma âncora comum entre as poses. Isso corrige os saltos causados por dividir igualmente pranchas cujas figuras não estão igualmente espaçadas. As viradas durante percursos diagonais também mantêm uma direção estável.
 
 O protagonista mantém a aparência provisória e permite importar uma prancha local. A imagem extra da aventureira ruiva recebida em `abc.zip` foi preservada em `assets/characters/adventurer.png`, com origem e hash no mesmo manifesto; ela não é aplicada automaticamente nesta atualização dos NPCs. A prancha selecionada pelo jogador é copiada, sem modificar o arquivo original, para `user://characters/selected.png`.
 
@@ -101,7 +105,9 @@ Executar os testes nativos:
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/run.gd -- --test
 ```
 
-A suíte termina com código diferente de zero se uma verificação falhar e inclui regressões para a duração do vento, a continuidade dos quadros, a textura das ruas e o carregamento das oito pranchas originais dos NPCs. Ela usa dados temporários, não altera a jornada do jogador e tem limite de 60 segundos. Verifica acessibilidade dos objetivos, movimento e colisões reais, travessia da ponte, interação pela tecla E, coleta única, plantio, vitória, salvamento em disco, validação dos dados, importação e quadros dos personagens, menus e controles de toque.
+A suíte termina com código diferente de zero se uma verificação falhar e inclui regressões para a duração do vento, as raízes do atlas novo, o alinhamento dos passos, as viradas e a textura das ruas. Ela usa dados temporários, não altera a jornada do jogador e tem limite de 60 segundos. Verifica acessibilidade dos objetivos, movimento e colisões reais, travessia da ponte, interação pela tecla E, coleta única, plantio, vitória, salvamento em disco, validação dos dados, importação e quadros dos personagens, menus e controles de toque.
+
+`tests/capture_motion.gd` oferece uma conferência gráfica dos 128 quadros de caminhada dos NPCs, nas quatro direções, com guias de alinhamento.
 
 Uma verificação gráfica opcional, em uma sessão com display ativo:
 

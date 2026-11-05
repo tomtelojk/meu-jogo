@@ -21,6 +21,10 @@ Os oito NPCs já usam as pranchas originais fornecidas em abc.zip.
 Para personalizar uma aparência, converse com o NPC e escolha
 'Escolher sprite deste morador'. Isso não exige instalar o Godot.
 As rotinas e os diálogos continuam funcionando com a prancha escolhida.
+
+ATUALIZAÇÃO VISUAL
+As árvores usam o novo atlas medieval enviado, com balanço lento.
+A caminhada dos moradores foi corrigida para evitar saltos entre os desenhos.
 """
 
 
@@ -60,10 +64,13 @@ def package(system: str, output: Path) -> Path:
     for license_file in (ROOT / "licenses").glob("*.txt"):
         shutil.copy2(license_file, stage / license_file.name)
     shutil.copy2(ROOT / "assets" / "npcs" / "sources.json", stage / "FONTES-SPRITES.json")
+    shutil.copy2(ROOT / "assets" / "environment" / "tree_sources.json", stage / "FONTES-ARVORES.json")
     (stage / "CREDITOS.txt").write_text(
         "Entre Folhas\nMotor: Godot 4.6.3, licença MIT.\n"
         "Os avisos do Godot e de suas dependências acompanham este pacote.\n"
         "Sprites de cenário: sprites_chao_arvores_vento.zip, fornecido pelo autor do projeto.\n"
+        "Árvores: Atlas de Árvore Medieval em Movimento.zip, fornecido pelo autor do projeto.\n"
+        "FONTES-ARVORES.json registra a origem e os hashes do novo atlas de árvores.\n"
         "Sprites dos oito NPCs: pranchas originais de abc.zip, fornecidas pelo autor do projeto.\n"
         "Os PNGs foram copiados e renomeados, preservando seus bytes originais.\n"
         "FONTES-SPRITES.json relaciona nomes recebidos, papéis e hashes SHA-256 das imagens e de abc.zip.\n"

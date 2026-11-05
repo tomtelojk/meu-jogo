@@ -2,7 +2,7 @@ extends RefCounted
 
 # Run before the individual import test changes Bento's appearance.
 static func run(runner, world: ForestWorld) -> void:
-	var cell := Vector2(1024.0 / 5.0, 1536.0 / 8.0)
+	var cell := Vector2(205, 192)
 	for profile in KingdomData.PEOPLE:
 		var path := "res://assets/npcs/" + String(profile.id) + ".png"
 		var original := load(path) as Texture2D
@@ -29,8 +29,11 @@ static func run(runner, world: ForestWorld) -> void:
 					continue
 				for frame in columns.size():
 					var atlas := library.get_frame_texture(animation, frame) as AtlasTexture
-					var expected := Rect2(Vector2(columns[frame], source_row) * cell, cell)
-					if atlas == null or not atlas.region.is_equal_approx(expected):
+					var left := roundi(columns[frame] * 1024.0 / 5.0)
+					var right := roundi((columns[frame] + 1) * 1024.0 / 5.0)
+					var source := Rect2(left, source_row * 192, right - left, 192)
+					if atlas == null or not source.encloses(atlas.region) or atlas.get_size() != cell \
+						or atlas.region.position != atlas.region.position.round() or atlas.region.size != atlas.region.size.round():
 						directions_match = false
 		runner.verify(directions_match,
 			"prancha 5×8 mantém os quadros e as quatro direções: " + profile.name)

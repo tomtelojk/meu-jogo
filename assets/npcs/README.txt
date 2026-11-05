@@ -15,6 +15,9 @@ mila.png — camponesa
 Formato: 5 colunas e 8 linhas, como as pranchas enviadas na conversa.
 Frente, costas, direita e esquerda nas quatro primeiras linhas;
 corrida nas quatro seguintes. A primeira coluna contém a pose parada.
+O leitor identifica o conteúdo visível de cada pose e alinha cabeça e pés
+em uma área fixa, corrigindo o espaçamento irregular das pranchas recebidas.
+Os recortes usam coordenadas inteiras e mantêm as quatro direções originais.
 
 Os PNGs foram apenas copiados e renomeados; seus bytes não foram alterados.
 sources.json registra o nome original, o papel, o destino e o SHA-256 de

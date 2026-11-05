@@ -144,11 +144,7 @@ func _physics_process(delta: float) -> void:
 	velocity = direction * (speed * 1.2 if running else speed)
 	var previous := position
 	move_and_slide()
-	if absf(direction.x) > absf(direction.y):
-		facing = "right" if direction.x > 0 else "left"
-	else:
-		facing = "down" if direction.y > 0 else "up"
-	sprite.play(("run_" if running else "walk_") + facing)
+	_animate_movement(get_real_velocity(), running)
 	stalled = stalled + delta if position.distance_to(previous) < 0.15 else 0.0
 	if stalled > 1.0:
 		stalled = 0.0
@@ -157,6 +153,34 @@ func _physics_process(delta: float) -> void:
 func _idle() -> void:
 	velocity = Vector2.ZERO
 	sprite.play("idle_" + facing)
+
+func _animate_movement(motion: Vector2, running: bool) -> void:
+	if motion.length_squared() <= 1.0:
+		sprite.play("idle_" + facing)
+		return
+	var horizontal := absf(motion.x)
+	var vertical := absf(motion.y)
+	# Keep the current axis near a diagonal so tiny path/collision corrections
+	# cannot flip the character between two directions every physics frame.
+	var use_horizontal := horizontal > vertical
+	if facing in ["left", "right"] and horizontal >= vertical * 0.8:
+		use_horizontal = true
+	elif facing in ["up", "down"] and vertical >= horizontal * 0.8:
+		use_horizontal = false
+	facing = ("right" if motion.x > 0 else "left") if use_horizontal else ("down" if motion.y > 0 else "up")
+	var animation := ("run_" if running else "walk_") + facing
+	if sprite.animation == animation:
+		sprite.play(animation)
+		return
+	var previous_animation := String(sprite.animation)
+	var keep_phase := previous_animation.begins_with("walk_") or previous_animation.begins_with("run_")
+	var phase := 0.0
+	if keep_phase:
+		phase = (sprite.frame + sprite.frame_progress) / sprite.sprite_frames.get_frame_count(previous_animation)
+	sprite.play(animation)
+	if keep_phase:
+		var frame_position := phase * sprite.sprite_frames.get_frame_count(animation)
+		sprite.set_frame_and_progress(floori(frame_position), fmod(frame_position, 1.0))
 
 func face(point: Vector2) -> void:
 	var direction := point - position
@@ -167,7 +191,7 @@ func face(point: Vector2) -> void:
 	sprite.play("idle_" + facing)
 
 func load_original_sprite(path: String) -> bool:
-	var sheet := CharacterSheet.read(path)
+	var sheet := CharacterSheet.read(path, true)
 	if sheet.is_empty():
 		return false
 	sprite.sprite_frames = sheet.frames

@@ -48,6 +48,7 @@ func _run() -> void:
 	verify(game.player is CharacterBody2D and game.camera is Camera2D, "personagem e câmera usam nós nativos")
 	verify(game.world.trees.size() > 300 and game.world.seeds.size() == 5, "cenário e cinco sementes foram criados")
 	_test_wind()
+	preload("res://tests/tree_atlas_tests.gd").run(self, game.world)
 	preload("res://tests/terrain_tests.gd").run(self, game.world)
 	preload("res://tests/bundled_npc_tests.gd").run(self, game.world)
 	_test_reachability()
@@ -132,7 +133,7 @@ func _run() -> void:
 	game.player.position = WorldData.MOTHER + Vector2(0, 60)
 	await frames(4)
 	game.interact()
-	verify(game.complete and game.world.mother_sprite.sprite_frames == game.world.libraries.green, "plantar as cinco sementes restaura a árvore-mãe")
+	verify(game.complete and is_equal_approx(game.world.mother_material.get_shader_parameter("vitality"), 1.0), "plantar as cinco sementes restaura a vitalidade da árvore-mãe")
 	await create_timer(1.4).timeout
 	verify(game.hud.modal_kind == "victory", "conclusão mostra o diálogo de vitória")
 	var saved: Dictionary = JSON.parse_string(JSON.stringify(game.journey_data()))
@@ -155,6 +156,7 @@ func _run() -> void:
 	game.apply_journey({"version": 1, "seeds": ["flores", "flores", "inexistente"], "x": -999, "y": 10, "complete": true})
 	verify(game.collected.size() == 1 and not game.complete and game.player.position == WorldData.SPAWN, "salvamento inválido recupera posição e filtra sementes")
 	_test_character_import()
+	await preload("res://tests/npc_animation_tests.gd").run(self, game)
 	await NPCTests.run(self, game)
 	game.reset_journey()
 	root.size = Vector2i(390, 844)
@@ -208,18 +210,19 @@ func _test_character_import() -> void:
 	DirAccess.remove_absolute(path)
 
 func _test_wind() -> void:
-	for kind in ["green", "autumn", "bare"]:
+	for row in TreeAtlas.ROWS:
+		var kind := "tree" + str(row)
 		var library: SpriteFrames = game.world.libraries[kind]
 		var sources: Dictionary = {}
 		var indices: Array[int] = []
 		var duration := 0.0
 		for frame in library.get_frame_count("default"):
 			var texture: AtlasTexture = library.get_frame_texture("default", frame)
-			var index := roundi(texture.region.position.x / 200.0)
+			var index := TreeAtlas.COLUMN_EDGES.find(roundi(texture.region.position.x))
 			sources[index] = true
 			indices.append(index)
 			duration += library.get_frame_duration("default", frame) / library.get_animation_speed("default")
-		verify(sources.size() == 5 and duration >= 4.0, "árvore preserva cinco desenhos e balança devagar: " + kind)
+		verify(sources.size() == 5 and not sources.has(-1) and duration >= 4.0, "árvore preserva cinco desenhos e balança devagar: " + kind)
 		var continuous := true
 		for frame in indices.size():
 			continuous = continuous and absi(indices[frame] - indices[(frame + 1) % indices.size()]) == 1

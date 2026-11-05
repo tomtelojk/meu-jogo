@@ -1,15 +1,23 @@
 class_name ForestWorld
 extends Node2D
 
-const TREE_FILES := {"green": "arvore_verde_vento_5quadros.png", "autumn": "arvore_outono_vento_5quadros.png", "bare": "arvore_seca_vento_5quadros.png"}
 const DECOR_FRAMES := [Vector2(0, 78), Vector2(78, 68), Vector2(146, 87), Vector2(233, 87), Vector2(320, 101), Vector2(421, 97), Vector2(518, 73), Vector2(591, 79), Vector2(670, 92)]
 const TREE_SWAY_FPS: float = 2.0
 const BUSH_SWAY_FPS: float = 1.6
+const MOTHER_VITALITY_SHADER := """
+shader_type canvas_item;
+uniform float vitality : hint_range(0.0, 1.0) = 0.15;
+void fragment() {
+	float gray = dot(COLOR.rgb, vec3(0.299, 0.587, 0.114));
+	COLOR.rgb = mix(vec3(gray) * vec3(0.86, 0.87, 0.81), COLOR.rgb, vitality);
+}
+"""
 
 var data: Dictionary
 var entities: Node2D
 var mother_sprite: AnimatedSprite2D
 var mother_label: Label
+var mother_material: ShaderMaterial
 var trees: Array[Dictionary] = []
 var seeds: Dictionary = {}
 var libraries: Dictionary = {}
@@ -24,8 +32,9 @@ func _ready() -> void:
 	data = WorldData.generate()
 	entities = $Entities
 	player = $Entities/Player
-	for kind in TREE_FILES:
-		libraries[kind] = _frames(load("res://assets/environment/" + TREE_FILES[kind]), 5, 200.0, 200.0, TREE_SWAY_FPS)
+	var tree_frames := TreeAtlas.read(TREE_SWAY_FPS)
+	for row in TreeAtlas.ROWS:
+		libraries["tree" + str(row)] = tree_frames[row]
 	var bush_texture: Texture2D = load("res://assets/environment/arbustos_vento.png")
 	for variant in 3:
 		libraries["bush" + str(variant)] = _frames(bush_texture, 4, 1024.0 / 12.0, 102.0, BUSH_SWAY_FPS, variant * 4)
@@ -194,9 +203,13 @@ func _add_tree(tree: Dictionary, mother: bool = false) -> void:
 	shadow.color = Color(0.1, 0.17, 0.14, 0.26)
 	body.add_child(shadow)
 	var sprite := AnimatedSprite2D.new()
-	sprite.sprite_frames = libraries[tree.kind]
-	sprite.position.y = -tree.size / 2.0 + 11.0
-	sprite.scale = Vector2.ONE * tree.size / 200.0
+	var row := TreeAtlas.CALM_ROW if mother else TreeAtlas.variant(tree.position)
+	sprite.sprite_frames = libraries["tree" + str(row)]
+	sprite.set_meta("atlas_row", row)
+	sprite.centered = false
+	sprite.offset = -TreeAtlas.ANCHOR
+	sprite.position.y = 3.0
+	sprite.scale = Vector2.ONE * tree.size / TreeAtlas.REFERENCE_SIZE
 	sprite.play()
 	sprite.set_frame_and_progress(int(tree.phase), fposmod(tree.position.x * 0.01 + tree.position.y * 0.017, 1.0))
 	sprite.speed_scale = 0.9 + fposmod(tree.position.x * 0.013 + tree.position.y * 0.007, 0.14)
@@ -210,6 +223,12 @@ func _add_tree(tree: Dictionary, mother: bool = false) -> void:
 	trees.append({"body": body, "sprite": sprite, "size": tree.size})
 	if mother:
 		mother_sprite = sprite
+		mother_material = ShaderMaterial.new()
+		var shader := Shader.new()
+		shader.code = MOTHER_VITALITY_SHADER
+		mother_material.shader = shader
+		mother_material.set_shader_parameter("vitality", 0.15)
+		mother_sprite.material = mother_material
 		mother_label = Label.new()
 		mother_label.text = "Á R V O R E - M Ã E"
 		mother_label.position = Vector2(-100, 24)
@@ -302,8 +321,7 @@ func apply_progress(collected: Dictionary, complete: bool) -> void:
 			seeds[id].gathered = false
 			seeds[id].show()
 			seeds[id].set_deferred("monitorable", true)
-	mother_sprite.sprite_frames = libraries.green if complete else libraries.bare
-	mother_sprite.play()
+	mother_material.set_shader_parameter("vitality", 1.0 if complete else 0.15)
 	mother_label.text = "O BOSQUE RENASCE" if complete else "Á R V O R E - M Ã E"
 
 func burst(point: Vector2, amount: int = 30) -> void:
