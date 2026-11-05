@@ -2,41 +2,36 @@ extends RefCounted
 
 # Run before the individual import test changes Bento's appearance.
 static func run(runner, world: ForestWorld) -> void:
-	var cell := Vector2(205, 192)
 	for profile in KingdomData.PEOPLE:
-		var path := "res://assets/npcs/" + String(profile.id) + ".png"
-		var original := load(path) as Texture2D
 		var npc: ForestNPC = world.npcs.get(profile.id)
-		runner.verify(original != null and npc != null and npc.custom_sprite,
-			"NPC carrega a prancha original incluída no jogo: " + profile.name)
-		if original == null or npc == null or not npc.custom_sprite:
+		runner.verify(npc != null and npc.custom_sprite and TomateCharacterSheet.is_sheet(npc.sprite.sprite_frames),
+			"NPC usa o agricultor de tomate.zip: " + profile.name)
+		if npc == null or not TomateCharacterSheet.is_sheet(npc.sprite.sprite_frames):
 			continue
-		var library := npc.sprite.sprite_frames
-		var first := library.get_frame_texture("idle_down", 0) as AtlasTexture
-		var matches_original := original.get_size() == Vector2(1024, 1536) and first != null
-		if matches_original:
-			matches_original = first.atlas.get_image().get_data() == original.get_image().get_data()
-		runner.verify(matches_original,
-			"animação usa os pixels da prancha correta: " + profile.name)
-		var directions_match := library.get_animation_names().size() == 12
-		for row in 4:
+		var frames := npc.sprite.sprite_frames
+		var idle := frames.get_frame_texture("idle_down", 0) as AtlasTexture
+		runner.verify(idle != null and idle.atlas.resource_path == TomateCharacterSheet.BASE + "farmer_pixel.png",
+			"repouso usa as direções da prancha recebida: " + profile.name)
+		var valid := frames.get_animation_names().size() == 12
+		for direction in CharacterSheet.DIRECTIONS:
 			for mode in ["idle", "walk", "run"]:
-				var animation: String = mode + "_" + CharacterSheet.DIRECTIONS[row]
-				var columns := [0] if mode == "idle" else [1, 2, 3, 4]
-				var source_row := row + (4 if mode == "run" else 0)
-				if not library.has_animation(animation) or library.get_frame_count(animation) != columns.size():
-					directions_match = false
-					continue
-				for frame in columns.size():
-					var atlas := library.get_frame_texture(animation, frame) as AtlasTexture
-					var left := roundi(columns[frame] * 1024.0 / 5.0)
-					var right := roundi((columns[frame] + 1) * 1024.0 / 5.0)
-					var source := Rect2(left, source_row * 192, right - left, 192)
-					if atlas == null or not source.encloses(atlas.region) or atlas.get_size() != cell \
-						or atlas.region.position != atlas.region.position.round() or atlas.region.size != atlas.region.size.round():
-						directions_match = false
-		runner.verify(directions_match,
-			"prancha 5×8 mantém os quadros e as quatro direções: " + profile.name)
+				var animation: String = mode + "_" + direction
+				var count := 1 if mode == "idle" else 4
+				valid = valid and frames.get_frame_count(animation) == count
+				var file_name: String = "farmer_pixel" if mode == "idle" else TomateCharacterSheet.WALK_FILES[direction]
+				for index in count:
+					var atlas := frames.get_frame_texture(animation, index) as AtlasTexture
+					valid = valid and atlas != null
+					if atlas == null:
+						continue
+					valid = valid and atlas.atlas.resource_path == TomateCharacterSheet.BASE + file_name + ".png"
+					valid = valid and atlas.get_size() == TomateCharacterSheet.CELL
+					valid = valid and Rect2(Vector2.ZERO, atlas.atlas.get_size()).encloses(atlas.region)
+					valid = valid and atlas.region.position == atlas.region.position.round() and atlas.region.size == atlas.region.size.round()
+		runner.verify(valid, "cinco folhas complementares mantêm repouso e quatro direções sem espelhamento: " + profile.name)
+		var foot := npc.sprite.position.y + (TomateCharacterSheet.SOLE_Y - TomateCharacterSheet.CELL.y / 2.0) * npc.sprite.scale.y
 		runner.verify(npc.sprite.modulate == Color.WHITE and not npc.sprite.flip_h and not npc.sprite.flip_v
-			and npc.sprite.scale.is_equal_approx(Vector2.ONE * 72.0 / cell.y),
-			"NPC preserva cores, direção e escala da arte original: " + profile.name)
+			and npc.sprite.material is ShaderMaterial and is_equal_approx(foot, 2.0),
+			"fundo magenta é removido no render e a base do NPC fica ancorada: " + profile.name)
+	runner.verify(TomateCharacterSheet.is_sheet(world.player.sprite.sprite_frames), "protagonista usa a nova arte do agricultor por padrão")
+	runner.verify(world.player.sprite.material is ShaderMaterial, "protagonista remove o fundo magenta por material compartilhado")

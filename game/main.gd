@@ -323,9 +323,9 @@ func _show_victory() -> void:
 	], "victory")
 
 func show_characters() -> void:
-	_open_dialog("QUEM SEGUE O VENTO?", "Toda jornada tem um rosto.", "Escolha uma das suas pranchas PNG de personagem. O jogo usa as animações nas quatro direções, ao caminhar e correr. A imagem fica apenas neste dispositivo.\n\nFormato: 5 colunas e 8 linhas, como as pranchas enviadas.", [
+	_open_dialog("QUEM SEGUE O VENTO?", "Toda jornada tem um rosto.", "O agricultor do pacote já está pronto para explorar nas quatro direções. Você também pode importar uma prancha PNG de 5 colunas e 8 linhas. A imagem escolhida fica apenas neste dispositivo.", [
 		{"label": "Importar prancha PNG", "callback": _open_character_file},
-		{"label": "Usar viajante provisório", "callback": _use_default_character},
+		{"label": "Usar agricultor do pacote", "callback": _use_default_character},
 		{"label": "Voltar à jornada", "callback": close_dialog},
 	], "characters")
 

@@ -402,6 +402,7 @@ func update_status(player: ForestPlayer, data: Dictionary, clock: WorldClock = n
 	minimap.player_position = player.position
 	minimap.queue_redraw()
 	portrait.texture = player.sprite.sprite_frames.get_frame_texture("idle_down", 0)
+	portrait.material = player.sprite.material
 
 func show_interaction(value: String, screen_point: Vector2) -> void:
 	interaction_panel.visible = not value.is_empty() and modal == null

@@ -33,6 +33,21 @@ func _centroid(image: Image, area: Rect2i) -> float:
 			moment += x * alpha
 	return moment / maxf(mass, 1.0)
 
+func _opaque_point(image: Image, area: Rect2i) -> Vector2i:
+	var result := Vector2i(-1, -1)
+	var distance := INF
+	var center := Vector2(area.get_center())
+	for y in range(area.position.y, area.end.y):
+		for x in range(area.position.x, area.end.x):
+			var pixel := image.get_pixel(x, y)
+			if pixel.a > 0.95 and minf(pixel.r, minf(pixel.g, pixel.b)) > 0.04:
+				var candidate := Vector2i(x, y)
+				var candidate_distance := Vector2(candidate).distance_squared_to(center)
+				if candidate_distance < distance:
+					distance = candidate_distance
+					result = candidate
+	return result
+
 func _run() -> void:
 	var view := SubViewport.new()
 	view.size = Vector2i(256, 256)
@@ -46,6 +61,7 @@ func _run() -> void:
 	sprite.centered = false
 	sprite.offset = -TreeAtlas.ANCHOR
 	sprite.position = Vector2(128, 220)
+	sprite.scale = Vector2.ONE * 160.0 / TreeAtlas.REFERENCE_SIZE
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	var material := TreeAtlas.make_wind_material(TreeAtlas.CALM_ROW)
 	sprite.material = material
@@ -55,6 +71,17 @@ func _run() -> void:
 	first.save_png("/tmp/entre-folhas-tree-wind-start.png")
 	var root_area := Rect2i(70, 197, 120, 25)
 	var crown_area := Rect2i(20, 65, 220, 100)
+	var clean_key := true
+	var opaque_pixels := 0
+	for y in first.get_height():
+		for x in first.get_width():
+			var pixel := first.get_pixel(x, y)
+			if pixel.a > 0.1:
+				opaque_pixels += 1
+				if minf(pixel.r, pixel.b) - pixel.g > 0.15:
+					clean_key = false
+	verify(clean_key and opaque_pixels > 4000 and first.get_pixel(10, 10).a == 0.0,
+		"fundo magenta e sombra roxa do PNG RGB ficam transparentes sem apagar a árvore")
 	var root_pixels := first.get_region(root_area).get_data()
 	var root_fixed := true
 	var continuous := true
@@ -81,13 +108,18 @@ func _run() -> void:
 	light.color = Color(0.4, 0.5, 0.7)
 	view.add_child(light)
 	var night := await _image(view)
-	var day_pixel := last.get_pixel(128, 207)
-	var night_pixel := night.get_pixel(128, 207)
+	var point := _opaque_point(last, root_area)
+	verify(point.x >= 0, "tronco fornecido mantém pixels opacos após a remoção do fundo")
+	if point.x < 0:
+		quit(1)
+		return
+	var day_pixel := last.get_pixelv(point)
+	var night_pixel := night.get_pixelv(point)
 	verify(day_pixel.a > 0.8 and night_pixel.r < day_pixel.r * 0.8 and night_pixel.b / maxf(day_pixel.b, 0.01) > night_pixel.r / maxf(day_pixel.r, 0.01),
 		"vento preserva a iluminação noturna do cenário")
 	sprite.modulate.a = 0.38
 	var faded := await _image(view)
-	verify(absf(faded.get_pixel(128, 207).a / maxf(night_pixel.a, 0.01) - 0.38) < 0.02,
+	verify(absf(faded.get_pixelv(point).a / maxf(night_pixel.a, 0.01) - 0.38) < 0.02,
 		"árvore continua transparente quando o jogador passa por trás")
 	view.queue_free()
 	await process_frame
@@ -103,7 +135,9 @@ func _test_atlas_edge() -> void:
 	view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	root.add_child(view)
 	var image := Image.create(64, 32, false, Image.FORMAT_RGBA8)
-	image.fill(Color.MAGENTA)
+	# Blue is deliberately not a chroma-key color: a bad crop cannot hide a
+	# neighboring cell leak by making that cell transparent.
+	image.fill(Color.BLUE)
 	image.fill_rect(Rect2i(0, 0, 32, 32), Color.GREEN)
 	var sprite := Sprite2D.new()
 	sprite.texture = ImageTexture.create_from_image(image)
@@ -122,7 +156,7 @@ func _test_atlas_edge() -> void:
 	for y in 64:
 		for x in 64:
 			var pixel := rendered.get_pixel(x, y)
-			if pixel.a > 0.1 and pixel.r > 0.5 and pixel.b > 0.5 and pixel.g < 0.2:
+			if pixel.a > 0.1 and pixel.r < 0.2 and pixel.b > 0.5 and pixel.g < 0.2:
 				clean = false
 	verify(clean, "deformação da copa nunca amostra o desenho vizinho do atlas")
 	view.queue_free()

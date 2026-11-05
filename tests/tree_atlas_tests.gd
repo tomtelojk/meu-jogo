@@ -4,7 +4,7 @@ extends RefCounted
 static func run(runner, world: ForestWorld) -> void:
 	var texture: Texture2D = load(TreeAtlas.PATH)
 	var image := texture.get_image()
-	runner.verify(image.get_size() == TreeAtlas.ATLAS_SIZE and FileAccess.get_sha256(TreeAtlas.PATH) == "14f0f89537bfe301046738cee58d3a8f1c540a857a85cd53a8e5b6106bde3585", "atlas de árvores mantém os bytes originais do ZIP")
+	runner.verify(image.get_size() == Vector2i(1983, 793) and FileAccess.get_sha256(TreeAtlas.PATH) == "2e01a9ef7473d9744836cbeb2be3887309f1ec5db29bc4980f404128efa5210c", "árvores mantêm os bytes originais de tomate.zip")
 	var used_rows: Dictionary = {}
 	var only_original := true
 	var roots_aligned := true
@@ -15,33 +15,27 @@ static func run(runner, world: ForestWorld) -> void:
 		var atlas: AtlasTexture = frames.get_frame_texture("default", 0)
 		only_original = only_original and atlas.atlas.resource_path == TreeAtlas.PATH
 		valid_regions = valid_regions and atlas.region == TreeAtlas.cell_region(row, TreeAtlas.REST_COLUMN) and atlas.get_size() == TreeAtlas.FRAME_SIZE
-		var root := _trunk_center(image, atlas.region)
-		roots_aligned = roots_aligned and absf(root + atlas.margin.position.x - TreeAtlas.ANCHOR.x) <= 1.5
-		runner.verify(frames.get_frame_count("default") == 1 and not frames.get_animation_loop("default"), "vento mantém a mesma silhueta sem trocar desenhos na variação " + str(row + 1))
+		var anchor := TreeAtlas.source_anchor(row, TreeAtlas.REST_COLUMN) + atlas.margin.position
+		roots_aligned = roots_aligned and anchor.is_equal_approx(TreeAtlas.ANCHOR)
+		valid_regions = valid_regions and Rect2(Vector2.ZERO, Vector2(image.get_size())).encloses(atlas.region)
+		valid_regions = valid_regions and atlas.margin.position.x >= 0 and atlas.margin.position.y >= 0
+		valid_regions = valid_regions and (atlas.margin.position + atlas.region.size).x <= TreeAtlas.FRAME_SIZE.x and (atlas.margin.position + atlas.region.size).y <= TreeAtlas.FRAME_SIZE.y
+		runner.verify(frames.get_frame_count("default") == 1 and not frames.get_animation_loop("default"), "árvore usa uma pose completa do pacote com vento contínuo: " + str(row + 1))
 	for tree in world.trees:
 		var sprite: AnimatedSprite2D = tree.sprite
 		used_rows[sprite.get_meta("atlas_row", -1)] = true
-		only_original = only_original and sprite.sprite_frames in world.libraries.values()
+		var displayed := sprite.sprite_frames.get_frame_texture("default", 0) as AtlasTexture
+		only_original = only_original and displayed != null and displayed.atlas.resource_path == TreeAtlas.PATH
 		roots_aligned = roots_aligned and not sprite.centered and sprite.offset == -TreeAtlas.ANCHOR and absf(sprite.position.y - 3.0) < 0.01
 		continuous_wind = continuous_wind and not sprite.is_playing() and sprite.texture_filter == CanvasItem.TEXTURE_FILTER_LINEAR and sprite.material is ShaderMaterial and sprite.material.shader.resource_path == TreeAtlas.WIND_SHADER
-	runner.verify(only_original and used_rows.size() == 8 and not used_rows.has(-1), "todas as árvores, inclusive a árvore-mãe, usam o atlas novo e suas oito variações")
+	runner.verify(only_original and used_rows.size() == 4 and not used_rows.has(-1), "bosque usa carvalho, pinheiro, árvore seca e macieira de tomate.zip")
 	runner.verify(valid_regions, "recortes inteiros evitam vizinhos e mantêm o mesmo tamanho entre quadros")
 	runner.verify(roots_aligned, "centro dos troncos permanece fixo durante o balanço")
 	runner.verify(continuous_wind and world.tree_materials.size() == TreeAtlas.ROWS, "árvores compartilham vento contínuo na copa sem executar flipbook")
-	var mother_frames := world.mother_sprite.sprite_frames
 	world.apply_progress({}, false)
-	runner.verify(is_equal_approx(world.mother_material.get_shader_parameter("vitality"), 0.15), "árvore-mãe debilitada usa dessaturação discreta em runtime")
+	var dry: AtlasTexture = world.mother_sprite.sprite_frames.get_frame_texture("default", 0)
+	runner.verify(dry.atlas.resource_path == TreeAtlas.PATH and dry.region == TreeAtlas.cell_region(TreeAtlas.DRY_ROW, TreeAtlas.REST_COLUMN), "árvore-mãe usa o desenho seco do novo pacote antes da restauração")
 	world.apply_progress({}, true)
-	runner.verify(is_equal_approx(world.mother_material.get_shader_parameter("vitality"), 1.0) and world.mother_sprite.sprite_frames == mother_frames, "restauração devolve as cores originais sem trocar ou deslocar a árvore-mãe")
+	var green: AtlasTexture = world.mother_sprite.sprite_frames.get_frame_texture("default", 0)
+	runner.verify(green.atlas.resource_path == TreeAtlas.PATH and green.region == TreeAtlas.cell_region(TreeAtlas.CALM_ROW, TreeAtlas.REST_COLUMN) and world.mother_sprite.offset == -TreeAtlas.ANCHOR and is_equal_approx(world.mother_material.get_shader_parameter("vitality"), 1.0), "restauração troca a árvore-mãe seca pelo carvalho vivo mantendo a mesma raiz")
 	world.apply_progress({}, false)
-
-static func _trunk_center(image: Image, region: Rect2) -> float:
-	var pixels: Array[int] = []
-	for y in range(155, 172):
-		for x in int(region.size.x):
-			if image.get_pixel(int(region.position.x) + x, int(region.position.y) + y).a > 0.64:
-				pixels.append(x)
-	if pixels.is_empty():
-		return INF
-	pixels.sort()
-	return float(pixels[pixels.size() / 2])

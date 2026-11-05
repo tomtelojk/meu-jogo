@@ -17,13 +17,14 @@ O relógio aparece na tela. Na barraca do acampamento, você pode descansar até
 Fale com os dois reis e restaure a árvore-mãe para renovar o Acordo das Raízes.
 
 APARÊNCIAS DOS MORADORES
-Os oito NPCs já usam as pranchas originais fornecidas em abc.zip.
+O protagonista e os oito NPCs usam as cinco folhas complementares de tomate.zip.
 Para personalizar uma aparência, converse com o NPC e escolha
 'Escolher sprite deste morador'. Isso não exige instalar o Godot.
 As rotinas e os diálogos continuam funcionando com a prancha escolhida.
 
 ATUALIZAÇÃO VISUAL
-As árvores usam o atlas medieval enviado, com vento contínuo na copa e troncos firmes.
+Personagens, quatro árvores, terrenos, água e três estilos de casas usam tomate.zip.
+As árvores têm vento contínuo na copa e troncos firmes.
 Os passos dos moradores acompanham sua velocidade e param quando eles param.
 """
 
@@ -63,19 +64,16 @@ def package(system: str, output: Path) -> Path:
     (stage / "LEIA-ME.txt").write_text(instructions + CONTROLS + VILLAGERS, encoding="utf-8")
     for license_file in (ROOT / "licenses").glob("*.txt"):
         shutil.copy2(license_file, stage / license_file.name)
-    shutil.copy2(ROOT / "assets" / "npcs" / "sources.json", stage / "FONTES-SPRITES.json")
-    shutil.copy2(ROOT / "assets" / "environment" / "tree_sources.json", stage / "FONTES-ARVORES.json")
+    shutil.copy2(ROOT / "assets" / "tomate" / "sources.json", stage / "FONTES-SPRITES.json")
+    (stage / "FONTES-ARVORES.json").unlink(missing_ok=True)
     (stage / "CREDITOS.txt").write_text(
         "Entre Folhas\nMotor: Godot 4.6.3, licença MIT.\n"
         "Os avisos do Godot e de suas dependências acompanham este pacote.\n"
-        "Sprites de cenário: sprites_chao_arvores_vento.zip, fornecido pelo autor do projeto.\n"
-        "Árvores: Atlas de Árvore Medieval em Movimento.zip, fornecido pelo autor do projeto.\n"
-        "FONTES-ARVORES.json registra a origem e os hashes do novo atlas de árvores.\n"
-        "Sprites dos oito NPCs: pranchas originais de abc.zip, fornecidas pelo autor do projeto.\n"
+        "Sprites: dez PNGs originais de tomate.zip, fornecidos pelo autor do projeto.\n"
+        "Inclui personagens, árvores, terrenos, transições, água e casas.\n"
         "Os PNGs foram copiados e renomeados, preservando seus bytes originais.\n"
-        "FONTES-SPRITES.json relaciona nomes recebidos, papéis e hashes SHA-256 das imagens e de abc.zip.\n"
-        "O manifesto também registra a aventureira ruiva extra preservada no projeto;\n"
-        "ela não substitui automaticamente a aparência do protagonista.\n",
+        "O fundo magenta é removido pelo renderizador do jogo.\n"
+        "FONTES-SPRITES.json relaciona nomes recebidos, papéis e hashes SHA-256 das imagens e de tomate.zip.\n",
         encoding="utf-8",
     )
     archive = output / f"EntreFolhas-{system}.zip"

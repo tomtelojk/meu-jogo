@@ -2,7 +2,7 @@ extends SceneTree
 
 # Graphical inspection of the actual NPC walking frames. Run after imports:
 # DISPLAY=:99 ./scripts/godot.sh --audio-driver Dummy --script res://tests/capture_motion.gd
-# The source PNGs remain untouched; CharacterSheet supplies the runtime atlases.
+# The source PNGs remain untouched; TomateCharacterSheet supplies the atlases.
 const OUTPUT := "/tmp/entre-folhas-npc-motion.png"
 const ROW_TOP := 70.0
 const ROW_HEIGHT := 88.0
@@ -35,10 +35,9 @@ func _capture() -> void:
 			_label(stage, str(frame + 1), Vector2(left + 4 + frame * FRAME_STEP, 41), Vector2(60, 20), 11, true)
 	var count := 0
 	for profile in KingdomData.PEOPLE:
-		var path := "res://assets/npcs/" + String(profile.id) + ".png"
-		var sheet: Dictionary = CharacterSheet.read(path, true)
+		var sheet: Dictionary = TomateCharacterSheet.read()
 		if sheet.is_empty():
-			_fail("Prancha não carregada: " + path)
+			_fail("Pranchas complementares do agricultor não foram carregadas.")
 			return
 		var frames: SpriteFrames = sheet.frames
 		var cell: Vector2 = sheet.cell
@@ -61,12 +60,17 @@ func _capture() -> void:
 				if texture == null:
 					_fail("Quadro vazio: %s / %s / %d" % [profile.id, animation, frame])
 					return
-				var sprite := Sprite2D.new()
-				sprite.texture = texture
-				# Keep this placement identical to ForestNPC.load_original_sprite.
-				sprite.scale = Vector2.ONE * 72.0 / cell.y
-				sprite.position = Vector2(x, baseline) + Vector2(0, -31)
-				stage.add_child(sprite)
+				var actor := Node2D.new()
+				actor.position = Vector2(x, baseline)
+				stage.add_child(actor)
+				var sprite := AnimatedSprite2D.new()
+				sprite.sprite_frames = frames
+				sprite.animation = animation
+				sprite.frame = frame
+				sprite.pause()
+				sprite.material = TomateCharacterSheet.make_material(profile.color)
+				TomateCharacterSheet.apply_geometry(sprite)
+				actor.add_child(sprite)
 		count += 1
 	if count != 8:
 		_fail("Esperados oito NPCs; encontrados %d." % count)

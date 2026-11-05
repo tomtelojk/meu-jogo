@@ -1,0 +1,97 @@
+{
+  "archive": "tomate.zip",
+  "archive_sha256": "2c7cb2c20afa9ba41f5d85fa694239a0c2b3c0ebc2a2708a272177c691981a53",
+  "note": "Arquivos originais fornecidos pelo usuário, copiados e renomeados sem alterar pixels ou bytes. Os PNGs deste pacote são RGB e não contêm canal alpha.",
+  "files": [
+    {
+      "source": "Folha de Sprites do Agricultor Caminhando.png",
+      "path": "assets/tomate/farmer_walk.png",
+      "role": "Agricultor caminhando",
+      "sha256": "22d1557d4f8ea3dd486f2efbb0df285b9f37cfa106e41d318f1f01d6ad268fa4",
+      "width": 2172,
+      "height": 724,
+      "mode": "RGB"
+    },
+    {
+      "source": "Folha de sprites do fazendeiro pixelado.png",
+      "path": "assets/tomate/farmer_pixel.png",
+      "role": "Fazendeiro pixelado",
+      "sha256": "bb8bb023f6a511cd7c67c3e06b5a253e00b775af9b2153ecd4e93fc00c3f7d08",
+      "width": 2172,
+      "height": 724,
+      "mode": "RGB"
+    },
+    {
+      "source": "Folhagem Pixelada em Quatro Árvores.png",
+      "path": "assets/tomate/trees.png",
+      "role": "Quatro árvores",
+      "sha256": "2e01a9ef7473d9744836cbeb2be3887309f1ec5db29bc4980f404128efa5210c",
+      "width": 1983,
+      "height": 793,
+      "mode": "RGB"
+    },
+    {
+      "source": "Sprite de Aventureiro em Pixel Art.png",
+      "path": "assets/tomate/adventurer.png",
+      "role": "Aventureiro",
+      "sha256": "246c0dc05c97a48e363806579e9aa711865b89c77fc202315dfeccad3178c5f9",
+      "width": 2048,
+      "height": 768,
+      "mode": "RGB"
+    },
+    {
+      "source": "Sprite de Caminhada do Explorador.png",
+      "path": "assets/tomate/explorer_walk.png",
+      "role": "Explorador caminhando",
+      "sha256": "25d442ab4ef289d40e3c40e4802e689e55fb4bda8cd2ab1faef69242fbfa2b19",
+      "width": 2172,
+      "height": 724,
+      "mode": "RGB"
+    },
+    {
+      "source": "Sprite de fazendeiro em caminhada retro.png",
+      "path": "assets/tomate/farmer_retro.png",
+      "role": "Fazendeiro retro",
+      "sha256": "2abd407abab3d1ec17507412dfd12e7cc3c3b13e9936f98cc6b57af2012bc695",
+      "width": 2172,
+      "height": 724,
+      "mode": "RGB"
+    },
+    {
+      "source": "Tileset de Água Animada em Pixel Art.png",
+      "path": "assets/tomate/water.png",
+      "role": "Água animada",
+      "sha256": "7d7ea3899b55755cfd7b23a57b095d139676d7e433e95ae99d76a5722850c113",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGB"
+    },
+    {
+      "source": "Tileset de Terrenos em Pixel Art.png",
+      "path": "assets/tomate/terrain.png",
+      "role": "Terrenos",
+      "sha256": "d0186c3be76ea29822a8c681f711ef9c664e76ebfc90820fac49182cb2da1cb9",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGB"
+    },
+    {
+      "source": "Tileset Pixelado de Transições Grama e Terra.png",
+      "path": "assets/tomate/transitions.png",
+      "role": "Transições de grama e terra",
+      "sha256": "f4e66fd1955e24c8becdc4a418f32da771092db8d371e4fd9c0aa80610118ca9",
+      "width": 1536,
+      "height": 1024,
+      "mode": "RGB"
+    },
+    {
+      "source": "Vilas Medievais em Pixel Art.png",
+      "path": "assets/tomate/villages.png",
+      "role": "Vilas medievais",
+      "sha256": "c662c6956b3d6bc93ba8df49b8f508d0b8728c4cf1c61a599f8002c36cad66b0",
+      "width": 2172,
+      "height": 724,
+      "mode": "RGB"
+    }
+  ]
+}

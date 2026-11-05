@@ -1,31 +1,22 @@
 class_name TreeAtlas
 extends RefCounted
 
-const PATH := "res://assets/environment/medieval_tree_atlas.png"
-const ATLAS_SIZE := Vector2i(1024, 1536)
-const ROWS := 8
-const COLUMNS := 5
-const COLUMN_EDGES := [0, 205, 410, 614, 819, 1024]
-const ROW_HEIGHT := 192
-const FRAME_SIZE := Vector2(240, 208)
-const ANCHOR := Vector2(120, 184)
-const SOURCE_BASELINE := 179.0
-const REFERENCE_SIZE := 160.0
-const CALM_ROW := 3
+const PATH := "res://assets/tomate/trees.png"
+const ATLAS_SIZE := Vector2i(1983, 793)
+const ROWS := 4
+const COLUMNS := 1
+const FRAME_SIZE := Vector2(600, 800)
+const ANCHOR := Vector2(300, 720)
+const REFERENCE_SIZE := 660.0
+const CALM_ROW := 0
+const DRY_ROW := 2
 const REST_COLUMN := 0
 const WIND_SHADER := "res://assets/environment/tree_wind.gdshader"
-# Lower-trunk centers measured in the original cells. The supplied poses move
-# their trunks as well as their crowns; padding anchors each to the same root.
-const TRUNK_X := [
-	[108.0, 106.0, 102.0, 99.0, 94.0],
-	[95.0, 94.0, 91.0, 90.0, 88.0],
-	[90.0, 92.0, 95.0, 100.0, 101.0],
-	[107.0, 106.0, 104.0, 104.0, 104.0],
-	[108.0, 107.0, 103.0, 105.0, 103.0],
-	[108.0, 106.0, 103.0, 105.0, 103.0],
-	[105.0, 105.0, 101.0, 101.0, 101.0],
-	[106.0, 105.0, 103.0, 104.0, 102.5],
-]
+# Complete silhouettes, original outlines and ground details. The renderer
+# removes the magenta key and purple baked shadows without changing the PNG.
+const REGIONS := [Rect2(11, 64, 480, 633), Rect2(528, 27, 427, 669), Rect2(1003, 82, 462, 614), Rect2(1497, 70, 481, 626)]
+const SOURCE_ROOTS := [Vector2(243, 693), Vector2(744, 692), Vector2(1229, 692), Vector2(1738, 692)]
+
 static func read() -> Array[SpriteFrames]:
 	var texture: Texture2D = load(PATH)
 	var result: Array[SpriteFrames] = []
@@ -47,13 +38,14 @@ static func make_wind_material(row: int, vitality: float = 1.0) -> ShaderMateria
 	var source := cell_region(row, REST_COLUMN)
 	material.set_shader_parameter("frame_uv", Vector4(source.position.x / ATLAS_SIZE.x, source.position.y / ATLAS_SIZE.y, source.size.x / ATLAS_SIZE.x, source.size.y / ATLAS_SIZE.y))
 	material.set_shader_parameter("vitality", vitality)
+	material.set_shader_parameter("wind_strength", 0.15 if row == DRY_ROW else 1.0)
 	return material
 
-static func cell_region(row: int, column: int) -> Rect2:
-	return Rect2(COLUMN_EDGES[column], row * ROW_HEIGHT, COLUMN_EDGES[column + 1] - COLUMN_EDGES[column], ROW_HEIGHT)
+static func cell_region(row: int, _column: int = 0) -> Rect2:
+	return REGIONS[clampi(row, 0, ROWS - 1)]
 
-static func source_anchor(row: int, column: int) -> Vector2:
-	return Vector2(TRUNK_X[row][column], SOURCE_BASELINE)
+static func source_anchor(row: int, _column: int = 0) -> Vector2:
+	return SOURCE_ROOTS[row] - REGIONS[row].position
 
 static func variant(point: Vector2) -> int:
 	return posmod(roundi(point.x * 0.07 + point.y * 0.11), ROWS)

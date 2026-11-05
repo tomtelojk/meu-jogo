@@ -40,9 +40,14 @@ func _ready() -> void:
 	sprite.position = Vector2(0, -26)
 	sprite.scale = Vector2.ONE * 1.15
 	default_frames = _default_animations()
+	var provided := TomateCharacterSheet.read()
+	if not provided.is_empty():
+		default_frames = provided.frames
 	sprite.sprite_frames = default_frames
 	sprite.play("idle_down")
 	add_child(sprite)
+	sprite.animation_changed.connect(_sync_character_geometry)
+	use_default_character()
 
 func _physics_process(delta: float) -> void:
 	if not active:
@@ -77,17 +82,23 @@ func use_default_character() -> void:
 	sprite.sprite_frames = default_frames
 	sprite.scale = Vector2.ONE * 1.15
 	sprite.position = Vector2(0, -26)
+	sprite.material = TomateCharacterSheet.make_material() if TomateCharacterSheet.is_sheet(default_frames) else null
 	sprite.play("idle_" + facing)
+	_sync_character_geometry()
 
 func load_character_file(path: String) -> bool:
 	var sheet := CharacterSheet.read(path)
 	if sheet.is_empty():
 		return false
 	sprite.sprite_frames = sheet.frames
+	sprite.material = null
 	sprite.scale = Vector2.ONE * 72.0 / sheet.cell.y
 	sprite.position = Vector2(0, -31)
 	sprite.play("idle_" + facing)
 	return true
+
+func _sync_character_geometry() -> void:
+	TomateCharacterSheet.apply_geometry(sprite)
 
 func _default_animations() -> SpriteFrames:
 	var frames := SpriteFrames.new()

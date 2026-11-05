@@ -43,6 +43,7 @@ func setup(profile: Dictionary, fallback: SpriteFrames, grid: AStarGrid2D, minut
 	sprite.modulate = profile.color
 	sprite.play("idle_down")
 	add_child(sprite)
+	sprite.animation_changed.connect(_sync_character_geometry)
 	name_label = Label.new()
 	name_label.position = Vector2(-115, -98)
 	name_label.size = Vector2(230, 35)
@@ -66,9 +67,7 @@ func setup(profile: Dictionary, fallback: SpriteFrames, grid: AStarGrid2D, minut
 	interaction_area.add_child(area_shape)
 	add_child(interaction_area)
 	apply_schedule(minute, true)
-	var bundled := "res://assets/npcs/" + String(profile.id) + ".png"
-	if ResourceLoader.exists(bundled):
-		load_original_sprite(bundled)
+	load_default_sprite()
 
 func apply_schedule(minute: float, snap: bool = false) -> void:
 	var entry := KingdomData.schedule(definition, minute)
@@ -205,6 +204,7 @@ func load_original_sprite(path: String) -> bool:
 	if sheet.is_empty():
 		return false
 	sprite.sprite_frames = sheet.frames
+	sprite.material = null
 	sprite.scale = Vector2.ONE * 72.0 / sheet.cell.y
 	sprite.position = Vector2(0, -31)
 	sprite.modulate = Color.WHITE
@@ -212,6 +212,22 @@ func load_original_sprite(path: String) -> bool:
 	sprite.play("idle_" + facing)
 	queue_redraw()
 	return true
+
+func load_default_sprite() -> bool:
+	var sheet := TomateCharacterSheet.read()
+	if sheet.is_empty():
+		return false
+	sprite.sprite_frames = sheet.frames
+	sprite.material = TomateCharacterSheet.make_material(definition.color)
+	sprite.modulate = Color.WHITE
+	custom_sprite = true
+	sprite.play("idle_" + facing)
+	_sync_character_geometry()
+	queue_redraw()
+	return true
+
+func _sync_character_geometry() -> void:
+	TomateCharacterSheet.apply_geometry(sprite)
 
 func _draw() -> void:
 	draw_set_transform(Vector2(0, 2), 0, Vector2(1, 0.4))

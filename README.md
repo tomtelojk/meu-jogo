@@ -59,7 +59,7 @@ Um dia dura 12 minutos reais. Os moradores caminham por caminhos calculados com 
 
 Os dois reis podem dar sua palavra para renovar o **Acordo das Raízes**. A aliança só é concluída com o aval dos dois e a árvore-mãe restaurada. O salvamento preserva dia, horário, posições dos NPCs, encontros e compromisso dos reinos, mantendo compatibilidade com a jornada anterior.
 
-Os oito NPCs já usam as pranchas originais fornecidas em `abc.zip`, incluídas em `assets/npcs/`. Os PNGs foram apenas copiados e renomeados, preservando seus bytes. O [manifesto de origem](assets/npcs/sources.json) relaciona cada personagem ao nome do arquivo recebido e registra os hashes SHA-256 do ZIP e de cada imagem. Para personalizar uma aparência no jogo pronto, converse com o morador e escolha **Escolher sprite deste morador**. As rotinas e os diálogos continuam funcionando com a prancha escolhida.
+O protagonista e os oito NPCs usam as cinco folhas complementares do agricultor fornecidas em `tomate.zip`, com variações discretas na roupa dos moradores. Nomes, reinos, diálogos e rotinas são mantidos. Os dez PNGs do pacote estão em `assets/tomate/`, preservando os bytes originais. O [manifesto de origem](assets/tomate/sources.json) registra nomes recebidos, papéis e hashes SHA-256. Para personalizar uma aparência no jogo pronto, converse com o morador e escolha **Escolher sprite deste morador**.
 
 ## Controles
 
@@ -75,17 +75,17 @@ Em telas menores ou dispositivos com toque, a interface oferece um controle de m
 
 ## Sprites e personagens
 
-As árvores usam o PNG original de `Atlas de Árvore Medieval em Movimento.zip`, preservado em `assets/environment/medieval_tree_atlas.png`. Cada uma das oito variantes mantém uma pose neutra e recebe vento contínuo na copa, com pequenas rajadas e fases espaciais diferentes. A base do tronco fica imóvel. O filtro suave se aplica apenas às árvores, permitindo deslocamentos menores que um pixel. A árvore-mãe usa a mesma arte, com vitalidade reduzida antes da restauração. A origem e os hashes estão em `assets/environment/tree_sources.json`.
+As quatro árvores de `tomate.zip` são carvalho, pinheiro, árvore seca e macieira. Recebem vento contínuo na copa, com pequenas rajadas e raízes imóveis. A árvore-mãe começa seca e volta a ser um carvalho ao concluir a missão. As três casas fornecidas representam os edifícios dos dois reinos, preservando proporção, portas, nomes, profundidade e colisões.
 
-Os sete PNGs de `sprites_chao_arvores_vento.zip` continuam preservados sem alterações. Chão, arbustos e decoração usam esse pacote; as árvores anteriores ficam apenas arquivadas. Pequenas variações de fase e velocidade evitam que todas as plantas balancem em sincronia.
+Grama, flores, pedras, terra, areia, calçamento e musgo vêm da nova folha de terrenos. As transições formam as bordas dos caminhos. O rio usa as quatro fases de água com transição suave e margens estáticas. Recortes inteiros excluem as grades das folhas, e as texturas dos caminhos ficam fixas nas coordenadas do mundo. A decoração do chão faz parte dos tiles e não deixa obstáculos invisíveis da arte anterior.
 
 **Escolher personagem**, na introdução ou no menu de pausa, abre um seletor de arquivo PNG nativo do Godot. Ele aceita as pranchas de cinco colunas e oito linhas das imagens enviadas. As primeiras quatro linhas representam frente, costas, direita e esquerda ao caminhar; as quatro seguintes representam corrida. A primeira coluna contém a pose parada, e as demais contêm os quatro quadros de movimento. Os sprites laterais não são espelhados.
 
-Nos NPCs, os recortes acompanham a distribuição real dos desenhos e usam uma âncora comum entre as poses. Isso corrige os saltos causados por dividir igualmente pranchas cujas figuras não estão igualmente espaçadas. As viradas durante percursos diagonais também mantêm uma direção estável.
+O pacote fornece uma folha de repouso nas quatro direções e quatro folhas de caminhada, uma por direção. Elas são combinadas em 12 animações. A corrida reutiliza as poses de caminhada em sua cadência própria. A escala é normalizada nas viradas, e o fundo magenta dos PNGs RGB é removido apenas durante a renderização, sem alterar os arquivos.
 
 Os passos avançam conforme a distância realmente percorrida: moradores mais lentos têm uma passada mais calma, e a corrida usa um passo mais comprido. O ciclo para junto com o personagem e mantém a fase nas viradas, independentemente da taxa de quadros.
 
-O protagonista mantém a aparência provisória e permite importar uma prancha local. A imagem extra da aventureira ruiva recebida em `abc.zip` foi preservada em `assets/characters/adventurer.png`, com origem e hash no mesmo manifesto; ela não é aplicada automaticamente nesta atualização dos NPCs. A prancha selecionada pelo jogador é copiada, sem modificar o arquivo original, para `user://characters/selected.png`.
+O protagonista usa o agricultor por padrão e permite importar uma prancha local. A imagem escolhida é copiada, sem modificar o original, para `user://characters/selected.png`. As artes recebidas anteriormente continuam arquivadas no projeto e são excluídas dos executáveis atuais.
 
 ## Salvamento
 

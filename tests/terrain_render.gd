@@ -61,6 +61,57 @@ func _run() -> void:
 		var b := after.get_pixelv(point - Vector2i(17, 13))
 		anchored = anchored and absf(a.r - b.r) < 0.02 and absf(a.g - b.g) < 0.02
 	verify(anchored, "textura permanece presa ao terreno quando a câmera se move")
+	patch.queue_free()
+	await process_frame
+	view.canvas_transform = Transform2D.IDENTITY
+	view.transparent_bg = true
+	await _test_water(view)
 	view.queue_free()
 	await process_frame
 	quit(1 if failures else 0)
+
+func _test_water(view: SubViewport) -> void:
+	var factory := ForestRiver.new()
+	var frames := GroundAtlas.water_frames()
+	var material := factory._material(frames, false)
+	factory.free()
+	var patch := Polygon2D.new()
+	patch.polygon = PackedVector2Array([Vector2.ZERO, Vector2(302, 0), Vector2(302, 302), Vector2(0, 302)])
+	var uv := PackedVector2Array()
+	for point in patch.polygon:
+		uv.append(point * GroundAtlas.UV_SCALE)
+	patch.uv = uv
+	patch.texture = frames[0]
+	patch.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	patch.material = material
+	view.add_child(patch)
+	material.set_shader_parameter("water_time", 0.0)
+	await RenderingServer.frame_post_draw
+	await RenderingServer.frame_post_draw
+	var first := view.get_texture().get_image()
+	material.set_shader_parameter("water_time", 1.25)
+	await RenderingServer.frame_post_draw
+	await RenderingServer.frame_post_draw
+	var next := view.get_texture().get_image()
+	var clean := true
+	var changed := 0
+	for y in range(2, 299, 8):
+		for x in range(2, 299, 8):
+			var a := first.get_pixel(x, y)
+			var b := next.get_pixel(x, y)
+			clean = clean and a.b > a.r * 1.3 and b.b > b.r * 1.3 and a.a > 0.99 and b.a > 0.99
+			if absf(a.r - b.r) + absf(a.g - b.g) + absf(a.b - b.b) > 0.02:
+				changed += 1
+	verify(clean and changed > 10, "água renderiza as fases novas sem fundo magenta, grade ou regiões vazias")
+	patch.modulate = Color(0.5, 0.6, 0.7, 0.6)
+	await RenderingServer.frame_post_draw
+	await RenderingServer.frame_post_draw
+	var shaded := view.get_texture().get_image()
+	var tint_preserved := true
+	for point in [Vector2i(35, 43), Vector2i(100, 124), Vector2i(230, 210)]:
+		var a := next.get_pixelv(point)
+		var b := shaded.get_pixelv(point)
+		tint_preserved = tint_preserved and absf(b.a - 0.6) < 0.02 and b.b < a.b * 0.8
+	verify(tint_preserved, "shader da água preserva transparência e iluminação do CanvasItem")
+	patch.queue_free()
+	await process_frame

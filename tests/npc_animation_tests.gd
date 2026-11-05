@@ -56,19 +56,26 @@ static func _head_center(atlas: AtlasTexture) -> float:
 	var image := atlas.get_image()
 	var weight := 0.0
 	var weighted_x := 0.0
-	for y in mini(60, image.get_height()):
-		for x in image.get_width():
+	var tomato := atlas.atlas.resource_path.begins_with(TomateCharacterSheet.BASE)
+	var height := roundi(image.get_height() * 0.35) if tomato else mini(60, image.get_height())
+	# The new RGB sheets are several times larger than the previous ones. Their
+	# pixel blocks are broad, so a three-pixel sampling grid still measures the
+	# head independently while keeping the complete suite within its time limit.
+	var sample_step := 3 if tomato else 1
+	for y in range(0, height, sample_step):
+		for x in range(0, image.get_width(), sample_step):
 			var alpha := image.get_pixel(x, y).a
-			if alpha >= 0.75:
+			if alpha >= 0.75 and not (tomato and TomateCharacterSheet.is_key(image.get_pixel(x, y))):
 				weight += alpha
 				weighted_x += (x + atlas.margin.position.x) * alpha
 	return weighted_x / maxf(weight, 1.0)
 
 static func _sole(atlas: AtlasTexture) -> int:
 	var image := atlas.get_image()
+	var tomato := atlas.atlas.resource_path.begins_with(TomateCharacterSheet.BASE)
 	for y in range(image.get_height() - 1, -1, -1):
 		for x in image.get_width():
-			if image.get_pixel(x, y).a >= 0.75:
+			if image.get_pixel(x, y).a >= 0.75 and not (tomato and TomateCharacterSheet.is_key(image.get_pixel(x, y))):
 				return y + roundi(atlas.margin.position.y)
 	return -1
 
@@ -87,7 +94,7 @@ static func _test_alignment(runner, world: ForestWorld) -> void:
 				stable = stable and centers.max() - centers.min() <= 4.0 and soles.max() - soles.min() <= 1
 		runner.verify(stable, "cabeça e pés mantêm a âncora ao caminhar e correr: " + profile.name)
 	var original: SpriteFrames = CharacterSheet.read("res://assets/npcs/caio.png").frames
-	var fixed: SpriteFrames = world.npcs.caio.sprite.sprite_frames
+	var fixed: SpriteFrames = CharacterSheet.read("res://assets/npcs/caio.png", true).frames
 	var old_centers: Array[float] = []
 	var new_centers: Array[float] = []
 	for frame in 4:
@@ -104,7 +111,7 @@ static func _test_alignment(runner, world: ForestWorld) -> void:
 			var bundled := fixed.get_frame_texture("walk_down", frame) as AtlasTexture
 			var imported := override.frames.get_frame_texture("walk_down", frame) as AtlasTexture
 			same_layout = same_layout and bundled.region == imported.region and bundled.margin == imported.margin
-	runner.verify(same_layout, "PNG original importado do disco recebe a mesma correção do NPC incluído")
+	runner.verify(same_layout, "importação de PNG 5×8 do disco mantém o alinhamento do leitor legado")
 	DirAccess.remove_absolute(path)
 
 static func _test_motion(runner, game: ForestGame) -> void:

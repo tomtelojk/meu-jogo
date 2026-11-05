@@ -2,6 +2,7 @@ class_name TerrainTests
 extends RefCounted
 
 static func run(runner, world: ForestWorld) -> void:
+	_test_atlas(runner)
 	var terrain: ForestTerrain = world.get_node("ForestPaths")
 	var samples: Array[Vector2] = []
 	for path in WorldData.paths():
@@ -15,7 +16,7 @@ static func run(runner, world: ForestWorld) -> void:
 		var patches := _at(terrain, point)
 		covered = covered and not patches.is_empty()
 		for patch in patches:
-			anchored = anchored and _texture_point(patch, point).distance_to(point) < 0.02
+			anchored = anchored and _texture_point(patch, point).distance_to(point * GroundAtlas.UV_SCALE) < 0.02
 	runner.verify(covered, "ruas cobrem todos os percursos, curvas, cruzamentos e pontas")
 	runner.verify(anchored, "textura de terra mantém escala e posição nos cruzamentos e curvas")
 	# The southern end is isolated from all other roads and clearings.
@@ -29,6 +30,57 @@ static func run(runner, world: ForestWorld) -> void:
 	for point in spots:
 		clearings_covered = clearings_covered and not _at(terrain, point).is_empty()
 	runner.verify(clearings_covered, "clareiras da árvore-mãe, acampamento e sementes preservadas")
+	_test_river(runner, world)
+
+static func _test_atlas(runner) -> void:
+	var source := GroundAtlas.source_image(GroundAtlas.TERRAIN_PATH)
+	var original_pixels := true
+	var no_borders := true
+	for row in 5:
+		for column in 8:
+			var image := GroundAtlas.tile(row, column).get_image()
+			var region := GroundAtlas.region(row, column)
+			original_pixels = original_pixels and image.get_size() == Vector2i(176, 176)
+			for point in [Vector2i.ZERO, Vector2i(87, 87), Vector2i(175, 175)]:
+				original_pixels = original_pixels and image.get_pixelv(point).is_equal_approx(source.get_pixelv(region.position + point))
+			no_borders = no_borders and not _contains_sheet_border(image)
+	runner.verify(original_pixels, "quarenta tiles de tomate.zip mantêm os pixels e recortes inteiros originais")
+	runner.verify(no_borders, "recortes de terreno excluem o fundo magenta e a grade preta da prancha")
+	var tiles := GroundAtlas.create_grass_tiles()
+	var variants: Dictionary = {}
+	for y in WorldData.ROWS:
+		for x in WorldData.COLS:
+			variants[GroundAtlas.grass_variant(x, y)] = true
+	runner.verify(tiles.get_source_count() == 8 and variants.size() == 8, "o chão usa as oito variações de grama com flores e pedras do pacote")
+	runner.verify(not _contains_sheet_border(GroundAtlas.transition_strip().get_image()), "franjas dos caminhos usam a transição grama e terra sem a grade da folha")
+
+static func _contains_sheet_border(image: Image) -> bool:
+	var dark_rows := 0
+	for y in image.get_height():
+		var dark := 0
+		for x in image.get_width():
+			var color := image.get_pixel(x, y)
+			if color.r > 0.65 and color.b > 0.65 and color.g < 0.25:
+				return true
+			if maxf(color.r, maxf(color.g, color.b)) < 0.13:
+				dark += 1
+		if dark > image.get_width() * 0.85:
+			dark_rows += 1
+	return dark_rows > 0
+
+static func _test_river(runner, world: ForestWorld) -> void:
+	var river: ForestRiver = world.get_node("RiverBridgeAndCamp/TomateRiver")
+	var frames := GroundAtlas.water_frames()
+	var valid := river.get_child_count() == 3 and frames.size() == 4
+	for phase in 4:
+		valid = valid and river.water_material.get_shader_parameter("frame" + str(phase)) == frames[phase]
+		valid = valid and not _contains_sheet_border(frames[phase].get_image())
+	runner.verify(valid, "rio usa as quatro fases de água do pacote e duas margens sem magenta ou grade")
+	var body: Polygon2D = river.get_child(0)
+	var covered := true
+	for y in range(0, int(WorldData.SIZE.y), 64):
+		covered = covered and Geometry2D.is_point_in_polygon(Vector2(WorldData.river_x(y), y + 0.1), body.polygon)
+	runner.verify(covered, "rio texturizado acompanha a geometria original até a ponte e as duas extremidades")
 
 static func _at(terrain: ForestTerrain, point: Vector2) -> Array[Polygon2D]:
 	var result: Array[Polygon2D] = []

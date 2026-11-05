@@ -1,7 +1,10 @@
-PRANCHAS ORIGINAIS DOS NPCs
+ARQUIVO DAS PRANCHAS ANTERIORES DOS NPCs
 
-As oito pranchas originais de abc.zip já estão incluídas e são carregadas
-automaticamente pelos NPCs:
+As oito pranchas originais de abc.zip estão preservadas aqui como arquivo.
+As aparências padrão atuais vêm de assets/tomate e são descritas no README
+dessa pasta. Os executáveis atuais excluem estas imagens anteriores.
+
+Mapeamento histórico:
 
 bento.png — ferreiro
 lia.png — comerciante

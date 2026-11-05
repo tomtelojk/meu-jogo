@@ -47,10 +47,10 @@ func _run() -> void:
 	verify(game.world.get_node("GrassTiles") is TileMapLayer, "o chão usa TileMapLayer nativo")
 	verify(game.player is CharacterBody2D and game.camera is Camera2D, "personagem e câmera usam nós nativos")
 	verify(game.world.trees.size() > 300 and game.world.seeds.size() == 5, "cenário e cinco sementes foram criados")
-	_test_wind()
 	preload("res://tests/tree_atlas_tests.gd").run(self, game.world)
 	preload("res://tests/terrain_tests.gd").run(self, game.world)
 	preload("res://tests/bundled_npc_tests.gd").run(self, game.world)
+	preload("res://tests/tomate_assets_tests.gd").run(self, game.world)
 	_test_reachability()
 	game.start_journey()
 	await frames()
@@ -208,14 +208,6 @@ func _test_character_import() -> void:
 	verify(library.get_frame_count("walk_up") == 4 and library.get_frame_count("idle_up") == 1, "animações usam quatro quadros de movimento e um parado")
 	game.player.use_default_character()
 	DirAccess.remove_absolute(path)
-
-func _test_wind() -> void:
-	for variant in 3:
-		var library: SpriteFrames = game.world.libraries["bush" + str(variant)]
-		var duration := 0.0
-		for frame in library.get_frame_count("default"):
-			duration += library.get_frame_duration("default", frame) / library.get_animation_speed("default")
-		verify(duration >= 4.0, "arbusto acompanha o vento lento: " + str(variant))
 
 func _test_reachability() -> void:
 	var step := 16

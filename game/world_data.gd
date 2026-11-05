@@ -86,13 +86,15 @@ static func generate() -> Dictionary:
 				var bush := rng.randf() < 0.34
 				var item := {"position": point, "kind": "bush" if bush else "decor", "variant": rng.randi_range(0, 2 if bush else 8), "size": 27.0 + rng.randf() * 28.0, "phase": rng.randi_range(0, 3)}
 				decor.append(item)
-				if not bush and item.variant >= 6:
-					colliders.append({"position": point, "radius": item.size * 0.24})
 	for index in SEEDS.size():
 		for i in 9:
 			var angle := i / 9.0 * TAU
 			var radius := 62.0 + rng.randf() * 21.0
 			decor.append({"position": SEEDS[index].position + Vector2(cos(angle) * radius, sin(angle) * radius * 0.64), "kind": "decor" if index == 2 else "bush", "variant": 6 + i % 3 if index == 2 else (1 if index == 1 else 2), "size": 38.0 + rng.randf() * 15.0, "phase": rng.randi_range(0, 3)})
+	# Flowers, stones and low plants now belong to the supplied ground tiles.
+	# Keep the RNG sequence above so saved tree positions remain deterministic,
+	# but do not leave invisible colliders for the retired decorative sprites.
+	decor.clear()
 	var grid: Dictionary = {}
 	for obstacle in colliders:
 		var cell := Vector2i(floori(obstacle.position.x / TILE), floori(obstacle.position.y / TILE))

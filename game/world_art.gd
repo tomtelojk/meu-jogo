@@ -1,20 +1,11 @@
 extends Node2D
 
+func _ready() -> void:
+	var river := ForestRiver.new()
+	river.build()
+	add_child(river)
+
 func _draw() -> void:
-	var stream := PackedVector2Array()
-	for i in 83:
-		var y := i / 82.0 * WorldData.SIZE.y
-		stream.append(Vector2(WorldData.river_x(y), y))
-	draw_polyline(stream, Color("35492f"), 184.0)
-	draw_polyline(stream, Color("8a8450"), 172.0)
-	draw_polyline(stream, Color("3e6c62"), 160.0)
-	draw_polyline(stream, Color("4f7d6e"), 137.0)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 42
-	for i in 400:
-		var y := rng.randf() * WorldData.SIZE.y
-		var x := WorldData.river_x(y) + rng.randf_range(-70, 70)
-		draw_rect(Rect2(x, y, rng.randf_range(4, 18), 2), Color(0.68, 0.78, 0.65, 0.25))
 	_draw_bridge()
 	_draw_camp()
 	_draw_sign()

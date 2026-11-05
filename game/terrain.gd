@@ -3,9 +3,6 @@ extends Node2D
 
 const ROAD_HALF_WIDTH := 44.0
 const BORDER_WIDTH := 7.5
-# Opaque edging keeps overlapping paths from darkening their intersections.
-const BORDER_COLOR := Color("414c2d")
-const DIRT_REGION := Rect2i(14, 270, 100, 100)
 const DIRT_SHADER := """
 shader_type canvas_item;
 varying vec4 tint;
@@ -24,8 +21,8 @@ void fragment() {
 }
 """
 
-func build(ground_image: Image) -> void:
-	var dirt := ImageTexture.create_from_image(ground_image.get_region(DIRT_REGION))
+func build() -> void:
+	var dirt := GroundAtlas.tile(1, 0)
 	var borders := Node2D.new()
 	borders.name = "Borders"
 	add_child(borders)
@@ -38,9 +35,8 @@ func build(ground_image: Image) -> void:
 	surface.material = material
 	add_child(surface)
 	for path in WorldData.paths():
-		for outline in Geometry2D.offset_polyline(path, ROAD_HALF_WIDTH + BORDER_WIDTH, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
-			_add_polygon(borders, outline)
 		for outline in Geometry2D.offset_polyline(path, ROAD_HALF_WIDTH, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
+			_add_edge(borders, outline)
 			_add_polygon(surface, outline, dirt)
 	var spots: Array[Vector2] = [WorldData.MOTHER, WorldData.CAMP]
 	for seed_data in WorldData.SEEDS:
@@ -51,9 +47,42 @@ func build(ground_image: Image) -> void:
 		for i in 36:
 			var angle := i / 36.0 * TAU
 			clearing.append(point + Vector2(cos(angle), sin(angle)) * radius)
-		for outline in Geometry2D.offset_polygon(clearing, BORDER_WIDTH, Geometry2D.JOIN_ROUND):
-			_add_polygon(borders, outline)
-		_add_polygon(surface, clearing, dirt)
+		_add_edge(borders, clearing)
+		var texture := dirt
+		if point == WorldData.SEEDS[2].position:
+			texture = GroundAtlas.tile(4, 0)
+		elif point == WorldData.SEEDS[3].position:
+			texture = GroundAtlas.tile(2, 3)
+		_add_polygon(surface, clearing, texture)
+	# The stone and moss rows form small plazas at the two capitals.
+	for id in ["aurelia", "valverde"]:
+		var plaza := PackedVector2Array()
+		var center: Vector2 = KingdomData.REALMS[id].capital
+		for i in 36:
+			var angle := i / 36.0 * TAU
+			plaza.append(center + Vector2(cos(angle) * 105.0, sin(angle) * 67.0))
+		_add_edge(borders, plaza)
+		_add_polygon(surface, plaza, GroundAtlas.tile(3 if id == "aurelia" else 4, 2))
+
+func _add_edge(layer: Node2D, outline: PackedVector2Array) -> void:
+	# This layer is behind every road fill, so junctions never acquire a green
+	# stripe from the outline of a crossing road. Only the outer fringe remains.
+	var points := outline.duplicate()
+	var signed_area := 0.0
+	for index in points.size():
+		signed_area += points[index].cross(points[(index + 1) % points.size()])
+	if signed_area < 0:
+		points.reverse()
+	points.append(points[0])
+	var edge := Line2D.new()
+	edge.points = points
+	edge.width = BORDER_WIDTH * 2.0
+	edge.joint_mode = Line2D.LINE_JOINT_ROUND
+	edge.texture = GroundAtlas.transition_strip()
+	edge.texture_mode = Line2D.LINE_TEXTURE_TILE
+	edge.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	edge.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	layer.add_child(edge)
 
 func _add_polygon(layer: Node2D, outline: PackedVector2Array, dirt: Texture2D = null) -> void:
 	var patch := Polygon2D.new()
@@ -61,11 +90,12 @@ func _add_polygon(layer: Node2D, outline: PackedVector2Array, dirt: Texture2D = 
 	if dirt:
 		# UVs use world pixels instead of distance along a line. Curves, caps,
 		# intersections and clearings therefore sample precisely the same texels.
-		patch.uv = outline
+		var uv := PackedVector2Array()
+		for point in outline:
+			uv.append(point * GroundAtlas.UV_SCALE)
+		patch.uv = uv
 		patch.texture = dirt
 		patch.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 		patch.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		patch.use_parent_material = true
-	else:
-		patch.color = BORDER_COLOR
 	layer.add_child(patch)

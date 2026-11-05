@@ -3,7 +3,7 @@ extends SceneTree
 # Deterministic temporal preview of the actual gait controller and tree shader.
 # Physics/pathfinding behavior is covered separately by the native test suite.
 # DISPLAY=:99 ./scripts/godot.sh --audio-driver Dummy --script res://tests/natural_motion_preview.gd -- --test
-const OUTPUT := "/tmp/entre-folhas-motion-preview30"
+const OUTPUT := "/tmp/entre-folhas-tomate-motion-preview30"
 const FRAME_COUNT := 240
 const FRAME_STEP := 1.0 / 30.0
 var actors: Array[Dictionary] = []
@@ -26,13 +26,13 @@ func _record() -> void:
 	navigator.region = Rect2i(0, 0, 100, 80)
 	navigator.cell_size = Vector2(32, 32)
 	navigator.update()
-	var fallback: SpriteFrames = CharacterSheet.read("res://assets/npcs/bento.png", true).frames
+	var fallback: SpriteFrames = TomateCharacterSheet.read().frames
 	root.canvas_transform = Transform2D.IDENTITY
 	var stage := Node2D.new()
 	stage.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	root.add_child(stage)
 	_panel(stage, Rect2(0, 0, 1280, 800), Color("17291f"))
-	_label(stage, "Entre Folhas · movimento", Vector2(24, 10), 25)
+	_label(stage, "Entre Folhas · sprites de tomate.zip", Vector2(24, 10), 25)
 	_label(stage, "Passos acompanham o deslocamento · copas com vento contínuo", Vector2(24, 44), 15)
 	for index in KingdomData.PEOPLE.size():
 		var profile: Dictionary = KingdomData.PEOPLE[index]
@@ -70,7 +70,8 @@ func _record() -> void:
 		tree.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 		tree.centered = false
 		tree.offset = -TreeAtlas.ANCHOR
-		tree.position = Vector2(80 + row * 160, 766)
+		tree.position = Vector2(160 + row * 320, 766)
+		tree.scale = Vector2.ONE * 160.0 / TreeAtlas.REFERENCE_SIZE
 		var material := TreeAtlas.make_wind_material(row)
 		tree.material = material
 		wind_materials.append(material)

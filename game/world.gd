@@ -1,9 +1,6 @@
 class_name ForestWorld
 extends Node2D
 
-const DECOR_FRAMES := [Vector2(0, 78), Vector2(78, 68), Vector2(146, 87), Vector2(233, 87), Vector2(320, 101), Vector2(421, 97), Vector2(518, 73), Vector2(591, 79), Vector2(670, 92)]
-const BUSH_SWAY_FPS: float = 1.6
-
 var data: Dictionary
 var entities: Node2D
 var mother_sprite: AnimatedSprite2D
@@ -28,9 +25,6 @@ func _ready() -> void:
 	for row in TreeAtlas.ROWS:
 		libraries["tree" + str(row)] = tree_frames[row]
 		tree_materials.append(TreeAtlas.make_wind_material(row))
-	var bush_texture: Texture2D = load("res://assets/environment/arbustos_vento.png")
-	for variant in 3:
-		libraries["bush" + str(variant)] = _frames(bush_texture, 4, 1024.0 / 12.0, 102.0, BUSH_SWAY_FPS, variant * 4)
 	_build_ground()
 	var art := Node2D.new()
 	art.name = "RiverBridgeAndCamp"
@@ -40,8 +34,6 @@ func _ready() -> void:
 	for tree in data.trees:
 		_add_tree(tree)
 	_add_tree({"position": WorldData.MOTHER, "size": 255.0, "radius": 26.0, "kind": "bare", "phase": 0}, true)
-	for item in data.decor:
-		_add_decor(item)
 	for seed_data in WorldData.SEEDS:
 		var seed_node := ForestSeed.new()
 		seed_node.setup(seed_data)
@@ -137,49 +129,19 @@ func population_data() -> Dictionary:
 		result[id] = {"x": npcs[id].position.x, "y": npcs[id].position.y}
 	return result
 
-func _frames(texture: Texture2D, count: int, width: float, height: float, fps: float, offset: int = 0) -> SpriteFrames:
-	var frames := SpriteFrames.new()
-	frames.set_animation_speed("default", fps)
-	# Return through the original frames so the crown never snaps from one
-	# extreme to the other. Hold the ends briefly for a softer breeze.
-	var sequence: Array[int] = []
-	for i in count:
-		sequence.append(i)
-	for i in range(count - 2, 0, -1):
-		sequence.append(i)
-	for i in sequence:
-		var atlas := AtlasTexture.new()
-		atlas.atlas = texture
-		atlas.region = Rect2((i + offset) * width, 0, width, height)
-		frames.add_frame("default", atlas, 1.4 if i == 0 or i == count - 1 else 1.0)
-	return frames
-
 func _build_ground() -> void:
-	var ground_texture: Texture2D = load("res://assets/environment/chao_tiles_7x6_128px.png")
-	var image := ground_texture.get_image()
-	var tiles := TileSet.new()
-	tiles.tile_size = Vector2i(104, 104)
-	for variant in 3:
-		var source := TileSetAtlasSource.new()
-		source.texture = ImageTexture.create_from_image(image.get_region(Rect2i([0, 2, 3][variant] * 128 + 12, 12, 104, 104)))
-		source.texture_region_size = Vector2i(104, 104)
-		source.create_tile(Vector2i.ZERO)
-		tiles.add_source(source, variant)
 	var ground := TileMapLayer.new()
 	ground.name = "GrassTiles"
-	ground.tile_set = tiles
-	ground.scale = Vector2.ONE * (64.0 / 104.0)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 442
+	ground.tile_set = GroundAtlas.create_grass_tiles()
+	ground.scale = Vector2.ONE * (float(WorldData.TILE) / GroundAtlas.TILE_PIXELS)
 	for y in WorldData.ROWS:
 		for x in WorldData.COLS:
-			var variant := 1 if rng.randf() < 0.13 else (0 if rng.randf() < 0.6 else 2)
-			ground.set_cell(Vector2i(x, y), variant, Vector2i.ZERO)
+			ground.set_cell(Vector2i(x, y), GroundAtlas.grass_variant(x, y), Vector2i.ZERO)
 	add_child(ground)
 	move_child(ground, 0)
 	var paths_node := ForestTerrain.new()
 	paths_node.name = "ForestPaths"
-	paths_node.build(image)
+	paths_node.build()
 	add_child(paths_node)
 	move_child(paths_node, 1)
 
@@ -196,7 +158,11 @@ func _add_tree(tree: Dictionary, mother: bool = false) -> void:
 	shadow.color = Color(0.1, 0.17, 0.14, 0.26)
 	body.add_child(shadow)
 	var sprite := AnimatedSprite2D.new()
-	var row := TreeAtlas.CALM_ROW if mother else TreeAtlas.variant(tree.position)
+	var row := TreeAtlas.variant(tree.position)
+	if mother or tree.get("kind", "green") == "bare":
+		row = TreeAtlas.DRY_ROW
+	elif row == TreeAtlas.DRY_ROW:
+		row = TreeAtlas.CALM_ROW
 	sprite.sprite_frames = libraries["tree" + str(row)]
 	sprite.set_meta("atlas_row", row)
 	sprite.centered = false
@@ -230,35 +196,6 @@ func _add_tree(tree: Dictionary, mother: bool = false) -> void:
 		mother_label.add_theme_color_override("font_shadow_color", Color("253727"))
 		mother_label.add_theme_constant_override("shadow_offset_y", 2)
 		body.add_child(mother_label)
-
-func _add_decor(item: Dictionary) -> void:
-	var root: Node2D = StaticBody2D.new() if item.kind == "decor" and item.variant >= 6 else Node2D.new()
-	root.position = item.position
-	if root is StaticBody2D:
-		var shape := CollisionShape2D.new()
-		var circle := CircleShape2D.new()
-		circle.radius = item.size * 0.24
-		shape.shape = circle
-		root.add_child(shape)
-	if item.kind == "bush":
-		var sprite := AnimatedSprite2D.new()
-		sprite.sprite_frames = libraries["bush" + str(item.variant)]
-		sprite.scale = Vector2.ONE * item.size / (1024.0 / 12.0)
-		sprite.position.y = -item.size * 0.35
-		sprite.play()
-		sprite.set_frame_and_progress(int(item.phase), fposmod(item.position.x * 0.017 + item.position.y * 0.011, 1.0))
-		sprite.speed_scale = 0.9 + fposmod(item.position.x * 0.009 + item.position.y * 0.013, 0.14)
-		root.add_child(sprite)
-	else:
-		var sprite := Sprite2D.new()
-		sprite.texture = load("res://assets/environment/decoracao_chao.png")
-		var region: Vector2 = DECOR_FRAMES[item.variant]
-		sprite.region_enabled = true
-		sprite.region_rect = Rect2(region.x, 0, region.y, 82)
-		sprite.scale = Vector2.ONE * item.size / region.y
-		sprite.position.y = -item.size * 82.0 / region.y / 2.0 + 5
-		root.add_child(sprite)
-	entities.add_child(root)
 
 func _interaction_area(point: Vector2, radius: float) -> Area2D:
 	var area := Area2D.new()
@@ -312,7 +249,11 @@ func apply_progress(collected: Dictionary, complete: bool) -> void:
 			seeds[id].gathered = false
 			seeds[id].show()
 			seeds[id].set_deferred("monitorable", true)
-	mother_material.set_shader_parameter("vitality", 1.0 if complete else 0.15)
+	var row := TreeAtlas.CALM_ROW if complete else TreeAtlas.DRY_ROW
+	mother_sprite.sprite_frames = libraries["tree" + str(row)]
+	mother_sprite.set_meta("atlas_row", row)
+	mother_material = TreeAtlas.make_wind_material(row, 1.0 if complete else 0.15)
+	mother_sprite.material = mother_material
 	mother_label.text = "O BOSQUE RENASCE" if complete else "Á R V O R E - M Ã E"
 
 func burst(point: Vector2, amount: int = 30) -> void:
