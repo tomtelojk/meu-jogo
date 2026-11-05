@@ -8,7 +8,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTROLS = """\nCOMO JOGAR\nEncontre as cinco sementes douradas e leve-as de volta à árvore-mãe.\n\nWASD ou setas: caminhar\nShift: correr\nE: recolher sementes, ler e plantar\nM: abrir e fechar o mapa\nEsc: pausar e voltar\n\nSeu progresso é salvo automaticamente neste computador.\nSom ambiente é opcional, no botão de música.\n"""
-VILLAGERS = """\nOS DOIS REINOS\nAurélia fica no oeste dourado; Valverde, a leste do riacho.\nConverse com os oito moradores usando E. Cada um tem histórias, dicas e horários próprios.\nOs NPCs trabalham, viajam, patrulham e voltam para casa ao longo do dia.\nO relógio aparece na tela. Na barraca do acampamento, você pode descansar até a manhã seguinte.\nFale com os dois reis e restaure a árvore-mãe para renovar o Acordo das Raízes.\n\nAPARÊNCIAS DOS MORADORES\nAs pranchas enviadas na conversa ainda não estão disponíveis como arquivos PNG neste projeto.\nOs NPCs usam aparências provisórias. Para aplicar suas imagens originais, converse com cada\nNPC e escolha 'Escolher sprite deste morador'. Isso não exige instalar o Godot.\n"""
+VILLAGERS = """
+OS DOIS REINOS
+Aurélia fica no oeste dourado; Valverde, a leste do riacho.
+Converse com os oito moradores usando E. Cada um tem histórias, dicas e horários próprios.
+Os NPCs trabalham, viajam, patrulham e voltam para casa ao longo do dia.
+O relógio aparece na tela. Na barraca do acampamento, você pode descansar até a manhã seguinte.
+Fale com os dois reis e restaure a árvore-mãe para renovar o Acordo das Raízes.
+
+APARÊNCIAS DOS MORADORES
+Os oito NPCs já usam as pranchas originais fornecidas em abc.zip.
+Para personalizar uma aparência, converse com o NPC e escolha
+'Escolher sprite deste morador'. Isso não exige instalar o Godot.
+As rotinas e os diálogos continuam funcionando com a prancha escolhida.
+"""
 
 
 def verify_player(path: Path, prefix: bytes) -> None:
@@ -46,10 +59,16 @@ def package(system: str, output: Path) -> Path:
     (stage / "LEIA-ME.txt").write_text(instructions + CONTROLS + VILLAGERS, encoding="utf-8")
     for license_file in (ROOT / "licenses").glob("*.txt"):
         shutil.copy2(license_file, stage / license_file.name)
+    shutil.copy2(ROOT / "assets" / "npcs" / "sources.json", stage / "FONTES-SPRITES.json")
     (stage / "CREDITOS.txt").write_text(
         "Entre Folhas\nMotor: Godot 4.6.3, licença MIT.\n"
         "Os avisos do Godot e de suas dependências acompanham este pacote.\n"
-        "Sprites de cenário: pacote original fornecido pelo autor do projeto.\n",
+        "Sprites de cenário: sprites_chao_arvores_vento.zip, fornecido pelo autor do projeto.\n"
+        "Sprites dos oito NPCs: pranchas originais de abc.zip, fornecidas pelo autor do projeto.\n"
+        "Os PNGs foram copiados e renomeados, preservando seus bytes originais.\n"
+        "FONTES-SPRITES.json relaciona nomes recebidos, papéis e hashes SHA-256 das imagens e de abc.zip.\n"
+        "O manifesto também registra a aventureira ruiva extra preservada no projeto;\n"
+        "ela não substitui automaticamente a aparência do protagonista.\n",
         encoding="utf-8",
     )
     archive = output / f"EntreFolhas-{system}.zip"

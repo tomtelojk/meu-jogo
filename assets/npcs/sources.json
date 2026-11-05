@@ -1,0 +1,61 @@
+{
+  "archive": "abc.zip",
+  "archive_sha256": "d4934da074ed1a865c9052db9c05a96c1e8cb18caf8a183103fafa1394e0e7e7",
+  "note": "PNGs originais fornecidos pelo usuário; apenas copiados e renomeados, sem alteração dos pixels ou dos bytes. Pranchas RGBA de 1024 × 1536, com 5 colunas e 8 linhas.",
+  "files": [
+    {
+      "source": "Imagem do ChatGPT 5 de nov. de 2026, 06_49_50-1.png",
+      "path": "assets/npcs/eron.png",
+      "role": "Eron — sábio do bosque",
+      "sha256": "8359857e5f3250282c2f6e93612d13730502aac32592cf081a22f645bbfb3c38"
+    },
+    {
+      "source": "Imagem do ChatGPT 5 de nov. de 2026, 06_49_51-2.png",
+      "path": "assets/npcs/aurel.png",
+      "role": "Rei Aurel — rei de Aurélia",
+      "sha256": "a531c1cb61ba8aa6f8b3d0eba2da62bc6d902b2e6f7390a73ba66d1f800bc001"
+    },
+    {
+      "source": "Imagem do ChatGPT 5 de nov. de 2026, 06_49_51-3.png",
+      "path": "assets/npcs/caio.png",
+      "role": "Rei Caio — rei de Valverde",
+      "sha256": "9379a4b4a89c1a67d845cedb230ded6abc93746b6a9c03bb1c59b52d7cebfad2"
+    },
+    {
+      "source": "Imagem do ChatGPT 5 de nov. de 2026, 06_49_52-4.png",
+      "path": "assets/npcs/mila.png",
+      "role": "Mila — camponesa",
+      "sha256": "83a59ec8522c2942dff3a94e114e14ce25ad25a0b78bf0300eb0b97478cefa0e"
+    },
+    {
+      "source": "Imagem do ChatGPT 5 de nov. de 2026, 06_50_10-1.png",
+      "path": "assets/npcs/bento.png",
+      "role": "Bento — ferreiro",
+      "sha256": "e5309c9968f52b2d15a2563659f10dde8ef9bf3518be20b2529e72f67a83d2b4"
+    },
+    {
+      "source": "Imagem do ChatGPT 5 de nov. de 2026, 06_50_11-2.png",
+      "path": "assets/npcs/lia.png",
+      "role": "Lia — comerciante",
+      "sha256": "a095f3aebd2ffb36ed81a6af271124698a396ed5eace1d57d600658ae93f4ddf"
+    },
+    {
+      "source": "Imagem do ChatGPT 5 de nov. de 2026, 06_50_11-3.png",
+      "path": "assets/npcs/tomas.png",
+      "role": "Tomás — guarda da ponte",
+      "sha256": "2f3aa795fb74a93aed7812c468ee2937db883c486b83c00a1923d3cdad8fcbb1"
+    },
+    {
+      "source": "Imagem do ChatGPT 5 de nov. de 2026, 06_50_12-4.png",
+      "path": "assets/npcs/iris.png",
+      "role": "Íris — herbalista",
+      "sha256": "437c45fd1a490a14f1fa6c58d9fb9b9decbb60da1060a7627653bcf3a1c03e54"
+    },
+    {
+      "source": "Folha de sprites da aventureira ruiva.png",
+      "path": "assets/characters/adventurer.png",
+      "role": "Aventureira ruiva — protagonista",
+      "sha256": "ec13e38a5d46955d56e94969f7d6807560df83cc169fa2c294049042079af56a"
+    }
+  ]
+}

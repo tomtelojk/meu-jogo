@@ -59,7 +59,7 @@ Um dia dura 12 minutos reais. Os moradores caminham por caminhos calculados com 
 
 Os dois reis podem dar sua palavra para renovar o **Acordo das Raízes**. A aliança só é concluída com o aval dos dois e a árvore-mãe restaurada. O salvamento preserva dia, horário, posições dos NPCs, encontros e compromisso dos reinos, mantendo compatibilidade com a jornada anterior.
 
-As oito imagens de NPCs ainda chegaram apenas inline, sem arquivos PNG disponíveis no ambiente. As aparências atuais são provisórias. É possível aplicar cada prancha no jogo pronto, conversando e escolhendo **Escolher sprite deste morador**, ou colocar os originais em `assets/npcs/` conforme o arquivo de instruções dessa pasta. As rotinas e os diálogos funcionam com qualquer uma das aparências.
+Os oito NPCs já usam as pranchas originais fornecidas em `abc.zip`, incluídas em `assets/npcs/`. Os PNGs foram apenas copiados e renomeados, preservando seus bytes. O [manifesto de origem](assets/npcs/sources.json) relaciona cada personagem ao nome do arquivo recebido e registra os hashes SHA-256 do ZIP e de cada imagem. Para personalizar uma aparência no jogo pronto, converse com o morador e escolha **Escolher sprite deste morador**. As rotinas e os diálogos continuam funcionando com a prancha escolhida.
 
 ## Controles
 
@@ -75,11 +75,11 @@ Em telas menores ou dispositivos com toque, a interface oferece um controle de m
 
 ## Sprites e personagens
 
-Os sete PNGs originais de `sprites_chao_arvores_vento.zip`, fornecidos pelo usuário, foram preservados em `assets/environment/`, sem alterações. Árvores usam cinco quadros; arbustos usam quatro. Chão e decoração vêm das pranchas do pacote. A prancha completa de referência foi mantida, mas não é carregada pelo jogo.
+Os sete PNGs originais de `sprites_chao_arvores_vento.zip`, fornecidos pelo usuário, foram preservados em `assets/environment/`, sem alterações. Árvores usam cinco desenhos e arbustos usam quatro, com sequência de ida e volta, pausas suaves nos extremos e ciclos de aproximadamente quatro segundos. Pequenas variações por planta evitam que o bosque inteiro balance em sincronia. Chão e decoração vêm das pranchas do pacote. A prancha completa de referência foi mantida, mas não é carregada pelo jogo.
 
 **Escolher personagem**, na introdução ou no menu de pausa, abre um seletor de arquivo PNG nativo do Godot. Ele aceita as pranchas de cinco colunas e oito linhas das imagens enviadas. As primeiras quatro linhas representam frente, costas, direita e esquerda ao caminhar; as quatro seguintes representam corrida. A primeira coluna contém a pose parada, e as demais contêm os quatro quadros de movimento. Os sprites laterais não são espelhados.
 
-Os arquivos dos quatro personagens enviados inline ainda não foram disponibilizados no ambiente. Até receber os PNGs ou ZIP, o projeto usa um personagem provisório e permite importar uma prancha local. Não foram geradas imagens substitutas. A prancha selecionada é copiada, sem modificar o arquivo original, para `user://characters/selected.png`.
+O protagonista mantém a aparência provisória e permite importar uma prancha local. A imagem extra da aventureira ruiva recebida em `abc.zip` foi preservada em `assets/characters/adventurer.png`, com origem e hash no mesmo manifesto; ela não é aplicada automaticamente nesta atualização dos NPCs. A prancha selecionada pelo jogador é copiada, sem modificar o arquivo original, para `user://characters/selected.png`.
 
 ## Salvamento
 
@@ -101,7 +101,7 @@ Executar os testes nativos:
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/run.gd -- --test
 ```
 
-A suíte executa 109 verificações e termina com código diferente de zero se uma delas falhar. Ele usa dados temporários, não altera a jornada do jogador e tem limite de 60 segundos. Verifica acessibilidade dos objetivos, movimento e colisões reais, travessia da ponte, interação pela tecla E, coleta única, plantio, vitória, salvamento em disco, validação dos dados, importação e quadros dos personagens, menus e controles de toque.
+A suíte termina com código diferente de zero se uma verificação falhar e inclui regressões para a duração do vento, a continuidade dos quadros, a textura das ruas e o carregamento das oito pranchas originais dos NPCs. Ela usa dados temporários, não altera a jornada do jogador e tem limite de 60 segundos. Verifica acessibilidade dos objetivos, movimento e colisões reais, travessia da ponte, interação pela tecla E, coleta única, plantio, vitória, salvamento em disco, validação dos dados, importação e quadros dos personagens, menus e controles de toque.
 
 Uma verificação gráfica opcional, em uma sessão com display ativo:
 
@@ -118,6 +118,7 @@ Ela renderiza o cenário no próprio Godot e salva capturas temporárias de intr
 - `game/main.gd`: objetivos, diálogos, entradas e salvamento.
 - `game/world.gd`: chão em `TileMapLayer`, árvores em `AnimatedSprite2D`, profundidade por Y e colisões em `StaticBody2D`.
 - `game/world_data.gd`: mapa determinístico, destinos e regras de navegação.
+- `game/terrain.gd`: ruas e clareiras com textura fixa nas coordenadas do mundo, sem esticar a imagem nas curvas ou sobrepor bordas nos cruzamentos.
 - `game/player.gd`: `CharacterBody2D`, movimento, animações e sensor de interação em `Area2D`.
 - `game/seed.gd`: colecionável com `Area2D` e brilho animado.
 - `game/npc.gd`, `game/kingdom_data.gd` e `game/world_clock.gd`: moradores, reinos, diálogos, navegação e relógio.

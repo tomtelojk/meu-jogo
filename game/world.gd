@@ -3,6 +3,8 @@ extends Node2D
 
 const TREE_FILES := {"green": "arvore_verde_vento_5quadros.png", "autumn": "arvore_outono_vento_5quadros.png", "bare": "arvore_seca_vento_5quadros.png"}
 const DECOR_FRAMES := [Vector2(0, 78), Vector2(78, 68), Vector2(146, 87), Vector2(233, 87), Vector2(320, 101), Vector2(421, 97), Vector2(518, 73), Vector2(591, 79), Vector2(670, 92)]
+const TREE_SWAY_FPS: float = 2.0
+const BUSH_SWAY_FPS: float = 1.6
 
 var data: Dictionary
 var entities: Node2D
@@ -23,10 +25,10 @@ func _ready() -> void:
 	entities = $Entities
 	player = $Entities/Player
 	for kind in TREE_FILES:
-		libraries[kind] = _frames(load("res://assets/environment/" + TREE_FILES[kind]), 5, 200.0, 200.0, 4.0)
+		libraries[kind] = _frames(load("res://assets/environment/" + TREE_FILES[kind]), 5, 200.0, 200.0, TREE_SWAY_FPS)
 	var bush_texture: Texture2D = load("res://assets/environment/arbustos_vento.png")
 	for variant in 3:
-		libraries["bush" + str(variant)] = _frames(bush_texture, 4, 1024.0 / 12.0, 102.0, 3.0, variant * 4)
+		libraries["bush" + str(variant)] = _frames(bush_texture, 4, 1024.0 / 12.0, 102.0, BUSH_SWAY_FPS, variant * 4)
 	_build_ground()
 	var art := Node2D.new()
 	art.name = "RiverBridgeAndCamp"
@@ -136,11 +138,18 @@ func population_data() -> Dictionary:
 func _frames(texture: Texture2D, count: int, width: float, height: float, fps: float, offset: int = 0) -> SpriteFrames:
 	var frames := SpriteFrames.new()
 	frames.set_animation_speed("default", fps)
+	# Return through the original frames so the crown never snaps from one
+	# extreme to the other. Hold the ends briefly for a softer breeze.
+	var sequence: Array[int] = []
 	for i in count:
+		sequence.append(i)
+	for i in range(count - 2, 0, -1):
+		sequence.append(i)
+	for i in sequence:
 		var atlas := AtlasTexture.new()
 		atlas.atlas = texture
 		atlas.region = Rect2((i + offset) * width, 0, width, height)
-		frames.add_frame("default", atlas)
+		frames.add_frame("default", atlas, 1.4 if i == 0 or i == count - 1 else 1.0)
 	return frames
 
 func _build_ground() -> void:
@@ -166,39 +175,11 @@ func _build_ground() -> void:
 			ground.set_cell(Vector2i(x, y), variant, Vector2i.ZERO)
 	add_child(ground)
 	move_child(ground, 0)
-	var dirt := ImageTexture.create_from_image(image.get_region(Rect2i(14, 270, 100, 100)))
-	var paths_node := Node2D.new()
+	var paths_node := ForestTerrain.new()
 	paths_node.name = "ForestPaths"
+	paths_node.build(image)
 	add_child(paths_node)
 	move_child(paths_node, 1)
-	for path in WorldData.paths():
-		for border in [true, false]:
-			var path_line := Line2D.new()
-			path_line.points = path
-			path_line.width = 103.0 if border else 88.0
-			path_line.default_color = Color(0.2, 0.28, 0.16, 0.45) if border else Color.WHITE
-			path_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
-			path_line.end_cap_mode = Line2D.LINE_CAP_ROUND
-			path_line.joint_mode = Line2D.LINE_JOINT_ROUND
-			if not border:
-				path_line.texture = dirt
-				path_line.texture_mode = Line2D.LINE_TEXTURE_TILE
-				path_line.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-			paths_node.add_child(path_line)
-	var spots: Array[Vector2] = [WorldData.MOTHER, WorldData.CAMP]
-	for seed_data in WorldData.SEEDS:
-		spots.append(seed_data.position)
-	for point in spots:
-		var clearing := Polygon2D.new()
-		var points := PackedVector2Array()
-		for i in 36:
-			var angle := i / 36.0 * TAU
-			points.append(point + Vector2(cos(angle) * (110 if point == WorldData.MOTHER else 81), sin(angle) * (70 if point == WorldData.MOTHER else 52)))
-		clearing.polygon = points
-		clearing.uv = points
-		clearing.texture = dirt
-		clearing.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-		paths_node.add_child(clearing)
 
 func _add_tree(tree: Dictionary, mother: bool = false) -> void:
 	var body := StaticBody2D.new()
@@ -217,7 +198,8 @@ func _add_tree(tree: Dictionary, mother: bool = false) -> void:
 	sprite.position.y = -tree.size / 2.0 + 11.0
 	sprite.scale = Vector2.ONE * tree.size / 200.0
 	sprite.play()
-	sprite.frame = tree.phase
+	sprite.set_frame_and_progress(int(tree.phase), fposmod(tree.position.x * 0.01 + tree.position.y * 0.017, 1.0))
+	sprite.speed_scale = 0.9 + fposmod(tree.position.x * 0.013 + tree.position.y * 0.007, 0.14)
 	body.add_child(sprite)
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
@@ -254,7 +236,8 @@ func _add_decor(item: Dictionary) -> void:
 		sprite.scale = Vector2.ONE * item.size / (1024.0 / 12.0)
 		sprite.position.y = -item.size * 0.35
 		sprite.play()
-		sprite.frame = item.phase
+		sprite.set_frame_and_progress(int(item.phase), fposmod(item.position.x * 0.017 + item.position.y * 0.011, 1.0))
+		sprite.speed_scale = 0.9 + fposmod(item.position.x * 0.009 + item.position.y * 0.013, 0.14)
 		root.add_child(sprite)
 	else:
 		var sprite := Sprite2D.new()
