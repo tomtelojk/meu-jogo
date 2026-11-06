@@ -8,7 +8,21 @@ Uma pequena aventura de exploração **2.5D**, com chão, casas e ponte em **3D*
 
 A câmera ortográfica inclinada acompanha o jogador. As construções têm volume, os sprites ficam voltados para a câmera, as copas se movem suavemente e as árvores próximas ficam transparentes quando cobrem o personagem. Os sprites fornecidos em `tomate.zip` continuam em uso, incluindo as fachadas das casas. O rio usa uma superfície 3D com textura em movimento.
 
-A lógica de colisões e rotas continua em `CharacterBody2D`/`AStarGrid2D`, convertida do plano XY para o solo XZ na apresentação. Isso conserva as rotinas, os diálogos, as missões e os salvamentos anteriores. Não há salto ou movimentação vertical.
+A lógica de colisões e rotas continua em `CharacterBody2D`/`AStarGrid2D`, convertida do plano XY para o solo XZ na apresentação. Isso conserva as rotinas, os diálogos, as missões e os salvamentos anteriores. A altura acompanha as rampas da ponte; não há salto manual.
+
+## Desempenho, colisões e natação
+
+A floresta usa `MultiMesh` em pequenos grupos espaciais. O vento e o recorte das copas são calculados na GPU, com uma passagem de desenho e sombras fixas no chão. A ponte também reúne suas peças em um único grupo. A simulação 2D deixa de atualizar a transparência das árvores quando a apresentação 3D está ativa.
+
+O modo **leve** é o padrão: o cenário 3D é renderizado a 80% da resolução por eixo e a interface mantém a resolução integral. Em **Esc → Gráficos**, alterne para **nítido** para usar a resolução integral também no cenário. A preferência é salva.
+
+As casas têm paredes sólidas no mesmo perímetro usado pelas malhas, com cantos compatíveis com o corpo circular e deslizamento pela parede. A ponte tem rampas nas duas pontas, tablado elevado e corrimãos sólidos para quem caminha. Nadadores passam por baixo sem subir automaticamente no tablado.
+
+Entre no rio pelas margens usando **WASD/setas** para nadar; **Shift** acelera as braçadas. Há aceleração gradual, correnteza suave, corpo parcialmente submerso e ondulação na água. É possível sair pelas duas margens e continuar nadando sem fôlego para a aceleração. Pausa, diálogos e salvamento também respeitam a natação. Os NPCs continuam atravessando pela ponte.
+
+![Natação no rio](docs/natacao.png)
+
+A medição reproduzível está em [docs/desempenho.md](docs/desempenho.md).
 
 ## Abrir e jogar
 
@@ -83,7 +97,7 @@ Em telas menores ou dispositivos com toque, a interface oferece um controle de m
 
 As quatro árvores de `tomate.zip` são carvalho, pinheiro, árvore seca e macieira. Recebem vento contínuo na copa, com pequenas rajadas e raízes imóveis. A árvore-mãe começa seca e volta a ser um carvalho ao concluir a missão. As três casas fornecidas representam os edifícios dos dois reinos, preservando proporção, portas, nomes, profundidade e colisões.
 
-Grama, flores, pedras, terra, areia, calçamento e musgo vêm da nova folha de terrenos. As transições formam as bordas dos caminhos. O rio usa as quatro fases de água com transição suave e margens estáticas. Recortes inteiros excluem as grades das folhas, e as texturas dos caminhos ficam fixas nas coordenadas do mundo. A decoração do chão faz parte dos tiles e não deixa obstáculos invisíveis da arte anterior.
+Grama, flores, pedras, terra, areia, calçamento e musgo vêm da nova folha de terrenos. As transições formam as bordas dos caminhos. O rio 3D usa textura em movimento e margens estáticas; o atlas de quatro fases continua disponível na apresentação 2D auxiliar. Recortes inteiros excluem as grades das folhas, e as texturas dos caminhos ficam fixas nas coordenadas do mundo. A decoração do chão faz parte dos tiles e não deixa obstáculos invisíveis da arte anterior.
 
 **Escolher personagem**, na introdução ou no menu de pausa, abre um seletor de arquivo PNG nativo do Godot. Ele aceita as pranchas de cinco colunas e oito linhas das imagens enviadas. As primeiras quatro linhas representam frente, costas, direita e esquerda ao caminhar; as quatro seguintes representam corrida. A primeira coluna contém a pose parada, e as demais contêm os quatro quadros de movimento. Os sprites laterais não são espelhados.
 
@@ -107,13 +121,16 @@ Importar os recursos e analisar os scripts:
 ./scripts/godot.sh --headless --audio-driver Dummy --editor --import --quit
 ```
 
-Executar os testes nativos (a suíte de lógica usa a apresentação 2D isolada):
+Executar os testes nativos (as suítes de lógica usam a apresentação 2D isolada):
 
 ```sh
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/run.gd -- --test
+./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/swimming_physics_tests.gd -- --test
 ```
 
-A suíte termina com código diferente de zero se uma verificação falhar e inclui regressões para a duração do vento, as raízes do atlas novo, o alinhamento dos passos, as viradas e a textura das ruas. Ela usa dados temporários, não altera a jornada do jogador e tem limite de 60 segundos. Verifica acessibilidade dos objetivos, movimento e colisões reais, travessia da ponte, interação pela tecla E, coleta única, plantio, vitória, salvamento em disco, validação dos dados, importação e quadros dos personagens, menus e controles de toque.
+A suíte termina com código diferente de zero se uma verificação falhar e inclui regressões para a duração do vento, as raízes do atlas novo, o alinhamento dos passos, as viradas e a textura das ruas. A suíte principal usa dados temporários, não altera a jornada do jogador e tem limite de 60 segundos. Verifica acessibilidade dos objetivos, movimento e colisões reais, travessia da ponte, interação pela tecla E, coleta única, plantio, vitória, salvamento em disco, validação dos dados, importação e quadros dos personagens, menus e controles de toque.
+
+A validação atual soma 189 verificações da suíte principal, 31 de colisões e natação e 24 da apresentação gráfica.
 
 As prévias de movimento anteriores em `docs/movimento.gif` e `.mp4` mostram a versão 2D anterior; as imagens `docs/hibrido-*.png` mostram a versão atual.
 

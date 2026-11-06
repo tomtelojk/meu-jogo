@@ -398,6 +398,7 @@ func update_status(player: ForestPlayer, data: Dictionary, clock: WorldClock = n
 	location.tooltip_text = WorldData.location_name(player.position)
 	time_label.text = time
 	stamina.value = player.stamina * 100
+	controls.text = "W A S D / setas  nadar     Shift  acelerar     E  interagir" if player.swimming else "W A S D / setas  caminhar     Shift  correr     E  interagir"
 	minimap.world_data = data
 	minimap.player_position = player.position
 	minimap.queue_redraw()

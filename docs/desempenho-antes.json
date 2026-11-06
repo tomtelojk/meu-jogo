@@ -1,0 +1,34 @@
+{
+  "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "results": [
+    {
+      "cpu_ms": 242.649,
+      "draw_calls": 1816,
+      "fps": 4.33818776544286,
+      "median_ms": 230.511,
+      "p95_ms": 255.839,
+      "scene": "bosque"
+    },
+    {
+      "cpu_ms": 231.727,
+      "draw_calls": 1397,
+      "fps": 4.64472498583359,
+      "median_ms": 215.298,
+      "p95_ms": 237.436,
+      "scene": "vila"
+    },
+    {
+      "cpu_ms": 212.429,
+      "draw_calls": 1681,
+      "fps": 4.96919101570264,
+      "median_ms": 201.24,
+      "p95_ms": 260.666,
+      "scene": "ponte"
+    }
+  ],
+  "scale_3d": 1.0,
+  "window_size": [
+    1280,
+    800
+  ]
+}

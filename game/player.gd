@@ -5,6 +5,10 @@ signal interact_requested
 
 const WALK_SPEED: float = 135.0
 const RUN_SPEED: float = 225.0
+const SWIM_SPEED := 86.0
+const FAST_SWIM_SPEED := 120.0
+const SWIM_ACCELERATION := 260.0
+const RIVER_CURRENT := Vector2(0, 5)
 const DIRECTIONS := ["down", "up", "right", "left"]
 
 var active: bool = false
@@ -15,11 +19,16 @@ var running: bool = false
 var sprite: AnimatedSprite2D
 var sensor: Area2D
 var default_frames: SpriteFrames
+var swimming := false
+var on_bridge := false
+var swim_phase := 0.0
 
 func _ready() -> void:
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+	wall_min_slide_angle = 0.0
+	max_slides = 6
 	collision_layer = 8
-	collision_mask = 1
+	collision_mask = WorldData.SOLID_LAYER | WorldData.BRIDGE_RAIL_LAYER
 	var collision := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
 	circle.radius = 10.0
@@ -50,6 +59,7 @@ func _ready() -> void:
 	use_default_character()
 
 func _physics_process(delta: float) -> void:
+	update_surface()
 	if not active:
 		velocity = Vector2.ZERO
 		running = false
@@ -62,11 +72,40 @@ func _physics_process(delta: float) -> void:
 			facing = "right" if direction.x > 0 else "left"
 		else:
 			facing = "down" if direction.y > 0 else "up"
-	velocity = direction * (RUN_SPEED if running else WALK_SPEED)
+	if swimming:
+		var target := direction * (FAST_SWIM_SPEED if running else SWIM_SPEED) + RIVER_CURRENT
+		velocity = velocity.move_toward(target, SWIM_ACCELERATION * delta)
+	else:
+		velocity = direction * (RUN_SPEED if running else WALK_SPEED)
 	move_and_slide()
+	update_surface()
 	var moving := get_real_velocity().length_squared() > 1.0
-	stamina = clampf(stamina + delta * (-0.14 if running and moving else 0.25), 0.0, 1.0)
-	sprite.play(("run_" if running else "walk_") + facing if moving else "idle_" + facing)
+	stamina = clampf(stamina + delta * (-0.08 if swimming and running else (-0.14 if running and moving else 0.25)), 0.0, 1.0)
+	swim_phase += delta * (3.2 if moving else 1.6) if swimming else 0.0
+	sprite.speed_scale = 0.45 if swimming else 1.0
+	sprite.play(("run_" if running and not swimming else "walk_") + facing if moving and direction.length_squared() > 0.01 else "idle_" + facing)
+
+func update_surface() -> void:
+	# A swimmer stays below the bridge. Only entry from dry land boards its
+	# ramps; deck rails block walkers, while swimmers can pass underneath.
+	if on_bridge and not WorldData.BRIDGE_RECT.has_point(position):
+		on_bridge = false
+	if not on_bridge:
+		if swimming:
+			swimming = WorldData.in_river(position)
+		if not swimming:
+			on_bridge = WorldData.BRIDGE_RECT.has_point(position)
+			swimming = WorldData.in_river(position) and not on_bridge
+	collision_mask = WorldData.SOLID_LAYER | (0 if swimming else WorldData.BRIDGE_RAIL_LAYER)
+
+func restore_surface(under_bridge: bool = false) -> void:
+	on_bridge = false
+	swimming = under_bridge and WorldData.in_river(position)
+	velocity = Vector2.ZERO
+	update_surface()
+
+func surface_height() -> float:
+	return WorldData.bridge_height(position) if on_bridge else 0.0
 
 func _unhandled_input(event: InputEvent) -> void:
 	if active and event.is_action_pressed("interact") and not event.is_echo():

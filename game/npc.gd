@@ -29,8 +29,9 @@ func setup(profile: Dictionary, fallback: SpriteFrames, grid: AStarGrid2D, minut
 	name = "NPC_" + profile.id
 	navigator = grid
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+	wall_min_slide_angle = 0.0
 	collision_layer = 4
-	collision_mask = 1
+	collision_mask = WorldData.SOLID_LAYER | WorldData.WATER_LAYER | WorldData.BRIDGE_RAIL_LAYER
 	var collision := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
 	circle.radius = 9.0

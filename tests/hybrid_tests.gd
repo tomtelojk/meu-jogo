@@ -33,10 +33,15 @@ func run() -> void:
 	await settle(3)
 	var hybrid := game.hybrid
 	verify(hybrid != null and hybrid.camera.current, "câmera 3D ativa por padrão")
+	verify(is_equal_approx(root.scaling_3d_scale,0.8), "modo leve reduz apenas a resolução do cenário")
+	hybrid.set_light_graphics(false)
+	verify(is_equal_approx(root.scaling_3d_scale,1.0), "modo nítido permite resolução integral")
+	hybrid.set_light_graphics(true)
 	verify(not game.world.visible and not game.camera.enabled, "apenas o cenário híbrido é desenhado")
 	verify(hybrid.get_node("Ground3D").mesh is PlaneMesh, "solo é uma malha 3D real")
 	verify(hybrid.get_node("River3D").mesh is ArrayMesh, "rio acompanha o traçado em 3D")
 	verify(hybrid.tree_cards.size() == game.world.trees.size(), "todas as árvores têm sprites 3D")
+	verify(hybrid.tree_batches.size() < game.world.trees.size()/3, "floresta usa grupos com descarte espacial em vez de uma chamada por árvore")
 	verify(hybrid.pickups.size() == 5, "cinco sementes visíveis no cenário 3D")
 	var card: Sprite3D = hybrid.actors[0].card
 	var source := game.player.sprite
@@ -79,5 +84,14 @@ func run() -> void:
 	hybrid.snap_camera()
 	await settle(3)
 	await screenshot("/tmp/entre-folhas-hibrido-ponte.png")
+	verify(game.player.on_bridge and card.position.y>0.7, "pés do personagem acompanham a elevação do tablado")
+	var river_point := Vector2(WorldData.river_x(1430),1430)
+	game.player.position=river_point
+	game.player.restore_surface(true)
+	hybrid.snap_camera()
+	await settle(3)
+	verify(game.player.swimming and card.position.y < -0.2, "nadador fica parcialmente submerso")
+	verify(hybrid.swim_ripple.visible and card.material_override.get_shader_parameter("swim_amount")==1.0, "água oculta as pernas e mostra ondulação")
+	await screenshot("/tmp/entre-folhas-natacao.png")
 	print("HYBRID: %d verificações; %d falhas." % [checks, failures])
 	quit(1 if failures else 0)

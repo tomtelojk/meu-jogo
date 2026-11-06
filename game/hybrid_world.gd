@@ -11,29 +11,64 @@ uniform sampler2D art : source_color, filter_nearest;
 uniform vec4 tint : source_color = vec4(1.0);
 uniform vec4 frame_uv = vec4(0.0,0.0,1.0,1.0);
 uniform vec2 tex_size = vec2(1.0);
-uniform float wind = 0.0;
-uniform float phase = 0.0;
-uniform float vitality = 1.0;
 uniform vec4 clothing_tint : source_color = vec4(1.0);
 uniform vec3 day_color : source_color = vec3(1.0);
 uniform bool face_camera = true;
+uniform float swim_amount = 0.0;
 void vertex() {
  if(face_camera) MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
 }
 void fragment() {
  vec2 local = (UV-frame_uv.xy)/frame_uv.zw;
- vec2 uv=UV;
- uv.x -= sin(TIME*0.68+phase)*wind*(1.0-smoothstep(0.43,0.77,local.y))/tex_size.x;
- uv=clamp(uv,frame_uv.xy+0.5/tex_size,frame_uv.xy+frame_uv.zw-0.5/tex_size);
+ vec2 uv = clamp(UV,frame_uv.xy+0.5/tex_size,frame_uv.xy+frame_uv.zw-0.5/tex_size);
  vec4 c=texture(art,uv);
  float key=min(c.r,c.b)-c.g;
  c.a*=1.0-smoothstep(0.08,0.3,key);
+ c.a*=mix(1.0,1.0-smoothstep(0.57,0.61,local.y),swim_amount);
  if(c.a*tint.a<0.12) discard;
- float gray=dot(c.rgb,vec3(0.299,0.587,0.114));
  float cloth=step(0.44,local.y)*step(local.y,0.68)*step(0.08,c.r)*step(c.r,0.68)*smoothstep(0.06,0.18,c.r-c.g);
  c.rgb=mix(c.rgb,c.rgb*clothing_tint.rgb,cloth*0.55);
- ALBEDO=mix(vec3(gray)*vec3(0.86,0.87,0.81),c.rgb,vitality)*tint.rgb*day_color;
+ ALBEDO=c.rgb*tint.rgb*day_color;
  ALPHA=c.a*tint.a;
+}
+"""
+# Cutout foliage writes depth in one pass. Alpha blending and repeated
+# per-pixel chroma/tint calculations made the dense forest fill-rate bound.
+const FOLIAGE_SHADER := """
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform sampler2D art : source_color, filter_nearest;
+uniform vec2 tex_size = vec2(600.0,800.0);
+uniform vec4 tint : source_color = vec4(1.0);
+uniform vec3 day_color : source_color = vec3(1.0);
+uniform vec2 hero_position = vec2(-100.0);
+uniform float wind = 0.125;
+uniform float vitality = 1.0;
+uniform float foliage_height = 0.0;
+varying float opacity;
+void vertex() {
+ vec3 root = MODEL_MATRIX[3].xyz;
+ vec3 scale = vec3(length(MODEL_MATRIX[0].xyz),length(MODEL_MATRIX[1].xyz),length(MODEL_MATRIX[2].xyz));
+ float height = foliage_height > 0.0 ? foliage_height : tex_size.y/64.0*scale.y;
+ vec2 d = root.xz-hero_position;
+ float side = 1.0-smoothstep(height*0.3,height*0.42,abs(d.x));
+ float front = smoothstep(0.0,0.25,d.y)*(1.0-smoothstep(height*1.25,height*1.5,d.y));
+ opacity = mix(1.0,0.25,side*front);
+ VERTEX.x += sin(TIME*0.68+root.x*0.17+root.z*0.11)*wind*(1.0-smoothstep(0.43,0.77,UV.y));
+ MODELVIEW_MATRIX = VIEW_MATRIX*mat4(INV_VIEW_MATRIX[0]*scale.x,INV_VIEW_MATRIX[1]*scale.y,INV_VIEW_MATRIX[2]*scale.z,MODEL_MATRIX[3]);
+}
+void fragment() {
+ vec4 c = texture(art,UV);
+ if(c.a<0.5 || min(c.r,c.b)-c.g>0.18) discard;
+ // A four-pixel screen-door fade keeps early depth testing available and
+ // lets the hero remain visible without sorting hundreds of alpha cards.
+ float pattern = fract(dot(floor(FRAGCOORD.xy),vec2(0.5,0.25)))+0.125;
+ if(pattern>opacity) discard;
+ if(vitality<0.99) {
+  float gray = dot(c.rgb,vec3(0.299,0.587,0.114));
+  c.rgb = mix(vec3(gray)*vec3(0.86,0.87,0.81),c.rgb,vitality);
+ }
+ ALBEDO = c.rgb*day_color;
 }
 """
 var game: ForestGame
@@ -46,23 +81,28 @@ var atmosphere: WorldEnvironment
 var baked: Dictionary = {}
 var pickups: Array[Dictionary] = []
 var shader: Shader
+var foliage_shader: Shader
 var river_material: StandardMaterial3D
 var facade_materials: Array[ShaderMaterial] = []
+var foliage_materials: Array[ShaderMaterial] = []
+var tree_batches: Array[MultiMeshInstance3D] = []
+var mother_card: Sprite3D
+var swim_ripple: MeshInstance3D
+var last_daylight := Color(-1,-1,-1)
 
 func setup(source: ForestGame) -> void:
 	game=source
 	shader=Shader.new()
 	shader.code=BILLBOARD_SHADER
+	foliage_shader=Shader.new()
+	foliage_shader.code=FOLIAGE_SHADER
 	_ground()
 	_lighting()
 	_buildings()
 	_bridge()
 	_water()
 	_landmarks()
-	for tree in game.world.trees:
-		var card:=_card(tree.sprite)
-		card.position=_point(tree.body.position)
-		tree_cards.append({"card":card,"source":tree})
+	_build_forest()
 	for body in [game.player]+game.world.npcs.values():
 		var card:=_card(body.sprite)
 		actors.append({"card":card,"body":body})
@@ -86,7 +126,13 @@ func setup(source: ForestGame) -> void:
 	_follow(true)
 	game.camera.enabled=false
 	game.world.visible=false
+	game.world.hybrid_rendering=true
 	get_viewport().canvas_transform=Transform2D.IDENTITY
+	set_light_graphics(game.light_graphics)
+
+func set_light_graphics(enabled:bool)->void:
+	# Scale only the 3D buffer. HUD, text, menus and input keep native resolution.
+	get_viewport().scaling_3d_scale=0.8 if enabled else 1.0
 
 func _point(p:Vector2)->Vector3:
 	return Vector3(p.x/UNIT,0,p.y/UNIT)
@@ -104,6 +150,22 @@ func _ground()->void:
 	var paths:=ForestTerrain.new()
 	paths.build()
 	ground_view.add_child(paths)
+	# Ground shadows are drawn once, rather than rendering hundreds of alpha
+	# silhouettes into four directional shadow maps on every frame.
+	for tree in game.world.trees:
+		var shadow:Polygon2D=tree.body.get_child(0).duplicate()
+		shadow.position=tree.body.position
+		ground_view.add_child(shadow)
+	for building in KingdomData.BUILDINGS:
+		var rect:=KingdomData.building_rect(building)
+		var offset:=Vector2(24,32)*(rect.size.x/96.0)
+		var points:=PackedVector2Array([rect.position,Vector2(rect.end.x,rect.position.y),rect.end,Vector2(rect.position.x,rect.end.y)])
+		for point in points.duplicate():
+			points.append(point+offset)
+		var shadow:=Polygon2D.new()
+		shadow.polygon=Geometry2D.convex_hull(points)
+		shadow.color=Color(0.08,0.13,0.11,0.22)
+		ground_view.add_child(shadow)
 	var plane:=PlaneMesh.new()
 	plane.size=Vector2(50,40)
 	var material:=StandardMaterial3D.new()
@@ -130,7 +192,9 @@ func _lighting()->void:
 	sunlight=DirectionalLight3D.new()
 	sunlight.rotation_degrees=Vector3(-55,-28,0)
 	sunlight.light_energy=0.65
-	sunlight.shadow_enabled=true
+	sunlight.shadow_enabled=false
+	sunlight.directional_shadow_mode=DirectionalLight3D.SHADOW_ORTHOGONAL
+	sunlight.directional_shadow_max_distance=35.0
 	add_child(sunlight)
 
 func _box(at:Vector3,size:Vector3,color:Color)->MeshInstance3D:
@@ -195,17 +259,48 @@ func _buildings()->void:
 		add_child(face)
 
 func _bridge()->void:
-	var left:=35.7*WorldData.TILE/UNIT
-	var right:=41.2*WorldData.TILE/UNIT
-	var z:=20.0*WorldData.TILE/UNIT
-	_box(Vector3((left+right)/2,0.015,z),Vector3(right-left,0.12,1.0),Color("8d6e45"))
-	for i in 23:
-		var x:=lerpf(left,right,float(i)/22)
-		_box(Vector3(x,0.09,z),Vector3(0.21,0.04,1.02),Color("b59a67"))
-	for side in [-1,1]:
-		_box(Vector3((left+right)/2,0.45,z+side*0.55),Vector3(right-left,0.1,0.08),Color("80623d"))
-		for i in 5:
-			_box(Vector3(lerpf(left,right,i/4.0),0.25,z+side*0.55),Vector3(0.1,0.55,0.1),Color("705234"))
+	# One instanced box mesh for all planks, sloping rails and supports.
+	# Physics uses these same floor/rail dimensions in WorldData.
+	var parts: Array[Dictionary]=[]
+	var rect:=WorldData.BRIDGE_RECT
+	var z:=rect.get_center().y/UNIT
+	for i in 28:
+		var x0:=lerpf(rect.position.x,rect.end.x,i/28.0)
+		var x1:=lerpf(rect.position.x,rect.end.x,(i+1)/28.0)
+		var h0:=WorldData.bridge_height(Vector2(x0,rect.get_center().y))
+		var h1:=WorldData.bridge_height(Vector2(x1,rect.get_center().y))
+		var angle:=atan2(h1-h0,x1-x0)
+		var size:=Vector3(Vector2(x1-x0,h1-h0).length()/UNIT+0.008,0.075,rect.size.y/UNIT)
+		parts.append({"at":Vector3((x0+x1)/2/UNIT,(h0+h1)/2/UNIT-0.0375,z),"size":size,"angle":angle,"color":Color("b59a67") if i%2==0 else Color("ac8d5c")})
+	var stops: Array[float]=[rect.position.x,rect.position.x+WorldData.BRIDGE_RAMP,rect.get_center().x,rect.end.x-WorldData.BRIDGE_RAMP,rect.end.x]
+	for rail in WorldData.bridge_rails():
+		var rail_z:=rail.get_center().y/UNIT
+		for x in stops:
+			var height:=WorldData.bridge_height(Vector2(x,rect.get_center().y))/UNIT
+			parts.append({"at":Vector3(x/UNIT,height+0.25,rail_z),"size":Vector3(0.1,0.55,rail.size.y/UNIT),"angle":0.0,"color":Color("705234")})
+		for i in range(1,stops.size()):
+			var x0:=stops[i-1]/UNIT
+			var x1:=stops[i]/UNIT
+			var h0:=WorldData.bridge_height(Vector2(stops[i-1],rect.get_center().y))/UNIT+0.48
+			var h1:=WorldData.bridge_height(Vector2(stops[i],rect.get_center().y))/UNIT+0.48
+			parts.append({"at":Vector3((x0+x1)/2,(h0+h1)/2,rail_z),"size":Vector3(Vector2(x1-x0,h1-h0).length(),0.1,rail.size.y/UNIT),"angle":atan2(h1-h0,x1-x0),"color":Color("80623d")})
+	var multi:=MultiMesh.new()
+	multi.transform_format=MultiMesh.TRANSFORM_3D
+	multi.use_colors=true
+	multi.mesh=BoxMesh.new()
+	multi.instance_count=parts.size()
+	for i in parts.size():
+		var part:Dictionary=parts[i]
+		multi.set_instance_transform(i,Transform3D(Basis(Vector3.FORWARD,part.angle)*Basis.from_scale(part.size),part.at))
+		multi.set_instance_color(i,part.color)
+	var node:=MultiMeshInstance3D.new()
+	node.name="Bridge3D"
+	node.multimesh=multi
+	var material:=StandardMaterial3D.new()
+	material.vertex_color_use_as_albedo=true
+	material.roughness=1.0
+	node.material_override=material
+	add_child(node)
 
 func _water()->void:
 	var surface:=SurfaceTool.new()
@@ -248,8 +343,72 @@ func _material(texture:Texture2D)->ShaderMaterial:
 	mat.set_shader_parameter("frame_uv",Vector4(region.position.x/source.get_width(),region.position.y/source.get_height(),region.size.x/source.get_width(),region.size.y/source.get_height()))
 	return mat
 
+func _forest_material(texture:Texture2D)->ShaderMaterial:
+	var material:=ShaderMaterial.new()
+	material.shader=foliage_shader
+	material.set_shader_parameter("art",texture)
+	material.set_shader_parameter("tex_size",texture.get_size())
+	return material
+
+func _build_forest()->void:
+	var groups:Dictionary={}
+	var row_materials:Dictionary={}
+	for tree in game.world.trees:
+		if tree.sprite==game.world.mother_sprite:
+			mother_card=_card(tree.sprite)
+			mother_card.position=_point(tree.body.position)
+			var material:=_forest_material(mother_card.texture)
+			mother_card.material_override=material
+			material.set_shader_parameter("foliage_height",TreeAtlas.FRAME_SIZE.y*tree.sprite.scale.y/UNIT)
+			material.set_shader_parameter("wind",8.0*tree.sprite.scale.x/UNIT)
+			foliage_materials.append(material)
+			tree_cards.append({"card":mother_card,"source":tree})
+			continue
+		var row:int=tree.sprite.get_meta("atlas_row")
+		if not row_materials.has(row):
+			var texture:=_bake(tree.sprite.sprite_frames.get_frame_texture("default",0))
+			var material:=_forest_material(texture)
+			material.set_shader_parameter("wind",8.0/UNIT)
+			row_materials[row]=material
+			foliage_materials.append(material)
+		var point:Vector2=tree.body.position
+		var key:=Vector3i(floori(point.x/512.0),floori(point.y/512.0),row)
+		if not groups.has(key):
+			groups[key]=[]
+		groups[key].append(tree)
+	for key in groups:
+		var entries:Array=groups[key]
+		var quad:=QuadMesh.new()
+		quad.size=TreeAtlas.FRAME_SIZE/UNIT
+		quad.center_offset=Vector3(0,(TreeAtlas.ANCHOR.y-TreeAtlas.FRAME_SIZE.y/2.0)/UNIT,0)
+		quad.subdivide_depth=6
+		var multi:=MultiMesh.new()
+		multi.transform_format=MultiMesh.TRANSFORM_3D
+		multi.mesh=quad
+		multi.instance_count=entries.size()
+		var minimum:=Vector3(INF,0,INF)
+		var maximum:=Vector3(-INF,0,-INF)
+		for i in entries.size():
+			var tree:Dictionary=entries[i]
+			var at:=_point(tree.body.position)+Vector3(0,-tree.sprite.position.y/UNIT,0)
+			multi.set_instance_transform(i,Transform3D(Basis.from_scale(Vector3.ONE*tree.sprite.scale.x),at))
+			minimum=minimum.min(at)
+			maximum=maximum.max(at)
+			tree_cards.append({"batch":multi,"index":i,"source":tree})
+		# Account for the card facing the tilted camera, rather than the mesh's
+		# undeformed vertical bounds. Small chunks still cull independently.
+		multi.custom_aabb=AABB(Vector3(minimum.x-2,-0.6,minimum.z-5),Vector3(maximum.x-minimum.x+4,6,maximum.z-minimum.z+6))
+		var node:=MultiMeshInstance3D.new()
+		node.name="ForestBatch_%s"%key
+		node.multimesh=multi
+		node.material_override=row_materials[key.z]
+		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(node)
+		tree_batches.append(node)
+
 func _card(source:AnimatedSprite2D)->Sprite3D:
 	var card:=Sprite3D.new()
+	card.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	card.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 	card.texture=_bake(source.sprite_frames.get_frame_texture(source.animation,source.frame))
 	card.material_override=_material(card.texture)
@@ -261,7 +420,8 @@ func _sync(card:Sprite3D,source:AnimatedSprite2D)->void:
 	var tex:=_bake(source.sprite_frames.get_frame_texture(source.animation,source.frame))
 	if card.texture!=tex:
 		card.texture=tex
-		card.material_override=_material(tex)
+		card.material_override.set_shader_parameter("art",tex)
+		card.material_override.set_shader_parameter("tex_size",tex.get_size())
 	card.pixel_size=source.scale.x/UNIT
 	card.offset=source.position/source.scale+source.offset
 	card.offset.y=-card.offset.y
@@ -271,12 +431,12 @@ func _sync(card:Sprite3D,source:AnimatedSprite2D)->void:
 	card.flip_h=source.flip_h
 	var mat:=card.material_override as ShaderMaterial
 	mat.set_shader_parameter("tint",source.modulate)
-	mat.set_shader_parameter("day_color",Vector3(game.world.daylight.color.r,game.world.daylight.color.g,game.world.daylight.color.b))
 	if source.material is ShaderMaterial and TomateCharacterSheet.is_sheet(source.sprite_frames):
 		mat.set_shader_parameter("clothing_tint",source.material.get_shader_parameter("clothing_tint"))
 
 func _shadow(body:Node2D)->void:
 	var shadow:=MeshInstance3D.new()
+	shadow.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var mesh:=PlaneMesh.new()
 	mesh.size=Vector2(0.45,0.24)
 	shadow.mesh=mesh
@@ -291,39 +451,52 @@ func _process(delta:float)->void:
 	if game==null: return
 	for actor in actors:
 		if actor.has("label"):
-			actor.label.position=_point(actor.body.position)+Vector3(0,1.5,0)
+			actor.label.position=_point(actor.body.position)+Vector3(0,_body_height(actor.body)+1.5,0)
 			actor.label.visible=actor.body.visible
 		elif actor.has("shadow"):
-			actor.shadow.position=_point(actor.body.position)+Vector3(0,0.005,0)
-			actor.shadow.visible=actor.body.visible
+			actor.shadow.position=_point(actor.body.position)+Vector3(0,_body_height(actor.body)+0.005,0)
+			actor.shadow.visible=actor.body.visible and not (actor.body==game.player and game.player.swimming)
 		else:
 			_sync(actor.card,actor.body.sprite)
-			actor.card.position=_point(actor.body.position)
+			actor.card.position=_point(actor.body.position)+Vector3(0,_body_height(actor.body),0)
 			actor.card.visible=actor.body.visible
-	for entry in tree_cards:
-		_sync(entry.card,entry.source.sprite)
-		entry.card.material_override.set_shader_parameter("wind",8.0)
-		entry.card.material_override.set_shader_parameter("phase",entry.card.position.x*0.17+entry.card.position.z*0.11)
-		entry.card.material_override.set_shader_parameter("vitality",game.world.mother_material.get_shader_parameter("vitality") if entry.source.sprite==game.world.mother_sprite else 1.0)
-		var distance:Vector3=entry.card.position-_point(game.player.position)
-		var height:float=entry.card.texture.get_height()*entry.source.sprite.scale.y/UNIT
-		var obscures:=distance.z>0.0 and distance.z<height*1.5 and absf(distance.x)<height*0.4
-		var color:Color=entry.source.sprite.modulate
-		color.a=lerpf(entry.get("opacity",1.0),0.25 if obscures else 1.0,1.0-exp(-8.0*delta))
-		entry.opacity=color.a
-		entry.card.material_override.set_shader_parameter("tint",color)
+			if actor.body==game.player:
+				actor.card.material_override.set_shader_parameter("swim_amount",1.0 if game.player.swimming else 0.0)
+	_sync(mother_card,game.world.mother_sprite)
+	mother_card.material_override.set_shader_parameter("vitality",game.world.mother_material.get_shader_parameter("vitality"))
+	var hero:=Vector2(game.player.position.x,game.player.position.y)/UNIT
+	for material in foliage_materials:
+		material.set_shader_parameter("hero_position",hero)
+	swim_ripple.visible=game.player.swimming
+	swim_ripple.position=_point(game.player.position)+Vector3(0,0.015,-0.25)
+	swim_ripple.scale=Vector3.ONE*(1.0+sin(game.player.swim_phase)*0.12)
 	for item in pickups:
 		item.node.visible=not game.collected.has(item.id)
 		item.node.position.y=0.25+sin(Time.get_ticks_msec()*0.002+item.phase)*0.07
-	sunlight.light_color=game.world.daylight.color
-	atmosphere.environment.ambient_light_color=game.world.daylight.color
-	for material in facade_materials:
-		material.set_shader_parameter("day_color",Vector3(game.world.daylight.color.r,game.world.daylight.color.g,game.world.daylight.color.b))
+	if game.world.daylight.color!=last_daylight:
+		_update_light()
 	river_material.uv1_offset.y+=delta*0.018
 	_follow(false,delta)
 
+func _body_height(body:Node2D)->float:
+	if body==game.player:
+		return (-0.28+sin(game.player.swim_phase)*0.015) if game.player.swimming else game.player.surface_height()/UNIT
+	return WorldData.bridge_height(body.position)/UNIT
+
+func _update_light()->void:
+	last_daylight=game.world.daylight.color
+	sunlight.light_color=last_daylight
+	atmosphere.environment.ambient_light_color=last_daylight
+	var color:=Vector3(last_daylight.r,last_daylight.g,last_daylight.b)
+	for material in foliage_materials+facade_materials:
+		material.set_shader_parameter("day_color",color)
+	for actor in actors:
+		if actor.has("card"):
+			actor.card.material_override.set_shader_parameter("day_color",color)
+
 func _follow(snap:bool,delta:float=0.016)->void:
 	var target:=_point(game.player.position)
+	target.y=game.player.surface_height()/UNIT
 	var desired:=target+Vector3(0,12,14)
 	camera.position=desired if snap else camera.position.lerp(desired,1.0-exp(-9.0*delta))
 	camera.look_at(target+Vector3(0,0.3,0))
@@ -332,7 +505,7 @@ func snap_camera()->void:
 	_follow(true)
 
 func screen_position(point:Vector2)->Vector2:
-	return camera.unproject_position(_point(point)+Vector3(0,0.7,0))
+	return camera.unproject_position(_point(point)+Vector3(0,0.7+_body_height(game.player),0))
 
 func _bake(texture:Texture2D)->Texture2D:
 	# Sprite3D needs a real texture: retain each atlas frame's padded pivot
@@ -349,6 +522,20 @@ func _bake(texture:Texture2D)->Texture2D:
 	return baked[key]
 
 func _landmarks()->void:
+	swim_ripple=MeshInstance3D.new()
+	swim_ripple.name="SwimmingRipple"
+	var ring:=TorusMesh.new()
+	ring.inner_radius=0.19
+	ring.outer_radius=0.23
+	ring.rings=16
+	ring.ring_segments=4
+	swim_ripple.mesh=ring
+	swim_ripple.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var foam:=StandardMaterial3D.new()
+	foam.albedo_color=Color("b6dde0")
+	foam.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+	swim_ripple.material_override=foam
+	add_child(swim_ripple)
 	for data in WorldData.SEEDS:
 		var node:=MeshInstance3D.new()
 		var mesh:=SphereMesh.new()

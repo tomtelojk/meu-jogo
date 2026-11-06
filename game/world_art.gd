@@ -11,9 +11,9 @@ func _draw() -> void:
 	_draw_sign()
 
 func _draw_bridge() -> void:
-	var left := 35.7 * WorldData.TILE
-	var right := 41.2 * WorldData.TILE
-	var y := 20 * WorldData.TILE
+	var left := WorldData.BRIDGE_RECT.position.x
+	var right := WorldData.BRIDGE_RECT.end.x
+	var y := WorldData.BRIDGE_RECT.get_center().y
 	draw_rect(Rect2(left - 6, y - 31, right - left + 12, 75), Color(0.14, 0.24, 0.2, 0.5))
 	var x := left
 	while x < right:

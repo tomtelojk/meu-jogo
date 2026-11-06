@@ -9,6 +9,14 @@ const SPAWN := Vector2(1536, 1740.8)
 const MOTHER := Vector2(1536, 1497.6)
 const CAMP := Vector2(1376, 1817.6)
 const SIGN := Vector2(1593.6, 1644.8)
+const SOLID_LAYER := 1
+const WATER_LAYER := 16 # NPCs stay on land; the player can swim.
+const BRIDGE_RAIL_LAYER := 32
+const RIVER_HALF_WIDTH := 80.0
+const BRIDGE_HEIGHT := 52.0
+const BRIDGE_RAMP := 64.0
+# Center the deck on river_x(20*TILE), leaving a ramp on each dry bank.
+const BRIDGE_RECT := Rect2(2235.3182264, 1248.0, 288.0, 64.0)
 const SEEDS: Array[Dictionary] = [
 	{"id": "flores", "name": "Semente da alegria", "place": "Clareira das flores", "position": Vector2(1152, 1664)},
 	{"id": "outono", "name": "Semente da memória", "place": "Bosque dourado", "position": Vector2(800, 960)},
@@ -48,8 +56,24 @@ static func river_x(y: float) -> float:
 	return (38.5 + sin(y / TILE / 4.0) * 1.2 + sin(y / TILE / 1.7) * 0.24) * TILE
 
 static func is_water(point: Vector2) -> bool:
-	var bridge := point.y > 19.45 * TILE and point.y < 20.55 * TILE and point.x > 35.6 * TILE and point.x < 41.3 * TILE
-	return absf(point.x - river_x(point.y)) < 80.0 and not bridge
+	return in_river(point) and not BRIDGE_RECT.has_point(point)
+
+static func in_river(point: Vector2) -> bool:
+	return absf(point.x - river_x(point.y)) < RIVER_HALF_WIDTH
+
+static func bridge_rails() -> Array[Rect2]:
+	return [Rect2(BRIDGE_RECT.position + Vector2(0, -6.4), Vector2(BRIDGE_RECT.size.x, 6.4)),
+		Rect2(Vector2(BRIDGE_RECT.position.x, BRIDGE_RECT.end.y), Vector2(BRIDGE_RECT.size.x, 6.4))]
+
+static func bridge_height(point: Vector2) -> float:
+	if not BRIDGE_RECT.has_point(point):
+		return 0.0
+	return BRIDGE_HEIGHT * clampf(minf(point.x - BRIDGE_RECT.position.x, BRIDGE_RECT.end.x - point.x) / BRIDGE_RAMP, 0.0, 1.0)
+
+static func circle_hits_rect(point: Vector2, radius: float, rect: Rect2) -> bool:
+	# Match a round character against the actual wall, including the corners.
+	var closest := point.clamp(rect.position, rect.end)
+	return point.distance_squared_to(closest) < radius * radius
 
 static func generate() -> Dictionary:
 	var rng := RandomNumberGenerator.new()
@@ -106,15 +130,19 @@ static func generate() -> Dictionary:
 		solid_rects.append(KingdomData.building_rect(building))
 	return {"trees": trees, "decor": decor, "colliders": colliders, "collision_grid": grid, "solid_rects": solid_rects}
 
-static func can_stand(point: Vector2, data: Dictionary, radius: float = 10.0) -> bool:
+static func can_stand(point: Vector2, data: Dictionary, radius: float = 10.0, allow_swimming: bool = false) -> bool:
 	if point.x < 38.4 or point.y < 38.4 or point.x > SIZE.x - 38.4 or point.y > SIZE.y - 38.4:
 		return false
 	for rect in data.get("solid_rects", []):
-		if rect.grow(radius).has_point(point):
+		if circle_hits_rect(point, radius, rect):
 			return false
-	for offset in [Vector2.ZERO, Vector2(radius, 0), Vector2(-radius, 0), Vector2(0, radius), Vector2(0, -radius)]:
-		if is_water(point + offset):
-			return false
+	if not allow_swimming:
+		for rect in bridge_rails():
+			if circle_hits_rect(point, radius, rect):
+				return false
+		for offset in [Vector2.ZERO, Vector2(radius, 0), Vector2(-radius, 0), Vector2(0, radius), Vector2(0, -radius)]:
+			if is_water(point + offset):
+				return false
 	var candidates: Array = data.colliders
 	if data.has("collision_grid"):
 		candidates = []

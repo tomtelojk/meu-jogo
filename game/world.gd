@@ -16,6 +16,7 @@ var clock: WorldClock
 var navigator: AStarGrid2D
 var npcs: Dictionary = {}
 var daylight: CanvasModulate
+var hybrid_rendering := false
 
 func _ready() -> void:
 	data = WorldData.generate()
@@ -45,6 +46,7 @@ func _ready() -> void:
 		area.name = "Interaction_" + landmark.id
 		add_child(area)
 	_build_water_collisions()
+	_build_bridge_collisions()
 	_build_boundaries()
 	_build_settlements()
 	_build_population()
@@ -57,8 +59,12 @@ func _build_settlements() -> void:
 	move_child(art, 3)
 	var buildings := StaticBody2D.new()
 	buildings.name = "BuildingCollisions"
-	for rect in data.solid_rects:
+	buildings.collision_layer = WorldData.SOLID_LAYER
+	buildings.collision_mask = 0
+	for index in data.solid_rects.size():
+		var rect:Rect2 = data.solid_rects[index]
 		var shape := CollisionShape2D.new()
+		shape.name = "Footprint_" + str(index)
 		var box := RectangleShape2D.new()
 		box.size = rect.size
 		shape.shape = box
@@ -213,21 +219,37 @@ func _interaction_area(point: Vector2, radius: float) -> Area2D:
 func _build_water_collisions() -> void:
 	var water := StaticBody2D.new()
 	water.name = "StreamCollision"
+	water.collision_layer = WorldData.WATER_LAYER
+	water.collision_mask = 0
 	var cuts: Array[float] = []
 	for y in range(0, int(WorldData.SIZE.y) + 1, 32):
 		cuts.append(float(y))
-	cuts.append(19.45 * WorldData.TILE)
-	cuts.append(20.55 * WorldData.TILE)
+	cuts.append(WorldData.BRIDGE_RECT.position.y)
+	cuts.append(WorldData.BRIDGE_RECT.end.y)
 	cuts.sort()
 	for i in range(1, cuts.size()):
 		var a := cuts[i - 1]
 		var b := cuts[i]
-		if b <= a or (a >= 19.45 * WorldData.TILE and b <= 20.55 * WorldData.TILE):
+		if b <= a or (a >= WorldData.BRIDGE_RECT.position.y and b <= WorldData.BRIDGE_RECT.end.y):
 			continue
 		var polygon := CollisionPolygon2D.new()
 		polygon.polygon = PackedVector2Array([Vector2(WorldData.river_x(a) - 80, a), Vector2(WorldData.river_x(a) + 80, a), Vector2(WorldData.river_x(b) + 80, b), Vector2(WorldData.river_x(b) - 80, b)])
 		water.add_child(polygon)
 	add_child(water)
+
+func _build_bridge_collisions() -> void:
+	var rails := StaticBody2D.new()
+	rails.name = "BridgeRails"
+	rails.collision_layer = WorldData.BRIDGE_RAIL_LAYER
+	rails.collision_mask = 0
+	for rect in WorldData.bridge_rails():
+		var shape := CollisionShape2D.new()
+		var box := RectangleShape2D.new()
+		box.size = rect.size
+		shape.shape = box
+		shape.position = rect.get_center()
+		rails.add_child(shape)
+	add_child(rails)
 
 func _build_boundaries() -> void:
 	var boundary := StaticBody2D.new()
@@ -280,10 +302,11 @@ func _process(delta: float) -> void:
 	if fade_timer < 0.1:
 		return
 	fade_timer = 0.0
-	for tree in trees:
-		var point: Vector2 = tree.body.position
-		var behind: bool = player.position.y < point.y - 8 and player.position.y > point.y - tree.size and absf(player.position.x - point.x) < tree.size * 0.42
-		tree.sprite.modulate.a = 0.38 if behind else 1.0
+	if not hybrid_rendering:
+		for tree in trees:
+			var point: Vector2 = tree.body.position
+			var behind: bool = player.position.y < point.y - 8 and player.position.y > point.y - tree.size and absf(player.position.x - point.x) < tree.size * 0.42
+			tree.sprite.modulate.a = 0.38 if behind else 1.0
 	var markers: Array[Dictionary] = []
 	for npc in npcs.values():
 		if not npc.sleeping:

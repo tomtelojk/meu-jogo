@@ -21,6 +21,7 @@ var elapsed_save: float = 0.0
 var elapsed_hud: float = 0.0
 var victory_delay: float = 0.0
 var hybrid: HybridWorld
+var light_graphics := true
 var audio: ForestAudio
 var character_dialog: FileDialog
 var npc_sprite_dialog: FileDialog
@@ -281,12 +282,19 @@ func show_pause() -> void:
 	_open_dialog("UMA PEQUENA PAUSA", "O bosque espera por você.", "Não é preciso ter pressa. Sua jornada é salva automaticamente neste dispositivo.", [
 		{"label": "Continuar a jornada", "callback": close_dialog},
 		{"label": "Escolher personagem", "callback": show_characters},
+		{"label": "Gráficos: " + ("leve" if light_graphics else "nítido"), "callback": toggle_graphics},
 		{"label": "Como jogar", "callback": show_help},
 		{"label": "Começar de novo", "callback": confirm_reset},
 	], "pause")
 
+func toggle_graphics() -> void:
+	light_graphics = not light_graphics
+	if hybrid != null:
+		hybrid.set_light_graphics(light_graphics)
+	show_pause()
+
 func show_help() -> void:
-	_open_dialog("SEU GUIA DO BOSQUE", "Siga a sua curiosidade.", "Encontre cinco sementes douradas e leve-as à árvore-mãe. Os pontos dourados no mapa mostram onde procurar.\n\nWASD ou setas · Caminhar\nShift · Correr\nE · Recolher, ler e plantar\nM · Abrir e fechar o mapa\nEsc · Pausar e voltar\n\nNo celular, use o controle à esquerda e o botão à direita. O riacho pode ser atravessado pela ponte de madeira.", [{"label": "Entendi, vamos explorar", "callback": close_dialog}], "help")
+	_open_dialog("SEU GUIA DO BOSQUE", "Siga a sua curiosidade.", "Encontre cinco sementes douradas e leve-as à árvore-mãe. Os pontos dourados no mapa mostram onde procurar.\n\nWASD ou setas · Caminhar\nShift · Correr\nE · Recolher, ler e plantar\nM · Abrir e fechar o mapa\nEsc · Pausar e voltar\n\nNo celular, use o controle à esquerda e o botão à direita. Entre no rio por qualquer margem para nadar. Shift acelera as braçadas. Você pode atravessar pela ponte de madeira ou nadar por baixo dela.", [{"label": "Entendi, vamos explorar", "callback": close_dialog}], "help")
 
 func show_map() -> void:
 	if mode == "dialog" and hud.modal_kind == "map":
@@ -313,6 +321,7 @@ func reset_journey() -> void:
 	complete = false
 	victory_delay = 0.0
 	player.position = WorldData.SPAWN
+	player.restore_surface()
 	player.stamina = 1.0
 	player.touch_vector = Vector2.ZERO
 	world.apply_progress(collected, false)
@@ -372,7 +381,7 @@ func _use_default_character() -> void:
 	close_dialog()
 
 func journey_data() -> Dictionary:
-	return {"version": 1, "x": player.position.x, "y": player.position.y, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
+	return {"version": 1, "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
 
 func apply_journey(data: Dictionary) -> bool:
 	if data.get("version") != 1 or not data.get("seeds") is Array:
@@ -388,8 +397,12 @@ func apply_journey(data: Dictionary) -> bool:
 	var y = data.get("y")
 	if (x is float or x is int) and (y is float or y is int):
 		var point := Vector2(x, y)
-		if is_finite(point.x) and is_finite(point.y) and WorldData.can_stand(point, world.data):
+		if is_finite(point.x) and is_finite(point.y) and WorldData.can_stand(point, world.data, 10.0, true):
 			player.position = point
+	player.restore_surface(data.get("swimming", false) == true)
+	light_graphics = data.get("light_graphics", true) != false
+	if hybrid != null:
+		hybrid.set_light_graphics(light_graphics)
 	custom_character = data.get("custom_character") == true
 	met_npcs.clear()
 	royal_seals.clear()

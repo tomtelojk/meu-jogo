@@ -7,7 +7,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CONTROLS = """\nCOMO JOGAR\nEncontre as cinco sementes douradas e leve-as de volta à árvore-mãe.\n\nWASD ou setas: caminhar\nShift: correr\nE: recolher sementes, ler e plantar\nM: abrir e fechar o mapa\nEsc: pausar e voltar\n\nSeu progresso é salvo automaticamente neste computador.\nSom ambiente é opcional, no botão de música.\n"""
+CONTROLS = """\nCOMO JOGAR\nEncontre as cinco sementes douradas e leve-as de volta à árvore-mãe.\n\nWASD ou setas: caminhar e nadar\nShift: correr ou acelerar as braçadas\nE: recolher sementes, ler e plantar\nM: abrir e fechar o mapa\nEsc: pausar e voltar\n\nSeu progresso é salvo automaticamente neste computador.\nSom ambiente é opcional, no botão de música.\n"""
 VILLAGERS = """
 OS DOIS REINOS
 Aurélia fica no oeste dourado; Valverde, a leste do riacho.
@@ -21,6 +21,14 @@ O protagonista e os oito NPCs usam as cinco folhas complementares de tomate.zip.
 Para personalizar uma aparência, converse com o NPC e escolha
 'Escolher sprite deste morador'. Isso não exige instalar o Godot.
 As rotinas e os diálogos continuam funcionando com a prancha escolhida.
+
+DESEMPENHO E FÍSICA
+Modo gráfico leve por padrão. Em Esc → Gráficos, alterne entre leve e nítido.
+Floresta agrupada e sombras fixas reduzem o trabalho por quadro.
+As casas têm paredes sólidas e a ponte tem rampas e corrimãos com colisão.
+Entre no rio pelas margens para nadar; saia por qualquer margem.
+É possível nadar sob a ponte. Sem fôlego, continue nadando normalmente.
+As rotinas dos NPCs continuam atravessando pela ponte.
 
 ATUALIZAÇÃO VISUAL 2.5D
 Cenário, casas e ponte em 3D com personagens e árvores em sprites 2D.
