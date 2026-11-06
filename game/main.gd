@@ -20,6 +20,7 @@ var save_warning_shown: bool = false
 var elapsed_save: float = 0.0
 var elapsed_hud: float = 0.0
 var victory_delay: float = 0.0
+var hybrid: HybridWorld
 var audio: ForestAudio
 var character_dialog: FileDialog
 var npc_sprite_dialog: FileDialog
@@ -53,6 +54,10 @@ func _ready() -> void:
 	_refresh_quest()
 	hud.update_status(player, world.data, world.clock)
 	camera.reset_smoothing()
+	if not "--test" in OS.get_cmdline_user_args() or "--hybrid" in OS.get_cmdline_user_args():
+		hybrid = HybridWorld.new()
+		add_child(hybrid)
+		hybrid.setup(self)
 	print("Entre Folhas · Godot %s · cenário e controles carregados." % Engine.get_version_info().string)
 
 func _setup_input() -> void:
@@ -90,7 +95,7 @@ func _process(delta: float) -> void:
 		var label := ""
 		if not item.is_empty():
 			label = _interaction_label(item)
-		hud.show_interaction(label, get_viewport().get_canvas_transform() * player.global_position)
+		hud.show_interaction(label, hybrid.screen_position(player.position) if hybrid != null else get_viewport().get_canvas_transform() * player.global_position)
 	if elapsed_save > 2.0:
 		elapsed_save = 0.0
 		save_journey()
@@ -314,6 +319,8 @@ func reset_journey() -> void:
 	_refresh_quest()
 	camera.reset_smoothing()
 	start_journey()
+	if hybrid != null:
+		hybrid.snap_camera()
 	hud.toast("Uma nova jornada. Que o vento guie seus passos.")
 
 func _show_victory() -> void:

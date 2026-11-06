@@ -2,7 +2,13 @@
 
 Os pacotes prontos para jogar no Linux e no Windows estão em [downloads/README.md](downloads/README.md).
 
-Uma pequena aventura de exploração **com visão de cima**, agora implementada nativamente em **Godot 4.6 / GDScript**. Encontre cinco sementes e leve uma nova primavera à árvore-mãe.
+Uma pequena aventura de exploração **2.5D**, com chão, casas e ponte em **3D** e personagens e árvores em **sprites 2D**, implementada em **Godot 4.6 / GDScript**. Encontre cinco sementes e leve uma nova primavera à árvore-mãe.
+
+![Cenário híbrido no Godot](docs/hibrido-vila.png)
+
+A câmera ortográfica inclinada acompanha o jogador. As construções têm volume, os sprites ficam voltados para a câmera, as copas se movem suavemente e as árvores próximas ficam transparentes quando cobrem o personagem. Os sprites fornecidos em `tomate.zip` continuam em uso, incluindo as fachadas das casas. O rio usa uma superfície 3D com textura em movimento.
+
+A lógica de colisões e rotas continua em `CharacterBody2D`/`AStarGrid2D`, convertida do plano XY para o solo XZ na apresentação. Isso conserva as rotinas, os diálogos, as missões e os salvamentos anteriores. Não há salto ou movimentação vertical.
 
 ## Abrir e jogar
 
@@ -101,13 +107,21 @@ Importar os recursos e analisar os scripts:
 ./scripts/godot.sh --headless --audio-driver Dummy --editor --import --quit
 ```
 
-Executar os testes nativos:
+Executar os testes nativos (a suíte de lógica usa a apresentação 2D isolada):
 
 ```sh
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/run.gd -- --test
 ```
 
 A suíte termina com código diferente de zero se uma verificação falhar e inclui regressões para a duração do vento, as raízes do atlas novo, o alinhamento dos passos, as viradas e a textura das ruas. Ela usa dados temporários, não altera a jornada do jogador e tem limite de 60 segundos. Verifica acessibilidade dos objetivos, movimento e colisões reais, travessia da ponte, interação pela tecla E, coleta única, plantio, vitória, salvamento em disco, validação dos dados, importação e quadros dos personagens, menus e controles de toque.
+
+As prévias de movimento anteriores em `docs/movimento.gif` e `.mp4` mostram a versão 2D anterior; as imagens `docs/hibrido-*.png` mostram a versão atual.
+
+Para validar a apresentação atual com uma sessão gráfica:
+
+```sh
+./scripts/godot.sh --audio-driver Dummy --script res://tests/hybrid_tests.gd -- --test --hybrid
+```
 
 `tests/capture_motion.gd` oferece uma conferência gráfica dos 128 quadros de caminhada dos NPCs, nas quatro direções, com guias de alinhamento.
 
@@ -125,9 +139,10 @@ Ela renderiza o cenário no próprio Godot e salva capturas temporárias de intr
 
 ## Estrutura do projeto
 
-- `project.godot`: projeto Godot 4.6, renderização 2D Compatibility e filtro de pixels.
+- `project.godot`: projeto Godot 4.6, renderização híbrida 2.5D Compatibility e filtro de pixels.
 - `scenes/main.tscn`: cena principal com mundo, personagem, câmera e HUD.
 - `game/main.gd`: objetivos, diálogos, entradas e salvamento.
+- `game/hybrid_world.gd`: apresentação 3D, câmera inclinada, sprites, casas, rio, ponte e conversão de coordenadas.
 - `game/world.gd`: chão em `TileMapLayer`, árvores em `AnimatedSprite2D`, profundidade por Y e colisões em `StaticBody2D`.
 - `game/world_data.gd`: mapa determinístico, destinos e regras de navegação.
 - `game/terrain.gd`: ruas e clareiras com textura fixa nas coordenadas do mundo, sem esticar a imagem nas curvas ou sobrepor bordas nos cruzamentos.

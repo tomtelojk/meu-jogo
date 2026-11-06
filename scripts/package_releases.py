@@ -22,7 +22,9 @@ Para personalizar uma aparência, converse com o NPC e escolha
 'Escolher sprite deste morador'. Isso não exige instalar o Godot.
 As rotinas e os diálogos continuam funcionando com a prancha escolhida.
 
-ATUALIZAÇÃO VISUAL
+ATUALIZAÇÃO VISUAL 2.5D
+Cenário, casas e ponte em 3D com personagens e árvores em sprites 2D.
+A câmera inclinada acompanha o jogador, com sombras e água em movimento.
 Personagens, quatro árvores, terrenos, água e três estilos de casas usam tomate.zip.
 As árvores têm vento contínuo na copa e troncos firmes.
 Os passos dos moradores acompanham sua velocidade e param quando eles param.

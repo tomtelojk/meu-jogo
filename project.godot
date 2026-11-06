@@ -1,9 +1,9 @@
-; Open this file in Godot 4.6 or later. F6/F5 runs the native 2D game.
+; Open this file in Godot 4.6 or later. F6/F5 runs the hybrid 2.5D game.
 config_version=5
 
 [application]
 config/name="Entre Folhas"
-config/description="Uma pequena aventura de exploração com visão de cima."
+config/description="Uma aventura 2.5D: personagens em pixel art, cenário 3D e dois reinos para explorar."
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://assets/icon.svg"
