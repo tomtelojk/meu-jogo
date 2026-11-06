@@ -3,6 +3,8 @@ extends Node
 
 var game:ForestGame
 var elapsed:=0.0
+var work_timers:Dictionary={}
+var food_timers:Dictionary={}
 
 func setup(source:ForestGame)->void:
 	game=source
@@ -21,12 +23,47 @@ func _process(delta:float)->void:
 		if minute-int(account.last_wage)>=20:
 			account.gold+=2
 			account.last_wage=minute
-		if npc.definition.get("builder",false):advance_builder(npc,dt)
-		else:
-			account.job=npc.activity()
-			var town:String=npc.definition.get("town","")
-			var tool:String={"Lenhador":"axe","Mineiro":"pickaxe","Artesã":"hammer"}.get(npc.definition.role,"")
-			if not town.is_empty() and not tool.is_empty() and not account.tools.has(tool) and npc.position.distance_to(KingdomData.point(town+"_shop"))<95:game.rpg.buy(tool,id)
+		if npc.definition.get("builder",false) and not npc.current_schedule.get("social",false):advance_builder(npc,dt)
+		else:advance_worker(npc,dt)
+
+func advance_worker(npc:ForestNPC,delta:float)->void:
+	var id:String=npc.definition.id
+	var account:=game.rpg.npc_account(id)
+	account.job=npc.activity()
+	var town:String=npc.definition.get("town","aurelia" if npc.definition.realm=="aurelia" else "valverde")
+	if npc.definition.get("editor",false):return
+	var tool:String={"Lenhador":"axe","Mineiro":"pickaxe","Artesã":"hammer","Ferreiro":"hammer"}.get(npc.definition.role,"")
+	var shop:=KingdomData.point(town+"_shop")
+	var trade_kind:String={"Lenhador":"wood","Mineiro":"stone"}.get(npc.definition.role,"")
+	if not trade_kind.is_empty() and int(account[trade_kind])>=10 and npc.position.distance_to(shop)<100:
+		account[trade_kind]-=10;account.gold+=20 if trade_kind=="wood" else 30;game.rpg.changed.emit()
+	if not tool.is_empty() and not account.tools.has(tool):
+		npc.set_economic_goal(KingdomData.point(town+"_shop_"+str(npc.personality_seed%6)),"Indo comprar "+RPGState.ITEMS[tool].name.to_lower())
+		if npc.position.distance_to(shop)<100:
+			var purchased:=game.rpg.buy(tool,id)
+			if purchased.ok:npc.clear_economic_goal()
+		return
+	if npc.hunger>0.75:
+		var inn:=KingdomData.point(town+"_inn")
+		npc.set_economic_goal(inn,"Procurando uma refeição")
+		if npc.position.distance_to(inn)<110 and account.gold>=5:
+			account.gold-=5;npc.hunger=0.1;npc.clear_economic_goal();game.rpg.changed.emit()
+		return
+	if not npc.current_schedule.get("work",false):
+		if npc.economic_target.is_finite():npc.clear_economic_goal()
+		return
+	work_timers[id]=float(work_timers.get(id,0))+delta
+	if work_timers[id]<12:return
+	work_timers[id]=0.0
+	var kind:String={"Lenhador":"wood","Mineiro":"stone"}.get(npc.definition.role,"")
+	if kind.is_empty():
+		if npc.state=="work":account.gold+=1
+		return
+	var center:=KingdomData.point(town+"_"+kind)
+	if npc.position.distance_to(center)>400:return
+	for index in 20:
+		var resource_id:=kind+"_"+town+"_"+str(index)
+		if not game.rpg.depleted.has(resource_id):game.rpg.harvest(resource_id,kind,id);break
 
 func advance_builder(npc:ForestNPC,delta:float)->void:
 	var id:String=npc.definition.id

@@ -31,7 +31,7 @@ func run()->void:
 	root.add_child(game)
 	await frames(5)
 	verify(game.hybrid!=null and game.hybrid.camera.current,"câmera 3D e visual 2.5D continuam ativos")
-	verify(is_equal_approx(root.scaling_3d_scale,0.8),"modo leve continua padrão com interface nítida")
+	verify(is_equal_approx(root.scaling_3d_scale,0.65),"modo leve continua padrão com interface nítida")
 	verify(game.hybrid.landscape.regions.size()==game.world.chunks.size(),"cada região ativa tem terreno, recursos e visuais sincronizados")
 	await capture("intro")
 	game.start_journey()

@@ -79,7 +79,7 @@ func _draw()->void:
 	if editor.draft.base=="reinos":
 		for town in KingdomData.SETTLEMENTS:
 			draw_circle(to_screen(town.position),1400*zoom,Color(0.80,0.78,0.48,0.16))
-		for path in KingdomData.paths():
+		for path in KingdomData.paths(int(editor.draft.get("generation",2))):
 			var points:=PackedVector2Array()
 			for p in path:points.append(to_screen(p))
 			draw_polyline(points,Color("b99b6b"),maxf(1.0,88*zoom),true)
@@ -98,9 +98,9 @@ func _draw()->void:
 			if kind.is_empty():continue
 			draw_rect(Rect2(to_screen(Vector2(cell)*64),Vector2.ONE*(64*zoom+0.5)),COLORS[kind])
 	if editor.draft.base=="reinos":
-		for i in KingdomData.BUILDINGS.size():
+		for i in KingdomData.base_buildings(int(editor.draft.get("generation",2))).size():
 			if editor.draft.removed.has("base_building_"+str(i)):continue
-			var data:Dictionary=KingdomData.BUILDINGS[i]
+			var data:Dictionary=KingdomData.base_buildings(int(editor.draft.get("generation",2)))[i]
 			var rect:=KingdomData.building_rect(data)
 			_building(rect,data.kind,posmod(String(data.name).hash(),6),"base_building_"+str(i))
 		for id in editor.base_npcs:

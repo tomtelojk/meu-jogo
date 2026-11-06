@@ -14,12 +14,17 @@ const SETTLEMENTS: Array[Dictionary] = [
 	{"id":"cedro","name":"Cedro","realm":"valverde","position":Vector2(13568,8192),"capital":false},
 ]
 static var PLACES: Dictionary = _make_places()
-static var BUILDINGS: Array[Dictionary] = _make_buildings()
+static var LEGACY_BUILDINGS: Array[Dictionary] = _make_buildings()
+static var NATURAL:Dictionary=SettlementLayout.generate(SETTLEMENTS,PLACES)
+static var BUILDINGS:Array[Dictionary]=NATURAL.buildings
 static var PEOPLE: Array[Dictionary] = _make_people()
 static var _roads: Array[PackedVector2Array] = []
 static var _map_revision := -1
 static var _map_buildings: Array[Dictionary] = []
 static var _map_people: Array[Dictionary] = []
+
+static func base_buildings(generation:int=-1)->Array[Dictionary]:
+	return LEGACY_BUILDINGS if (MapDocument.current.get("generation",2) if generation<0 else generation)==1 else BUILDINGS
 
 static func towns() -> Array[Dictionary]:
 	if MapDocument.base_enabled():return SETTLEMENTS
@@ -44,8 +49,8 @@ static func _refresh_map() -> void:
 	_map_revision=MapDocument.revision
 	_map_buildings=[];_map_people=[]
 	if MapDocument.base_enabled():
-		for i in BUILDINGS.size():
-			var entry: Dictionary=BUILDINGS[i].duplicate(true)
+		for i in base_buildings().size():
+			var entry: Dictionary=base_buildings()[i].duplicate(true)
 			entry.id="base_building_"+str(i)
 			if not MapDocument.removed(entry.id):_map_buildings.append(entry)
 		for profile in PEOPLE:
@@ -63,7 +68,7 @@ static func _editor_person(obj: Dictionary, original: Dictionary) -> Dictionary:
 			if candidate.id==obj.appearance:profile=candidate.duplicate(true);break
 	profile.merge({"id":obj.id,"name":obj.name,"realm":obj.realm,"appearance":obj.appearance,"builder":false,"editor":true,"town":"","role":profile.get("role","Morador"),"speed":68.0+posmod(String(obj.id).hash(),20)},true)
 	var wake: int=6+posmod(String(obj.id).hash(),3)
-	profile.routine=[{"hour":0,"activity":"Descansando em casa","points":["map_"+obj.id+"_home"],"rest":true},{"hour":wake,"activity":"Indo trabalhar","points":["map_"+obj.id+"_work"]},{"hour":12,"activity":"Passeando","points":["map_"+obj.id+"_social"]},{"hour":14,"activity":"Trabalhando","points":["map_"+obj.id+"_work"]},{"hour":19,"activity":"Encontrando os vizinhos","points":["map_"+obj.id+"_social"]},{"hour":22,"activity":"Voltando para casa","points":["map_"+obj.id+"_home"],"rest":true}]
+	profile.routine=[{"hour":0,"activity":"Descansando em casa","points":["map_"+obj.id+"_home"],"rest":true},{"hour":wake,"activity":"Indo trabalhar","work":true,"points":["map_"+obj.id+"_work"]},{"hour":12,"activity":"Passeando","social":true,"points":["map_"+obj.id+"_social"]},{"hour":14,"activity":"Trabalhando","work":true,"points":["map_"+obj.id+"_work"]},{"hour":19,"activity":"Encontrando os vizinhos","social":true,"points":["map_"+obj.id+"_social"]},{"hour":22,"activity":"Voltando para casa","points":["map_"+obj.id+"_home"],"rest":true}]
 	return profile
 
 static func _make_places() -> Dictionary:
@@ -87,6 +92,8 @@ static func _make_places() -> Dictionary:
 		p[town.id+"_plot"]=c+Vector2(768,1152)
 		p[town.id+"_farm"]=c+Vector2(1600,832)
 		p[town.id+"_market"]=c+Vector2(0,448)
+		for role in ["wood","stone","farm"]:
+			for i in 4:p[town.id+"_"+role+"_"+str(i)]=p[town.id+"_"+role]+Vector2((i%2)*128-64,(i/2)*128+160)
 		for i in 6:
 			p[town.id+"_home_"+str(i)]=c+Vector2([-768,-384,384,768,-384,384][i],192 if i<4 else -192)
 			p[town.id+"_shop_"+str(i)]=c+Vector2(-192+(i%3-1)*48,208+(i/3)*48)
@@ -126,7 +133,7 @@ static func _make_people() -> Array[Dictionary]:
 	]
 	for i in named.size():
 		var n:Array=named[i]
-		people.append({"id":n[0],"name":n[1],"role":n[2],"realm":n[3],"color":Color("bc9879").lerp(Color("88afa0"),i/10.0),"speed":70.0+i*2,"greeting":n[7],"realm_text":REALMS[n[3]].name+" reúne cidades, rotas comerciais e pequenos povoados.","other_text":"As caravanas mantêm os dois reinos em contato. Cada morador tem seus planos.","hint":n[8],"routine":[{"hour":0,"activity":"Descansando em casa","points":[n[5]],"rest":true},{"hour":6+i%3,"activity":"Trabalhando como "+String(n[2]).to_lower(),"points":[n[4]]},{"hour":12,"activity":"Visitando o mercado","points":[n[6]]},{"hour":14,"activity":"Cuidando do trabalho","points":[n[4]]},{"hour":19,"activity":"Encontrando os vizinhos","points":[n[6]]},{"hour":22,"activity":"Descansando em casa","points":[n[5]],"rest":true}]})
+		people.append({"id":n[0],"name":n[1],"role":n[2],"realm":n[3],"color":Color("bc9879").lerp(Color("88afa0"),i/10.0),"speed":70.0+i*2,"greeting":n[7],"realm_text":REALMS[n[3]].name+" reúne cidades, rotas comerciais e pequenos povoados.","other_text":"As caravanas mantêm os dois reinos em contato. Cada morador tem seus planos.","hint":n[8],"routine":[{"hour":0,"activity":"Descansando em casa","points":[n[5]],"rest":true},{"hour":6+i%3,"activity":"Trabalhando como "+String(n[2]).to_lower(),"points":[n[4]]},{"hour":12,"activity":"Visitando o mercado","points":[n[6]]},{"hour":14,"activity":"Cuidando do trabalho","points":[n[4]]},{"hour":19,"activity":"Encontrando os vizinhos","social":true,"points":[n[6]]},{"hour":22,"activity":"Descansando em casa","points":[n[5]],"rest":true}]})
 	var names:PackedStringArray=["Rui","Nara","Caetano","Dora","Ivo","Luna","Bruno","Cora","Davi","Eva","Flora","Gil","Hugo","Inês","Jana","Lino","Maia","Nilo","Olívia","Pedro","Raul","Sara","Téo","Vera","Yara","Zeca","Ada","Bia","Ciro","Dina","Elisa","Fábio","Gabi","Heitor","Isa","João"]
 	for t in SETTLEMENTS.size():
 		var town:Dictionary=SETTLEMENTS[t]
@@ -134,11 +141,13 @@ static func _make_people() -> Array[Dictionary]:
 			var home:String=town.id+"_home_"+str(i)
 			var builder:bool=i==0 and not town.capital
 			var work:String=town.id+["_wood","_stone","_farm","_farm","_shop","_market"][i]
-			people.append({"id":town.id+"_resident_"+str(i),"name":names[t*6+i],"role":"Construtor" if builder else ["Lenhador","Mineiro","Pastor","Agricultor","Artesã","Mercador"][i],"realm":town.realm,"town":town.id,"builder":builder,"color":Color(0.7+(i%3)*0.08,0.7+(t%3)*0.08,0.65+(i%2)*0.15),"speed":68.0+i*4,"greeting":"Moro em "+town.name+". Trabalho, negócio e guardo recursos para melhorar minha casa. Os preços das ferramentas são os mesmos para todos.","realm_text":REALMS[town.realm].name+" é minha terra. Este vilarejo tem comércio, animais e terrenos para novos moradores.","other_text":"No fim do dia, prefiro encontrar meus vizinhos a ficar na estrada.","hint":"Converse comigo sobre minhas compras e construção para acompanhar meu progresso.","routine":[{"hour":0,"activity":"Descansando em casa","points":[home],"rest":true},{"hour":6+i%3,"activity":["Cortando madeira","Extraindo pedra","Cuidando dos animais","Trabalhando na plantação","Fabricando ferramentas","Negociando na feira"][i],"points":[work]},{"hour":12,"activity":"Comprando no comércio","points":[town.id+"_shop_"+str(i)]},{"hour":14,"activity":"Preparando materiais","points":[work]},{"hour":19,"activity":"Encontrando os vizinhos","points":[town.id+"_inn_"+str(i)]},{"hour":22,"activity":"Descansando em casa","points":[home],"rest":true}]})
+			people.append({"id":town.id+"_resident_"+str(i),"name":names[t*6+i],"role":"Construtor" if builder else ["Lenhador","Mineiro","Pastor","Agricultor","Artesã","Mercador"][i],"realm":town.realm,"town":town.id,"builder":builder,"color":Color(0.7+(i%3)*0.08,0.7+(t%3)*0.08,0.65+(i%2)*0.15),"speed":68.0+i*4,"greeting":"Moro em "+town.name+". Trabalho, negócio e guardo recursos para melhorar minha casa. Os preços das ferramentas são os mesmos para todos.","realm_text":REALMS[town.realm].name+" é minha terra. Este vilarejo tem comércio, animais e terrenos para novos moradores.","other_text":"No fim do dia, prefiro encontrar meus vizinhos a ficar na estrada.","hint":"Converse comigo sobre minhas compras e construção para acompanhar meu progresso.","routine":[{"hour":0,"activity":"Descansando em casa","points":[home],"rest":true},{"hour":6+i%3,"activity":["Cortando madeira","Extraindo pedra","Cuidando dos animais","Trabalhando na plantação","Fabricando ferramentas","Negociando na feira"][i],"points":[work]},{"hour":12,"activity":"Comprando no comércio","points":[town.id+"_shop_"+str(i)]},{"hour":14,"activity":"Preparando materiais","points":[work]},{"hour":19,"activity":"Encontrando os vizinhos","social":true,"points":[town.id+"_inn_"+str(i)]},{"hour":22,"activity":"Descansando em casa","points":[home],"rest":true}]})
+	for profile in people:profile.routine=DailyRoutines.make(profile)
 	return people
 
 static func point(id:String)->Vector2:
 	if MapDocument.points.has(id):return MapDocument.points[id]
+	if MapDocument.current.get("generation",2)==2 and NATURAL.places.has(id):return NATURAL.places[id]
 	return PLACES.get(id,REALMS.aurelia.capital)
 
 static func person(id:String)->Dictionary:
@@ -154,10 +163,14 @@ static func schedule(profile:Dictionary,minute:float)->Dictionary:
 
 static func routine_text(profile:Dictionary)->String:
 	var lines:=PackedStringArray()
-	for entry in profile.routine:lines.append("%02d:00 · %s"%[entry.hour,entry.activity])
+	for entry in profile.routine:lines.append("%02d:%02d · %s"%[int(entry.hour),roundi(fposmod(entry.hour,1)*60),entry.activity])
 	return "Minha rotina:\n\n"+"\n".join(lines)
 
-static func paths()->Array[PackedVector2Array]:
+static func paths(generation:int=-1)->Array[PackedVector2Array]:
+	if (MapDocument.current.get("generation",2) if generation<0 else generation)==2:
+		var result:Array[PackedVector2Array]=[]
+		result.assign(NATURAL.roads)
+		return result
 	if not _roads.is_empty():return _roads
 	for town in SETTLEMENTS:
 		var c:Vector2=town.position

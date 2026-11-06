@@ -84,7 +84,7 @@ func setup(data: Dictionary) -> void:
 	var mesh:=MeshInstance3D.new()
 	mesh.name="Architecture"
 	mesh.mesh=surface.commit()
-	mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	if shared_material==null:
 		shared_material=ShaderMaterial.new()
 		shared_material.shader=load("res://game/shaders/architecture.gdshader")

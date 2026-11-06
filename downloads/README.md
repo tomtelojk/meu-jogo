@@ -7,15 +7,19 @@ RPG de mundo aberto 2.5D para PC de 64 bits. Não é necessário instalar o Godo
 
 Extraia o ZIP inteiro. No Windows, abra **EntreReinos.exe**. No Linux, abra **Jogar.sh**; se necessário, dê permissão de execução aos dois arquivos.
 
-O mapa tem **25 vezes a área anterior**, dois reinos maiores, quatro vilarejos, 135 construções, 44 NPCs e animais. Compre ferramentas, recolha materiais, negocie, suba de nível e construa sua casa. Quatro moradores também compram equipamento e constroem casas com recursos próprios.
+O mapa tem **25 vezes a área anterior**, dois reinos maiores, quatro vilarejos, 126 construções, 44 NPCs e animais. Ruas curvas, bairros irregulares, bosques em grupos e um rio de largura variável tornam o continente menos repetitivo. Compre ferramentas, recolha materiais, negocie, suba de nível e construa sua casa.
 
 **F2 abre o Ateliê de Mundos**, incluído no jogo. Comece com um mapa vazio ou edite os reinos: pinte terreno e água, coloque casas, pontes, árvores, animais e NPCs e marque suas rotinas. Salve, exporte ou importe mapas em JSON e use **Testar mapa** para jogar. O ZIP inclui um mapa de exemplo e o guia do editor.
 
 Os moradores agora usam nove bases visuais, com os sprites originais de NPCs enviados pelo autor. Casas têm seis estilos de materiais e cores, com detalhes próprios. Shaders melhoram água, materiais e cor; podem ser desligados no menu de pausa.
 
+Os NPCs têm turnos de trabalho, comércio, refeições, patrulhas, encontros e descanso. Evitam aglomerações, procuram desvios e fogem de javalis. Quatro moradores também compram equipamento e constroem casas. A iluminação acompanha o dia, com neblina de distância, postes e lanterna à noite. O título e toda a interface seguem o estilo de RPG em pixel art.
+
 [Guia do editor](../docs/editor-de-mapas.md) · [Ver o ateliê](../docs/editor-mapa.png) · [Mapa de exemplo](../docs/mapa-exemplo.json)
 
-**E** interage e negocia, **I** abre inventário, **B** escolhe terreno, **J** mostra objetivos, **M** abre mapa e **Espaço** ataca. Nas estalagens, use caravanas para visitar outros povoados. O modo gráfico leve é o padrão.
+**E** interage, **I** abre inventário e **B** escolhe terreno. A hotbar usa **1–4** para ferramentas, **5** para comer, **6** para mapa, **7** para diário e **8** para lanterna. A roda do mouse seleciona e o clique esquerdo usa o item. **Espaço** ataca. Nas estalagens, use caravanas para visitar outros povoados. O modo gráfico leve é o padrão.
+
+[Ver o início](../docs/rpg-inicio.png) · [Ver a interface](../docs/rpg-hud.png) · [Ver iluminação e neblina](../docs/rpg-noite.png)
 
 [Ver Aurélia](../docs/rpg-aurelia.png) · [Ver animais](../docs/rpg-animais.png) · [Ver construção](../docs/rpg-casa.png) · [Ver mapa](../docs/rpg-mapa.png) · [Ver casa de um NPC](../docs/rpg-casa-npc.png)
 

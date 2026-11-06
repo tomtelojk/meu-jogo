@@ -52,17 +52,37 @@ func _ground(parent:Node3D,content:Dictionary)->void:
 	var region:Rect2=content.rect
 	var terrain:=WorldData.biome(region.get_center())
 	var row:=3 if terrain=="mountains" else (2 if terrain=="coast" else 0)
-	var tiles:=TileMapLayer.new()
-	tiles.tile_set=GroundAtlas.biome_tiles(row)
-	tiles.scale=Vector2.ONE*(64.0/GroundAtlas.TILE_PIXELS)
-	tiles.modulate=WorldData.biome_color(region.get_center()) if row==0 else Color.WHITE
-	for y in 8:
-		for x in 8:tiles.set_cell(Vector2i(x,y),GroundAtlas.grass_variant(content.coord.x*8+x,content.coord.y*8+y),Vector2i.ZERO)
-	view.add_child(tiles)
+	if MapDocument.base_enabled() and MapDocument.current.get("generation",2)==2:
+		var tile:=ColorRect.new()
+		tile.size=Vector2.ONE*512
+		var blend:=ShaderMaterial.new()
+		blend.shader=load("res://game/shaders/natural_ground.gdshader")
+		blend.set_shader_parameter("grass",GroundAtlas.tile(0,0))
+		blend.set_shader_parameter("sand",GroundAtlas.tile(2,0))
+		blend.set_shader_parameter("stone",GroundAtlas.tile(3,0))
+		blend.set_shader_parameter("climate",NaturalLandscape.texture())
+		blend.set_shader_parameter("world_origin",region.position)
+		tile.material=blend
+		view.add_child(tile)
+	else:
+		var tiles:=TileMapLayer.new()
+		tiles.tile_set=GroundAtlas.biome_tiles(row)
+		tiles.scale=Vector2.ONE*(64.0/GroundAtlas.TILE_PIXELS)
+		tiles.modulate=WorldData.biome_color(region.get_center()) if row==0 else Color.WHITE
+		for y in 8:
+			for x in 8:tiles.set_cell(Vector2i(x,y),GroundAtlas.grass_variant(content.coord.x*8+x,content.coord.y*8+y),Vector2i.ZERO)
+		view.add_child(tiles)
 	var roads:=ForestTerrain.new()
 	roads.position=-region.position
 	roads.build_region(region)
 	view.add_child(roads)
+	for building in KingdomData.buildings():
+		var wall:=KingdomData.building_rect(building)
+		if not region.grow(80).intersects(wall):continue
+		var shadow:=Polygon2D.new()
+		shadow.polygon=PackedVector2Array([wall.position-region.position+Vector2(20,22),Vector2(wall.end.x,wall.position.y)-region.position+Vector2(48,22),wall.end-region.position+Vector2(48,28),Vector2(wall.position.x,wall.end.y)-region.position+Vector2(20,28)])
+		shadow.color=Color(0.06,0.09,0.12,0.19)
+		view.add_child(shadow)
 	var shadows:Dictionary={"view":view,"nodes":{}}
 	for tree in content.tree_entries:
 		var shape:=Polygon2D.new()

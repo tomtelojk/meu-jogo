@@ -24,6 +24,8 @@ var hybrid: HybridWorld
 var light_graphics := true
 var shaders_enabled := true
 var map_editor: WorldEditor
+var equipped_slot:=0
+var lantern_enabled:=false
 var map_snapshots: Dictionary = {}
 var audio: ForestAudio
 var character_dialog: FileDialog
@@ -62,6 +64,7 @@ func _ready() -> void:
 	hud.sound_requested.connect(func(): hud.set_sound(audio.toggle()))
 	hud.character_requested.connect(show_characters)
 	hud.editor_requested.connect(show_map_editor)
+	hud.hotbar_selected.connect(select_hotbar)
 	hud.dialog_closed.connect(close_dialog)
 	hud.interact_requested.connect(interact)
 	hud.touch_moved.connect(func(value: Vector2): player.touch_vector = value)
@@ -87,6 +90,7 @@ func _ready() -> void:
 		hybrid = HybridWorld.new()
 		add_child(hybrid)
 		hybrid.setup(self)
+		hybrid.visible=false;hybrid.set_process(false);hybrid.grade.hide()
 	print("Entre Reinos · Godot %s · cenário e controles carregados." % Engine.get_version_info().string)
 	if MapDocument.current.id!="reinos" and not FileAccess.file_exists(save_path):
 		player.position=MapDocument.spawn_point()
@@ -110,6 +114,7 @@ func _setup_input() -> void:
 				InputMap.action_add_event(action, event)
 
 func start_journey() -> void:
+	if hybrid!=null:hybrid.show();hybrid.set_process(true);hybrid.grade.show()
 	mode = "playing"
 	player.active = true
 	world.set_population_active(true)
@@ -416,7 +421,7 @@ func apply_map(document:Dictionary) -> bool:
 	return true
 
 func show_help()->void:
-	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e colher\nEspaço ou clique esquerdo · Atacar\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Escolher terreno para sua casa\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nEsc · Pausar\n\nCompre machado, picareta e martelo no comércio. Madeira e pedra servem para construir ou podem ser vendidas. A casa cresce em três etapas. Vilarejos têm estalagens, caravanas e encomendas. Alguns moradores também compram ferramentas e constroem casas. Javalis podem atacar; provisões e descanso recuperam vida.",[{"label":"Continuar","callback":close_dialog}],"help")
+	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e colher\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Escolher terreno para sua casa\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nEsc · Pausar\n\nCompre machado, picareta e martelo no comércio. Madeira e pedra servem para construir ou podem ser vendidas. A casa cresce em três etapas. Vilarejos têm estalagens, caravanas e encomendas. Alguns moradores também compram ferramentas e constroem casas. Javalis podem atacar; provisões e descanso recuperam vida.",[{"label":"Continuar","callback":close_dialog}],"help")
 
 func show_map() -> void:
 	if mode == "dialog" and hud.modal_kind == "map":
@@ -518,7 +523,7 @@ func _use_default_character() -> void:
 	close_dialog()
 
 func journey_data() -> Dictionary:
-	return {"version": 2,"rpg":rpg.save_data(), "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
+	return {"version": 2,"rpg":rpg.save_data(), "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
 
 func apply_journey(data: Dictionary) -> bool:
 	if (data.get("version")!=1 and data.get("version")!=2) or not data.get("seeds",[]) is Array:
@@ -544,6 +549,9 @@ func apply_journey(data: Dictionary) -> bool:
 		player.position=MapDocument.spawn_point()
 		world.ensure_region(player.position,true)
 	player.restore_surface(data.get("swimming", false) == true)
+	equipped_slot=clampi(int(data.get("equipped_slot",0)),0,7)
+	lantern_enabled=data.get("lantern",false)==true
+	hud.hotbar.slot=equipped_slot;hud.hotbar.lantern=lantern_enabled
 	shaders_enabled=data.get("shaders",true)!=false
 	light_graphics = data.get("light_graphics", true) != false
 	if hybrid != null:
@@ -596,6 +604,10 @@ func _unhandled_input(event:InputEvent)->void:
 	if event.is_echo():return
 	if mode=="editor":return
 	if event.is_action_pressed("editor"):show_map_editor();get_viewport().set_input_as_handled();return
+	if mode=="playing" and event is InputEventKey and event.pressed and event.physical_keycode>=KEY_1 and event.physical_keycode<=KEY_8:
+		select_hotbar(int(event.physical_keycode-KEY_1));get_viewport().set_input_as_handled();return
+	if mode=="playing" and event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
+		select_hotbar(posmod(equipped_slot+(1 if event.button_index==MOUSE_BUTTON_WHEEL_DOWN else -1),8),false);return
 	if building_preview:
 		if event.is_action_pressed("pause") or event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_RIGHT:cancel_building()
 		elif event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:place_house(building_point)
@@ -612,7 +624,8 @@ func _unhandled_input(event:InputEvent)->void:
 		if event.is_action_pressed("inventory"):show_inventory()
 		elif event.is_action_pressed("journal"):show_journal()
 		elif event.is_action_pressed("build"):start_building()
-		elif event.is_action_pressed("attack") or event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:attack()
+		elif event.is_action_pressed("attack"):attack()
+		elif event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:use_equipped()
 
 func _notification(what: int) -> void:
 	if not is_node_ready():
@@ -809,7 +822,7 @@ func attack()->void:
 		var distance:float=animal.position.distance_to(player.position)
 		if distance<nearest:nearest=distance;target=animal
 	if target==null:hud.toast("Espaço: ataque um animal próximo. Uma espada aumenta o dano.");return
-	var damage:=(20 if rpg.tools.has("sword") else 7)+rpg.level()*2
+	var damage:=(20 if rpg.tools.has("sword") and equipped_slot==0 else 7)+rpg.level()*2
 	var defeated:=target.hurt(damage)
 	hud.toast("Caça concluída: carne e experiência." if defeated else "%s · -%d vida"%[target.definition.name,damage])
 	save_journey()
@@ -829,3 +842,34 @@ func take_damage(amount:int)->void:
 		hud.toast("Você foi socorrido. Perdeu 5 moedas e manteve seu equipamento.")
 	rpg.changed.emit()
 	save_journey()
+
+func select_hotbar(index:int,activate:bool=true)->void:
+	if mode!="playing":return
+	equipped_slot=clampi(index,0,7)
+	hud.hotbar.slot=equipped_slot;hud.hotbar.queue_redraw()
+	var item:String=RPGHotbar.ITEMS[equipped_slot]
+	if equipped_slot<4:
+		hud.toast(RPGHotbar.NAMES[equipped_slot]+(" equipado." if rpg.tools.has(item) else " · Compre na ferraria."),2)
+	elif activate:use_equipped()
+	save_journey()
+
+func use_equipped()->void:
+	if mode!="playing" or building_preview:return
+	match equipped_slot:
+		0:attack()
+		1,2:
+			var kind:="wood" if equipped_slot==1 else "stone"
+			var item:=current_interaction()
+			if item.get("kind")=="resource" and item.get("resource_kind")==kind:interact()
+			else:hud.toast("Aproxime-se de uma árvore." if equipped_slot==1 else "Aproxime-se de uma rocha.")
+		3:
+			if not rpg.tools.has("hammer"):hud.toast("Compre um martelo na ferraria.");return
+			var home:Dictionary=rpg.houses.get("home_player",{})
+			if not home.is_empty():open_house("home_player")
+			else:start_building()
+		4:
+			var result:=rpg.eat();hud.toast(result.message);_refresh_quest();save_journey()
+		5:show_map()
+		6:show_journal()
+		7:
+			lantern_enabled=not lantern_enabled;hud.hotbar.lantern=lantern_enabled;hud.hotbar.queue_redraw();save_journey()

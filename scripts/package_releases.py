@@ -13,7 +13,10 @@ ENTRE REINOS — RPG DE MUNDO ABERTO
 WASD ou setas: caminhar e nadar
 Shift: correr ou acelerar na água
 E: conversar, negociar, coletar e interagir
-Espaço ou clique esquerdo: atacar animais próximos
+Espaço: atacar animais próximos
+1 a 4: equipar espada, machado, picareta ou martelo
+5: comer provisão | 6: mapa | 7: diário | 8: ligar/desligar lanterna
+Roda do mouse: selecionar espaço da hotbar | Clique esquerdo: usar o item
 I: inventário, ferramentas e provisões
 J: objetivos e registros
 B: escolher terreno; clique confirma, botão direito/Esc cancela
@@ -43,7 +46,8 @@ VILLAGERS = """
 DOIS REINOS, QUATRO VILAREJOS
 Mapa 25 vezes maior: 16.000 x 12.800 unidades.
 Explore Aurélia, Valverde, Pedra Alta, Ponte Velha, Porto Claro e Cedro.
-As capitais e vilarejos somam 135 construções e 44 moradores.
+As capitais e vilarejos somam 126 construções e 44 moradores.
+Ruas curvas, lotes irregulares, bosques em grupos e rio de largura variável.
 Nas estalagens você pode descansar e viajar de caravana.
 
 SUA VIDA DE AVENTUREIRO
@@ -60,12 +64,17 @@ Um martelo, 50 madeira e 20 pedra completam fundação, paredes e telhado.
 Sua casa permite descansar e serve como retorno se você for socorrido.
 
 MORADORES COM PLANOS PRÓPRIOS
-Os NPCs trabalham, recebem moedas, visitam lojas e voltam para casa.
+Os NPCs têm turnos variados, refeições, encontros e descanso em casa.
+O guarda patrulha a ponte e a comerciante viaja entre os reinos.
+Moradores compram ferramentas, vendem produção, evitam aglomerações,
+procuram desvios e fogem de javalis próximos.
 Quatro construtores dos vilarejos compram ferramentas, recolhem materiais e
 constroem suas próprias casas ao longo do dia. Converse sobre compras e casa
 para acompanhar a carteira, as ferramentas e o objetivo de cada um.
 
 DESEMPENHO E SALVAMENTO
+O cenário 2.5D tem ciclo de luz, neblina, postes e lanterna noturna.
+O modo leve reduz a resolução do cenário, mantendo a interface nítida.
 O mundo carrega no máximo 25 regiões próximas, liberando as que ficam longe.
 Árvores usam grupos de instâncias, com vento e sombras leves.
 Posição, inventário, moedas, saúde, casas, recursos retirados e progresso dos
@@ -126,6 +135,7 @@ def package(system: str, output: Path) -> Path:
         "NPCs: oito pranchas originais de abc.zip, fornecidas pelo autor, além do agricultor de tomate.zip.\n"
         "FONTES-NPCS.json registra a origem e os hashes das pranchas de NPCs.\n"
         "Modelos 3D dos animais e das construções por etapas: geometria procedural do projeto.\n"
+        "Fonte bitmap 5x7, ícones da interface e paisagem do menu: criados no projeto.\n"
         "Os PNGs foram copiados e renomeados, preservando seus bytes originais.\n"
         "O fundo magenta é removido pelo renderizador do jogo.\n"
         "FONTES-SPRITES.json relaciona nomes recebidos, papéis e hashes SHA-256 das imagens e de tomate.zip.\n",

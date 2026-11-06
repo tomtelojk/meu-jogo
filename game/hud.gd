@@ -5,6 +5,7 @@ signal play_requested
 signal pause_requested
 signal help_requested
 signal map_requested
+signal hotbar_selected(index:int)
 signal editor_requested
 signal sound_requested
 signal character_requested
@@ -13,10 +14,10 @@ signal interact_requested
 signal touch_moved(value: Vector2)
 
 const CREAM := Color("f4eedb")
-const INK := Color("334132")
+const INK := Color("e8d6b2")
 const MUTED := Color("cbd0b3")
-const PAPER := Color("f1eedf")
-const MOSS := Color("4b6041")
+const PAPER := Color("1c2430")
+const MOSS := Color("604d3a")
 
 var root: Control
 var brand: Control
@@ -54,20 +55,23 @@ var sound_button: Button
 var touch_controls: Control
 var joystick: ForestJoystick
 var touch_action: Button
-var serif: SystemFont
+var serif: Font
+var hotbar:RPGHotbar
+var life_bar:ProgressBar
 var game_started: bool = false
 var modal_scroll:ScrollContainer
 var modal_content:VBoxContainer
 var portrait: TextureRect
 
 func _ready() -> void:
-	serif = SystemFont.new()
-	serif.font_names = PackedStringArray(["Georgia", "DejaVu Serif", "serif"])
+	serif=load(PixelArt.FONT)
 	root = Control.new()
 	root.name = "Interface"
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
+	root.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+	var theme:=Theme.new();theme.default_font=serif;theme.default_font_size=16;root.theme=theme
 	_build_atmosphere()
 	_build_header()
 	_build_quest()
@@ -81,9 +85,10 @@ func _ready() -> void:
 func _style(color: Color, radius: int = 8, border: Color = Color.TRANSPARENT) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
-	style.set_corner_radius_all(radius)
-	style.set_border_width_all(1)
-	style.border_color = border
+	style.set_corner_radius_all(0)
+	style.set_border_width_all(2)
+	style.border_color = Color("99825b") if border.a<0.1 else border
+	style.shadow_size=3;style.shadow_offset=Vector2(3,3);style.shadow_color=Color(0,0,0,0.55)
 	style.content_margin_left = 12
 	style.content_margin_right = 12
 	style.content_margin_top = 8
@@ -93,7 +98,8 @@ func _style(color: Color, radius: int = 8, border: Color = Color.TRANSPARENT) ->
 func _text(value: String, font_size: int = 12, color: Color = CREAM, display_font: bool = false) -> Label:
 	var label := Label.new()
 	label.text = value
-	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_font_override("font",serif)
+	label.add_theme_font_size_override("font_size",48 if font_size>=40 else (24 if font_size>=24 else (16 if font_size>=12 else 12)))
 	label.add_theme_color_override("font_color", color)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if display_font:
@@ -105,9 +111,10 @@ func _button(value: String, callback: Callable, filled: bool = false, dark: bool
 	button.text = value
 	button.custom_minimum_size = Vector2(0, 40)
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	button.add_theme_font_size_override("font_size", 12)
-	var bg := MOSS if filled and dark else (CREAM if filled else Color(0.16, 0.23, 0.17, 0.65))
-	var fg := INK if filled and not dark else CREAM
+	button.add_theme_font_override("font",serif)
+	button.add_theme_font_size_override("font_size",16)
+	var bg:=Color("614d36") if filled and not dark else Color("202936")
+	var fg:=CREAM
 	button.add_theme_color_override("font_color", fg)
 	button.add_theme_color_override("font_hover_color", fg)
 	button.add_theme_color_override("font_focus_color", fg)
@@ -120,28 +127,21 @@ func _button(value: String, callback: Callable, filled: bool = false, dark: bool
 
 func _panel(parent: Node, color: Color, padding: int = 18) -> PanelContainer:
 	var panel := PanelContainer.new()
-	var style := _style(color, 10)
+	var style := _style(PAPER, 0)
 	style.set_content_margin_all(padding)
 	panel.add_theme_stylebox_override("panel", style)
 	parent.add_child(panel)
 	return panel
 
 func _build_atmosphere() -> void:
-	var shade := ColorRect.new()
-	shade.name = "ForestLight"
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var material := ShaderMaterial.new()
-	material.shader = load("res://assets/atmosphere.gdshader")
-	shade.material = material
-	root.add_child(shade)
+	pass
 
 func _build_header() -> void:
 	brand = Control.new()
 	brand.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(brand)
 	brand_icon = TextureRect.new()
-	brand_icon.texture = load("res://assets/icon.svg")
+	brand_icon.texture = PixelArt.icon("map")
 	brand_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	brand_icon.size = Vector2(36, 36)
 	brand_icon.position.y = 4
@@ -172,76 +172,48 @@ func _build_header() -> void:
 		button.custom_minimum_size = Vector2(38, 38)
 		button.add_theme_font_size_override("font_size", 18)
 
-func _build_quest() -> void:
-	quest=_panel(root,Color(0.945,0.933,0.875,0.97),20)
+func _build_quest()->void:
+	quest=_panel(root,PAPER,10)
 	quest.name="RPGStatus"
-	var box:=VBoxContainer.new()
-	box.add_theme_constant_override("separation",9)
-	quest.add_child(box)
-	box.add_child(_text("AVENTUREIRO DOS DOIS REINOS",9,Color("6b7654")))
-	quest_title=_text("Viajante · Nível 1",17,INK,true)
-	quest_title.custom_minimum_size.x=240
+	var box:=VBoxContainer.new();box.add_theme_constant_override("separation",3);quest.add_child(box)
+	quest_title=_text("VIAJANTE · NÍVEL 1",16,CREAM)
 	box.add_child(quest_title)
-	seed_counter=_text("100 moedas",18,Color("786345"),true)
-	box.add_child(seed_counter)
-	quest_description=_text("Vida 100 / 100",11,Color("75806b"))
-	quest_description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	quest_description.custom_minimum_size.x=240
-	box.add_child(quest_description)
-	quest_note=_text("I · Inventário    J · Objetivos",10,Color("7a8267"))
-	quest_note.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	quest_note.custom_minimum_size.x=240
-	box.add_child(quest_note)
+	seed_counter=_text("100 MOEDAS",12,Color("dec083"));box.add_child(seed_counter)
+	life_bar=ProgressBar.new();life_bar.show_percentage=false;life_bar.custom_minimum_size=Vector2(240,10)
+	life_bar.add_theme_stylebox_override("background",_style(Color("111822"),0))
+	var fill:=StyleBoxFlat.new();fill.bg_color=Color("b65f5c");life_bar.add_theme_stylebox_override("fill",fill);box.add_child(life_bar)
+	quest_description=_text("",12,Color("c1c5bf"));box.add_child(quest_description)
+	quest_note=_text("",12);quest_note.hide();box.add_child(quest_note)
 	quest.hide()
 
-func _build_intro() -> void:
-	intro = Control.new()
-	intro.name = "Introduction"
-	intro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	intro.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(intro)
-	var shade := ColorRect.new()
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.color = Color(0.05, 0.12, 0.09, 0.25)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	intro.add_child(shade)
-	intro_body = VBoxContainer.new()
-	intro_body.add_theme_constant_override("separation", 20)
-	intro.add_child(intro_body)
-	intro_body.add_child(_text("—   DOIS REINOS · MUITOS CAMINHOS", 10, Color("e0d39c")))
-	intro_title = _text("Um mundo aberto.\nSeu próprio caminho.", 48, CREAM, true)
-	intro_body.add_child(intro_title)
-	var description := _text("Explore cidades, vilarejos e campos. Compre ferramentas, enfrente animais\ne reúna materiais para construir sua casa. Cada morador também tem seus planos.", 13, Color("e0e1ce"))
-	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	intro_body.add_child(description)
-	play_button = _button("Começar a aventura     ↗", play_requested.emit, true)
-	play_button.name = "PlayButton"
-	play_button.custom_minimum_size = Vector2(220, 50)
-	play_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	intro_body.add_child(play_button)
-	var character_button := _button("Escolher personagem  +", character_requested.emit)
-	character_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	intro_body.add_child(character_button)
-	var editor_button:=_button("Criar meu mapa · F2",editor_requested.emit)
-	editor_button.size_flags_horizontal=Control.SIZE_SHRINK_BEGIN
-	intro_body.add_child(editor_button)
-	intro_body.add_child(_text("W A S D  ou setas   caminhar      E   interagir", 10, MUTED))
-	caption = _text("—   Explore. Negocie. Construa seu lugar.", 11, Color("e2e2c9"))
-	root.add_child(caption)
+func _build_intro()->void:
+	intro=Control.new();intro.name="Introduction";intro.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);intro.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(intro)
+	var art:=PixelTitle.new();art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);intro.add_child(art)
+	intro_body=VBoxContainer.new();intro_body.add_theme_constant_override("separation",12);intro.add_child(intro_body)
+	var kicker:=_text("RPG DE MUNDO ABERTO",12,Color("d8bd88"));kicker.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;intro_body.add_child(kicker)
+	intro_title=_text("ENTRE REINOS",48,CREAM,true);intro_title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;intro_body.add_child(intro_title)
+	var subtitle:=_text("DOIS REINOS. SUA PRÓPRIA HISTÓRIA.",12,Color("b7bdc3"));subtitle.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;intro_body.add_child(subtitle)
+	intro_body.add_child(Control.new())
+	play_button=_button("INICIAR AVENTURA",play_requested.emit,true);play_button.name="PlayButton";intro_body.add_child(play_button)
+	intro_body.add_child(_button("PERSONAGEM",character_requested.emit))
+	intro_body.add_child(_button("CRIAR MEU MAPA · F2",editor_requested.emit))
+	intro_body.add_child(_button("COMO JOGAR",help_requested.emit))
+	caption=_text("WASD MOVER  ·  E INTERAGIR  ·  1-8 ATALHOS",12,Color("a7b0bc"));root.add_child(caption)
 
 func _build_bottom() -> void:
 	bottom_player = Control.new()
 	bottom_player.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(bottom_player)
+	hotbar=RPGHotbar.new();hotbar.selected.connect(hotbar_selected.emit);root.add_child(hotbar);hotbar.hide()
 	portrait = TextureRect.new()
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait.size = Vector2(40, 52)
 	bottom_player.add_child(portrait)
-	var name_label := _text("Viajante", 17, CREAM, true)
+	var name_label := _text("VIAJANTE", 12, CREAM, true)
 	name_label.position = Vector2(55, 0)
 	bottom_player.add_child(name_label)
-	var role := _text("Um passo de cada vez", 9, MUTED)
+	var role := _text("F2 EDITOR", 9, MUTED)
 	role.position = Vector2(55, 25)
 	bottom_player.add_child(role)
 	stamina = ProgressBar.new()
@@ -309,54 +281,31 @@ func _build_touch() -> void:
 	touch_controls.add_child(touch_action)
 	touch_controls.hide()
 
-func _layout() -> void:
-	if root == null:
-		return
-	var viewport_size := get_viewport().get_visible_rect().size
-	var mobile := viewport_size.x < 700
-	brand.position = Vector2(22 if mobile else 32, 23)
-	brand_title.add_theme_font_size_override("font_size", 21 if mobile else 28)
-	brand_title.position.x = 38 if mobile else 48
-	brand_subtitle.position = Vector2(39 if mobile else 49, 31 if mobile else 38)
-	brand_subtitle.add_theme_font_size_override("font_size", 6 if mobile else 8)
-	brand_icon.size = Vector2(28, 28) if mobile else Vector2(36, 36)
-	toolbar.position = Vector2(viewport_size.x - 155, 28)
-	location.visible = viewport_size.x > 1050
-	time_label.visible = not location.visible
-	time_label.position = Vector2(22 if mobile else 32, 80)
-	location.position = Vector2(viewport_size.x / 2.0 - location.size.x / 2.0, 42)
-	quest.position = Vector2(20 if mobile else 32, 104)
-	var quest_width := 230.0 if mobile else 280.0
-	quest_title.custom_minimum_size.x = quest_width - 40
-	quest_description.custom_minimum_size.x = quest_width - 40
-	quest_note.custom_minimum_size.x = quest_width - 40
-	quest.custom_minimum_size.x = quest_width
-	quest.size = Vector2(quest_width, 0)
-	intro_body.position = Vector2(26 if mobile else viewport_size.x * 0.08, viewport_size.y * (0.39 if mobile else 0.27))
-	intro_body.size.x = minf(600, viewport_size.x - intro_body.position.x - 24)
-	intro_title.add_theme_font_size_override("font_size", 32 if mobile else (42 if viewport_size.x < 1100 else 48))
-	caption.position = Vector2((viewport_size.x - caption.size.x) / 2.0, viewport_size.y - 42)
-	bottom_player.position = Vector2(32, viewport_size.y - 84)
-	bottom_player.visible = game_started and not mobile
-	stamina.size = Vector2(124, 4)
-	controls.position = Vector2((viewport_size.x - controls.size.x) / 2.0, viewport_size.y - 42)
-	controls.visible = game_started and viewport_size.x > 1050
-	minimap.custom_minimum_size = Vector2(124, 82) if mobile else Vector2(168, 112)
-	map_panel.reset_size()
-	map_panel.position = Vector2(viewport_size.x - map_panel.size.x - (20 if mobile else 32), viewport_size.y - map_panel.size.y - (155 if mobile else 24))
-	touch_controls.position = Vector2(24, viewport_size.y - 135)
-	touch_controls.size = Vector2(viewport_size.x - 48, 108)
-	touch_action.position = Vector2(viewport_size.x - 48 - 64, 25)
-	touch_controls.visible = game_started and (mobile or DisplayServer.is_touchscreen_available())
-	toast_label.custom_minimum_size.x = minf(460, viewport_size.x - 70)
-	toast_panel.reset_size()
-	call_deferred("_position_toast")
-	if modal != null:
-		_layout_modal()
+func _layout()->void:
+	if root==null:return
+	var viewport_size:=get_viewport().get_visible_rect().size
+	brand.position=Vector2(20,8);brand.visible=game_started
+	brand_title.position=Vector2(30,0);brand_title.add_theme_font_size_override("font_size",16)
+	brand_subtitle.hide();brand_icon.size=Vector2(24,24)
+	toolbar.position=Vector2(viewport_size.x-148,14);toolbar.visible=game_started
+	location.position=Vector2(330,12);location.visible=game_started and viewport_size.x>=1200
+	time_label.position=Vector2(330,12);time_label.visible=game_started and not location.visible
+	quest.position=Vector2(20,48);quest.custom_minimum_size.x=272;quest.size=Vector2(272,0)
+	intro_body.position=Vector2((viewport_size.x-480)/2,viewport_size.y*0.24);intro_body.size=Vector2(480,0)
+	intro_title.add_theme_font_size_override("font_size",48)
+	caption.position=Vector2((viewport_size.x-caption.get_minimum_size().x)/2,viewport_size.y-40)
+	bottom_player.position=Vector2(24,viewport_size.y-80);bottom_player.visible=game_started
+	stamina.size=Vector2(124,6)
+	controls.visible=false
+	hotbar.visible=game_started;hotbar.position=Vector2((viewport_size.x-480)/2,viewport_size.y-110);hotbar.size=Vector2(480,96)
+	minimap.custom_minimum_size=Vector2(156,100);map_panel.reset_size();map_panel.position=Vector2(viewport_size.x-map_panel.size.x-20,64)
+	touch_controls.hide()
+	toast_label.custom_minimum_size.x=minf(520,viewport_size.x-70);toast_panel.reset_size();call_deferred("_position_toast")
+	if modal!=null:_layout_modal()
 
 func set_started(resume: bool = false) -> void:
 	if resume:
-		play_button.text = "Continuar a jornada     ↗"
+		play_button.text = "CONTINUAR AVENTURA"
 
 func show_game() -> void:
 	game_started = true
@@ -372,7 +321,9 @@ func update_quest(_collected:Dictionary,_complete:bool,_peace:bool=false)->void:
 func update_rpg(state:RPGState)->void:
 	quest_title.text="Viajante · Nível %d"%state.level()
 	seed_counter.text="%d moedas"%state.gold
-	quest_description.text="Vida %d / 100   •   XP %d\nMadeira %d   •   Pedra %d\nProvisões %d   •   Vilarejos %d / 6"%[state.health,state.xp,state.wood,state.stone,state.food,state.discovered.size()]
+	life_bar.value=state.health
+	quest_description.text="VIDA %d/100  XP %d\nMADEIRA %d  PEDRA %d"%[state.health,state.xp,state.wood,state.stone]
+	hotbar.rpg=state;hotbar.queue_redraw()
 	var home:Dictionary=state.houses.get("home_player",{})
 	quest_note.text="I · Inventário   J · Objetivos\n"+("B · Escolher terreno para sua casa" if home.is_empty() else "Sua casa: "+RPGState.STAGES[home.stage])
 	minimap.home_position=Vector2(home.x,home.y) if not home.is_empty() else Vector2(-1,-1)
@@ -409,7 +360,7 @@ func toast(value: String, seconds: float = 4.0) -> void:
 
 func _position_toast() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
-	toast_panel.position = Vector2((viewport_size.x - toast_panel.size.x) / 2.0, viewport_size.y - (210 if viewport_size.x < 700 else 140))
+	toast_panel.position = Vector2((viewport_size.x - toast_panel.size.x) / 2.0, viewport_size.y - 178)
 
 func _process(delta: float) -> void:
 	if toast_time > 0:
@@ -443,7 +394,7 @@ func show_dialog(eyebrow: String, title: String, body: String, actions: Array[Di
 	modal_scroll.add_child(box)
 	var header := HBoxContainer.new()
 	box.add_child(header)
-	var kicker := _text(eyebrow, 9, Color("6b7654"))
+	var kicker := _text(eyebrow, 9, Color("d6b57b"))
 	kicker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(kicker)
 	var close := _button("×", dialog_closed.emit)
@@ -457,7 +408,7 @@ func show_dialog(eyebrow: String, title: String, body: String, actions: Array[Di
 	if map_view != null:
 		map_view.custom_minimum_size = Vector2(0, minf(300, get_viewport().get_visible_rect().size.x * 0.65))
 		box.add_child(map_view)
-	var content := _text(body, 13, Color("768068"))
+	var content := _text(body, 13, Color("c2c5c4"))
 	content.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	content.custom_minimum_size.x = heading.custom_minimum_size.x
 	box.add_child(content)

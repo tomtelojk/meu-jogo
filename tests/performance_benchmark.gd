@@ -1,5 +1,5 @@
 # Diagnostic only: run with a graphical display and -- --test --hybrid output.json.
-# Warm up each fixed scene, then sample 45 frames with V-Sync disabled.
+# Warm up 25 frames in each fixed scene, then sample 45 with V-Sync disabled.
 extends SceneTree
 func _initialize(): call_deferred("run")
 func run():
@@ -7,6 +7,7 @@ func run():
 	root.add_child(game)
 	game.start_journey()
 	game.world.set_population_active(false)
+	game.world.clock.active=false
 	game.economy.set_process(false)
 	if "--no-grade" in OS.get_cmdline_user_args():game.hybrid.grade_rect.hide()
 	var rows=[]
@@ -15,7 +16,7 @@ func run():
 		game.player.restore_surface()
 		game.world.ensure_region(spot.point,true)
 		game.hybrid.snap_camera()
-		for i in 10:
+		for i in 25:
 			await process_frame
 			await RenderingServer.frame_post_draw
 		var samples=[]

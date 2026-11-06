@@ -26,9 +26,23 @@ var gait_phase: float = 0.75
 var home_override:=Vector2(INF,INF)
 var economic_target := Vector2(INF,INF)
 var economic_activity := ""
+var task_target:=Vector2(INF,INF)
+var state:="travel"
+var hunger:=0.15
+var fatigue:=0.1
+var work_cycles:=0
+var choice_serial:=0
+var retry_delay:=0.0
+var route_failures:=0
+var neighbors:Array=[]
+var threat_until:=0.0
+var personality_seed:=0
+var action_phase:=0.0
 
 func setup(profile: Dictionary, fallback: SpriteFrames, grid: AStarGrid2D, minute: float) -> void:
 	definition = profile
+	personality_seed=posmod(String(profile.id).hash(),100000)
+	hunger=0.1+(personality_seed%20)/100.0
 	name = "NPC_" + profile.id
 	navigator = grid
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
@@ -82,6 +96,9 @@ func apply_schedule(minute: float, snap: bool = false) -> void:
 	stop_index = 0
 	waiting = 0.0
 	stalled = 0.0
+	task_target=Vector2(INF,INF)
+	state="returning_home" if wants_rest else "travel"
+	retry_delay=0
 	if snap:
 		position = nearest_walkable(_scheduled_point())
 	refresh_presence()
@@ -89,7 +106,10 @@ func apply_schedule(minute: float, snap: bool = false) -> void:
 	queue_redraw()
 
 func activity() -> String:
+	if state=="flee":return "Procurando abrigo"
 	if economic_target.is_finite() and not sleeping and not wants_rest:return economic_activity
+	if state=="blocked":return "Esperando o caminho liberar"
+	if state=="social" and not neighbors.is_empty():return "Conversando com os vizinhos"
 	return "Voltando para descansar" if wants_rest and not sleeping else String(current_schedule.activity)
 
 func refresh_presence() -> void:
@@ -99,7 +119,8 @@ func refresh_presence() -> void:
 	name_label.text = "%s · %s\n%s" % [definition.name, definition.role, activity()]
 
 func nearest_walkable(point: Vector2) -> Vector2:
-	return Vector2(_nearest_cell(point)) * navigator.cell_size
+	var cell:=_nearest_cell(point)
+	return Vector2(cell)*navigator.cell_size if cell.x>=0 else position
 
 func _nearest_cell(point: Vector2) -> Vector2i:
 	var cell := Vector2i(roundi(point.x / navigator.cell_size.x), roundi(point.y / navigator.cell_size.y))
@@ -118,76 +139,148 @@ func _nearest_cell(point: Vector2) -> Vector2i:
 						nearest_distance = distance
 		if nearest != Vector2i(-1, -1):
 			return nearest
-	return Vector2i(48, 54)
+	return Vector2i(-1,-1)
 
 func plan_route() -> void:
-	var target := economic_target if economic_target.is_finite() and not wants_rest else _scheduled_point(stop_index)
-	route = navigator.get_point_path(_nearest_cell(position), _nearest_cell(target))
-	path_index = 0
-	while path_index < route.size() and position.distance_to(route[path_index]) < 7:
-		path_index += 1
+	var target:=_target()
+	var start:=_nearest_cell(position)
+	var end:=_nearest_cell(target)
+	route=PackedVector2Array();path_index=0
+	if start.x<0 or end.x<0:
+		state="blocked";retry_delay=5;return
+	route=navigator.get_point_path(start,end)
+	if route.is_empty():
+		state="blocked";route_failures+=1;retry_delay=minf(10,2+route_failures);return
+	if state=="blocked":state="returning_home" if wants_rest else "travel"
+	route_failures=0
+	while path_index<route.size() and position.distance_to(route[path_index])<7:path_index+=1
 
-func _physics_process(delta: float) -> void:
-	if not active or sleeping:
-		velocity = Vector2.ZERO
-		sprite.play("idle_" + facing)
-		gait_phase = 0.75
-		return
-	if waiting > 0:
-		waiting -= delta
-		if waiting <= 0 and current_schedule.get("loop", false):
-			stop_index = (stop_index + 1) % current_schedule.points.size()
-			plan_route()
-		_idle()
-		return
-	while path_index < route.size() and position.distance_to(route[path_index]) < 5:
-		path_index += 1
-	if path_index >= route.size():
-		if wants_rest:
-			refresh_presence()
-		if current_schedule.get("loop", false):
-			waiting = 2.0
-		_idle()
-		return
-	var direction := position.direction_to(route[path_index])
-	var speed: float = definition.speed
-	var running: bool = definition.id == "tomas" and current_schedule.get("loop", false)
-	velocity = direction * (speed * 1.2 if running else speed)
-	var previous := position
+func _target()->Vector2:
+	if wants_rest:return _scheduled_point()
+	if state in ["flee","detour"] and task_target.is_finite():return task_target
+	if economic_target.is_finite():return economic_target
+	return task_target if task_target.is_finite() else _scheduled_point(stop_index)
+
+func update_brain(delta:float,nearby:Array,hostiles:Array)->void:
+	neighbors=nearby
+	if not active:return
+	action_phase+=delta
+	hunger=clampf(hunger+delta/480.0,0,1)
+	fatigue=clampf(fatigue+(-delta/50.0 if sleeping else delta/1800.0),0,1)
+	if sleeping:return
+	retry_delay=maxf(0,retry_delay-delta)
+	threat_until=maxf(0,threat_until-delta)
+	if state=="blocked" and retry_delay<=0:task_target=Vector2(INF,INF);plan_route()
+	if threat_until<=0 and state=="flee":state="travel";task_target=Vector2(INF,INF);plan_route()
+	if not wants_rest and threat_until<=0 and definition.id!="tomas":
+		for hostile in hostiles:
+			if not is_instance_valid(hostile) or not hostile.alive:continue
+			if position.distance_squared_to(hostile.position)<180*180:
+				var away:Vector2=hostile.position.direction_to(position)
+				if away==Vector2.ZERO:away=Vector2.RIGHT
+				task_target=nearest_walkable(position+away*320)
+				state="flee";threat_until=5;waiting=0;plan_route();break
+	if state=="social" and waiting>0:
+		for other in neighbors:
+			if is_instance_valid(other) and other!=self and not other.sleeping and position.distance_to(other.position)<100:
+				face(other.position);break
+
+func _physics_process(delta:float)->void:
+	if not active or sleeping:_idle();return
+	if state=="blocked":_idle();return
+	if waiting>0:
+		waiting=maxf(0,waiting-delta)
+		if waiting<=0:_next_task()
+		_idle();return
+	while path_index<route.size() and position.distance_to(route[path_index])<6:path_index+=1
+	if path_index>=route.size():_arrive();_idle();return
+	var direction:=position.direction_to(route[path_index])
+	var speed:float=definition.speed*(1.35 if state=="flee" else 1.0)
+	var separation:=Vector2.ZERO
+	for other in neighbors:
+		if not is_instance_valid(other) or other==self or other.sleeping:continue
+		var offset:Vector2=position-other.position
+		if offset.length_squared()<=0.01:separation+=Vector2.RIGHT if String(definition.id)>String(other.definition.id) else Vector2.LEFT
+		if offset.length_squared()<28*28 and offset.length_squared()>0.01:separation+=offset.normalized()*(1-offset.length()/28)
+	direction=(direction+separation*0.65).normalized()
+	# A local sweep finds a safe side around a trunk or a building corner.
+	if test_move(global_transform,direction*speed*minf(delta,0.15)):
+		for angle in [0.65,-0.65,1.2,-1.2]:
+			var alternative:=direction.rotated(angle)
+			if not test_move(global_transform,alternative*speed*minf(delta,0.15)):
+				direction=alternative;break
+	velocity=direction*speed
+	var previous:=position
 	move_and_slide()
-	_animate_movement(get_real_velocity(), running, position.distance_to(previous))
-	stalled = stalled + delta if position.distance_to(previous) < 0.15 else 0.0
-	if stalled > 1.0:
-		stalled = 0.0
-		plan_route()
+	var distance:=position.distance_to(previous)
+	_animate_movement(get_real_velocity(),state=="flee",distance)
+	stalled=stalled+delta if distance<0.15 else 0.0
+	if stalled>1.2:
+		stalled=0;retry_delay=0.5;task_target=nearest_walkable(position+Vector2(96 if personality_seed%2 else -96,64));state="detour";plan_route()
+
+func _arrive()->void:
+	if state=="detour":task_target=Vector2(INF,INF);state="travel";plan_route();return
+	if wants_rest:
+		refresh_presence()
+		if not sleeping:waiting=3
+		return
+	if state=="flee":waiting=0.5;return
+	state="work" if current_schedule.get("work",false) else ("social" if current_schedule.get("social",false) else "idle")
+	if state=="work":work_cycles+=1
+	waiting=2.5+((personality_seed+choice_serial*17)%35)/10.0
+	refresh_presence()
+
+func _next_task()->void:
+	choice_serial+=1
+	if wants_rest:plan_route();return
+	if economic_target.is_finite():plan_route();return
+	if current_schedule.get("loop",false):
+		stop_index=(stop_index+1)%current_schedule.points.size()
+		task_target=Vector2(INF,INF)
+	elif current_schedule.get("work",false) or current_schedule.get("social",false):
+		var origin:=_scheduled_point()
+		var angle:=fposmod(personality_seed*0.01+choice_serial*2.399,TAU)
+		task_target=nearest_walkable(origin+Vector2.from_angle(angle)*(64+((choice_serial+personality_seed)%3)*32))
+	else:task_target=Vector2(INF,INF)
+	state="travel";plan_route()
 
 func set_economic_goal(point:Vector2,label:String)->void:
 	economic_activity=label
 	if economic_target.is_equal_approx(point):return
-	economic_target=point
+	economic_target=point;task_target=Vector2(INF,INF);waiting=0
 	plan_route()
 
+func clear_economic_goal()->void:
+	economic_target=Vector2(INF,INF);task_target=Vector2(INF,INF);plan_route()
+
 func advance_offscreen(delta:float)->void:
-	if not active or sleeping:return
+	if not active or sleeping or state=="blocked":return
 	if waiting>0:
 		waiting=maxf(0,waiting-delta)
-		if waiting<=0 and current_schedule.get("loop",false):
-			stop_index=(stop_index+1)%current_schedule.points.size()
-			plan_route()
+		if waiting<=0:_next_task()
 		return
 	var remaining:float=definition.speed*delta
 	while path_index<route.size() and remaining>0:
 		var distance:=position.distance_to(route[path_index])
-		if distance<=remaining:
-			position=route[path_index]
-			remaining-=distance
-			path_index+=1
-		else:
-			position=position.move_toward(route[path_index],remaining)
-			remaining=0
-	if path_index>=route.size():
-		if wants_rest:refresh_presence()
-		if current_schedule.get("loop",false):waiting=2.0
+		if distance<=remaining:position=route[path_index];remaining-=distance;path_index+=1
+		else:position=position.move_toward(route[path_index],remaining);remaining=0
+	if path_index>=route.size():_arrive()
+
+func mind_data()->Dictionary:
+	return {"hunger":hunger,"fatigue":fatigue,"cycles":work_cycles,"serial":choice_serial}
+
+func restore_mind(data:Dictionary)->void:
+	for field in ["hunger","fatigue"]:
+		var value:Variant=data.get(field,0.1)
+		if (value is int or value is float) and is_finite(float(value)):set(field,clampf(value,0,1))
+	work_cycles=clampi(int(data.get("cycles",0)),0,1000000)
+	choice_serial=clampi(int(data.get("serial",0)),0,1000000)
+
+func emote()->String:
+	if state=="flee":return "!"
+	if state=="work":return {"Lenhador":"/","Mineiro":"*","Ferreiro":"*","Agricultora":"+","Agricultor":"+","Herbalista":"+"}.get(definition.role,"...")
+	if state=="social":return "..."
+	return ""
 
 func _idle() -> void:
 	velocity = Vector2.ZERO

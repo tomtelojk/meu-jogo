@@ -18,7 +18,7 @@ static var _mask: Texture2D
 static var revision := 0
 
 static func original() -> Dictionary:
-	return {"version":1,"id":"reinos","name":"Entre os dois reinos","base":"reinos","spawn":[4608,4480],"terrain":{},"objects":[],"removed":{},"npcs":{}}
+	return {"version":1,"id":"reinos","name":"Entre os dois reinos","base":"reinos","generation":2,"spawn":[4608,4480],"terrain":{},"objects":[],"removed":{},"npcs":{}}
 
 static func blank() -> Dictionary:
 	var doc := original()
@@ -168,6 +168,7 @@ static func validate(raw: Variant) -> Dictionary:
 	if not raw.get("objects") is Array or raw.objects.size()>5000:return fail
 	var clean := original()
 	clean.id=id;clean.name=raw.name;clean.base=raw.base;clean.spawn=spawn.duplicate()
+	clean.generation=2 if raw.get("generation",2 if id=="reinos" else 1)==2 else 1
 	clean.terrain=raw.terrain.duplicate()
 	var ids: Dictionary = {}
 	for entry in raw.objects:

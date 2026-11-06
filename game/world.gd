@@ -158,7 +158,7 @@ func reset_population()->void:
 
 func population_data()->Dictionary:
 	var result:Dictionary={}
-	for id in npcs:result[id]={"x":npcs[id].position.x,"y":npcs[id].position.y}
+	for id in npcs:result[id]={"x":npcs[id].position.x,"y":npcs[id].position.y,"mind":npcs[id].mind_data()}
 	return result
 
 func restore_population(saved:Dictionary)->void:
@@ -168,6 +168,7 @@ func restore_population(saved:Dictionary)->void:
 			var p:=Vector2(v.x,v.y)
 			if p.is_finite() and WorldData.can_stand(p,data):
 				npcs[id].position=p
+				if v.get("mind") is Dictionary:npcs[id].restore_mind(v.mind)
 				npcs[id].refresh_presence()
 				npcs[id].plan_route()
 
@@ -392,8 +393,9 @@ func _build_water_collisions()->void:
 			if b<=a:continue
 			var polygon:=PackedVector2Array([Vector2(WorldData.river_x(a)-WorldData.river_width(a),a),Vector2(WorldData.river_x(a)+WorldData.river_width(a),a),Vector2(WorldData.river_x(b)+WorldData.river_width(b),b),Vector2(WorldData.river_x(b)-WorldData.river_width(b),b)])
 			var pieces:Array[PackedVector2Array]=[polygon]
-			var min_x:=floori((minf(WorldData.river_x(a),WorldData.river_x(b))-WorldData.RIVER_HALF_WIDTH)/64)
-			var max_x:=floori((maxf(WorldData.river_x(a),WorldData.river_x(b))+WorldData.RIVER_HALF_WIDTH)/64)
+			var reach:=maxf(WorldData.river_width(a),WorldData.river_width(b))
+			var min_x:=floori((minf(WorldData.river_x(a),WorldData.river_x(b))-reach)/64)
+			var max_x:=floori((maxf(WorldData.river_x(a),WorldData.river_x(b))+reach)/64)
 			for x in range(min_x,max_x+1):
 				var cell:=Vector2i(x,floori((a+b)/2/64))
 				var painted:String=MapDocument.current.terrain.get(MapDocument.cell_key(cell),"")
@@ -483,7 +485,14 @@ func _process(delta:float)->void:
 	var step:=simulation_timer
 	simulation_timer=0
 	var markers:Array[Dictionary]=[]
+	var hostiles:Array=[]
+	for animal in animals.values():
+		if animal.alive and animal.species=="boar":hostiles.append(animal)
 	for npc in npcs.values():
+		var neighbors:Array=[]
+		for other in npcs.values():
+			if other!=npc and npc.position.distance_squared_to(other.position)<140*140:neighbors.append(other)
+		if population_active:npc.update_brain(step,neighbors,hostiles)
 		var nearby:bool=npc.position.distance_squared_to(player.position)<1800*1800
 		npc.set_physics_process(nearby)
 		if not nearby and population_active:npc.advance_offscreen(step)

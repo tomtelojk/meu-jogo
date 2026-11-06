@@ -21,6 +21,8 @@ static var _segments: Array[PackedVector2Array] = []
 static var _bridges: Array[Rect2] = []
 static var _bridge_revision := -1
 static var _effective_bridges: Array[Rect2] = []
+static var _road_revision:=-1
+static var _road_grid:Dictionary={}
 const SEEDS: Array[Dictionary] = [
 	{"id": "flores", "name": "Semente da alegria", "place": "Clareira das flores", "position": Vector2(1152, 1664)},
 	{"id": "outono", "name": "Semente da memória", "place": "Bosque dourado", "position": Vector2(800, 960)},
@@ -42,8 +44,18 @@ static func paths()->Array[PackedVector2Array]:
 static func path_distance(point:Vector2)->float:
 	var painted:=MapDocument.terrain_at(point)
 	if not painted.is_empty():return 0.0 if painted in ["dirt","stone","moss"] else INF
+	if _road_revision!=MapDocument.revision:
+		_road_revision=MapDocument.revision;_road_grid.clear()
+		for path in paths():
+			for i in range(1,path.size()):
+				var bounds:=Rect2(path[i-1].min(path[i]),(path[i]-path[i-1]).abs()).grow(256)
+				for y in range(floori(bounds.position.y/512),floori(bounds.end.y/512)+1):
+					for x in range(floori(bounds.position.x/512),floori(bounds.end.x/512)+1):
+						var key:=Vector2i(x,y)
+						if not _road_grid.has(key):_road_grid[key]=[]
+						_road_grid[key].append(PackedVector2Array([path[i-1],path[i]]))
 	var best:=INF
-	for path in paths():
+	for path:PackedVector2Array in _road_grid.get(Vector2i(floori(point.x/512),floori(point.y/512)),[]):
 		for i in range(1,path.size()):
 			var start:=path[i-1]
 			var end:=path[i]
@@ -54,9 +66,11 @@ static func path_distance(point:Vector2)->float:
 	return best
 
 static func river_x(y:float)->float:
+	if MapDocument.current.get("generation",2)==2:return NaturalLandscape.river_center(y)
 	return 8000+sin(y/800.0)*320+sin(y/1900.0)*160
 
 static func river_width(_y:float)->float:
+	if MapDocument.current.get("generation",2)==2:return NaturalLandscape.river_width(_y)
 	return RIVER_HALF_WIDTH
 
 static func _bridge_at_height(y:float)->Rect2:
@@ -65,10 +79,8 @@ static func _bridge_at_height(y:float)->Rect2:
 
 static func bridges()->Array[Rect2]:
 	if _bridge_revision==MapDocument.revision:return _effective_bridges
-	if _bridges.is_empty():
-		_bridges.append(BRIDGE_RECT)
-		for y in [4800.0,8192.0,11008.0]:
-			_bridges.append(_bridge_at_height(y))
+	_bridges.clear()
+	for y in [1280.0,4800.0,8192.0,11008.0]:_bridges.append(_bridge_at_height(y))
 	var result:Array[Rect2]=[]
 	if MapDocument.base_enabled():result.append_array(_bridges)
 	for obj in MapDocument.current.objects:
@@ -151,6 +163,12 @@ static func can_stand(point:Vector2,data:Dictionary,radius:float=10.0,allow_swim
 
 static func biome(point:Vector2)->String:
 	if not MapDocument.base_enabled():return "meadow"
+	if MapDocument.current.get("generation",2)==2:
+		var weights:=NaturalLandscape.weights(point)
+		if weights.r>0.55:return "mountains"
+		if weights.g>0.5:return "coast"
+		if NaturalLandscape.field(point+Vector2(1200,4300))>0.56:return "woodland"
+		return "plains" if point.x<river_x(point.y) else "meadow"
 	if point.y<2304 and point.x>3000:return "mountains"
 	if point.y>11264:return "coast"
 	if (point-Vector2(2400,10240)).length()<1900 or (point-Vector2(13000,10500)).length()<1500 or point.x<2700 and point.y<2600:return "woodland"
@@ -185,6 +203,9 @@ static func generate_chunk(coord:Vector2i,data:Dictionary)->Dictionary:
 			var town:=KingdomData.nearest_town(point)
 			var near_town:bool=point.distance_to(town.position)<1400
 			var chance:=0.32 if terrain=="woodland" else (0.025 if near_town else 0.075)
+			if MapDocument.current.get("generation",2)==2:
+				var patch:=smoothstep(0.42,0.68,NaturalLandscape.field(point+Vector2(1200,4300),2.3))
+				chance=(0.015+patch*0.38)*(0.18 if near_town else 1.0)
 			var id:="%d_%d_%d"%[coord.x,coord.y,y*8+x]
 			if terrain!="mountains" and terrain!="coast" and rng.randf()<chance:
 				result.trees.append({"id":"wood_"+id,"position":point,"radius":12.0,"size":115.0+rng.randf()*40,"kind":"wood","active":true})
@@ -195,7 +216,7 @@ static func generate_chunk(coord:Vector2i,data:Dictionary)->Dictionary:
 		for kind in ["wood","stone"]:
 			var center:Vector2=KingdomData.point(town.id+"_"+kind)
 			for i in 20:
-				var point:=center+Vector2((i%5-2)*56,(i/5-1)*56)
+				var point:Vector2=NaturalLandscape.grove(center,kind)[i] if MapDocument.current.get("generation",2)==2 else center+Vector2((i%5-2)*56,(i/5-1)*56)
 				if not rect.has_point(point) or not can_stand(point,terrain_data,24):continue
 				var resource:={"id":kind+"_"+town.id+"_"+str(i),"position":point,"radius":12.0 if kind=="wood" else 14.0,"size":130.0 if kind=="wood" else 38.0,"kind":kind,"active":true}
 				result["trees" if kind=="wood" else "rocks"].append(resource)

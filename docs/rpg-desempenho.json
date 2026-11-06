@@ -1,35 +1,35 @@
 {
-  "buildings": 135,
+  "buildings": 126,
   "loaded_regions": 25,
   "npcs": 44,
   "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
   "results": [
     {
-      "cpu_ms": 95.357,
-      "draw_calls": 60,
-      "fps": 31.7218627077782,
-      "median_ms": 31.524,
-      "p95_ms": 44.223,
+      "cpu_ms": 139.861,
+      "draw_calls": 75,
+      "fps": 29.9778164158523,
+      "median_ms": 33.358,
+      "p95_ms": 41.264,
       "scene": "capital"
     },
     {
-      "cpu_ms": 81.984,
-      "draw_calls": 61,
-      "fps": 32.3603650249175,
-      "median_ms": 30.902,
-      "p95_ms": 39.432,
+      "cpu_ms": 54.248,
+      "draw_calls": 76,
+      "fps": 32.0338277220745,
+      "median_ms": 31.217,
+      "p95_ms": 41.995,
       "scene": "ferraria"
     },
     {
-      "cpu_ms": 184.058,
-      "draw_calls": 71,
-      "fps": 33.2093517534538,
-      "median_ms": 30.112,
-      "p95_ms": 33.717,
+      "cpu_ms": 42.31,
+      "draw_calls": 83,
+      "fps": 30.1613632936209,
+      "median_ms": 33.155,
+      "p95_ms": 42.93,
       "scene": "ponte"
     }
   ],
-  "scale_3d": 0.800000011920929,
+  "scale_3d": 0.649999976158142,
   "window_size": [
     1280,
     800

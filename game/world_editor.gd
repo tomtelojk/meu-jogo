@@ -66,7 +66,10 @@ func close() -> void:
 func _collect_base_npcs() -> void:
 	base_npcs.clear()
 	for profile in KingdomData.PEOPLE:
-		var position: Vector2=KingdomData.point(profile.routine[1].points[0])
+		var work_entry:Dictionary=profile.routine[1]
+		for entry in profile.routine:
+			if entry.get("work",false) or entry.get("loop",false):work_entry=entry;break
+		var position: Vector2=KingdomData.point(work_entry.points[0])
 		var home: Vector2=KingdomData.point(profile.routine[0].points[0])
 		var social: Vector2=KingdomData.point(profile.routine[2].points[0])
 		base_npcs[profile.id]={"id":profile.id,"kind":"npc","x":position.x,"y":position.y,"name":profile.name,"appearance":NPCAppearance.identity(profile),"realm":profile.realm,"style":0,"size":130,"home_x":home.x,"home_y":home.y,"work_x":position.x,"work_y":position.y,"social_x":social.x,"social_y":social.y}
@@ -77,7 +80,7 @@ func _button(text_value: String, callback: Callable) -> Button:
 	return button
 
 func _build_ui() -> void:
-	root_control=Control.new();root_control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(root_control)
+	root_control=Control.new();root_control.theme=game.hud.root.theme;root_control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);add_child(root_control)
 	var background:=ColorRect.new();background.color=Color("18282c");background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);root_control.add_child(background)
 	var margin:=MarginContainer.new();margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for edge in ["left","top","right","bottom"]:margin.add_theme_constant_override("margin_"+edge,12)
@@ -236,9 +239,9 @@ func valid_at(point:Vector2,ignore_id:String="") -> bool:
 func _buildings_in_draft() -> Array[Dictionary]:
 	var result:Array[Dictionary]=[]
 	if draft.base=="reinos":
-		for i in KingdomData.BUILDINGS.size():
+		for i in KingdomData.base_buildings(int(draft.get("generation",2))).size():
 			var id:="base_building_"+str(i)
-			if not draft.removed.has(id):result.append(KingdomData.BUILDINGS[i].merged({"id":id}))
+			if not draft.removed.has(id):result.append(KingdomData.base_buildings(int(draft.get("generation",2)))[i].merged({"id":id}))
 	for obj in draft.objects:
 		if obj.kind in MapDocument.BUILDINGS:result.append({"id":obj.id,"tile":Vector2(obj.x,obj.y)/64,"size":MapDocument.building_size(obj.kind)})
 	return result

@@ -1,10 +1,12 @@
 shader_type spatial;
 render_mode unshaded, cull_disabled;
+#include "res://game/shaders/pixel_lighting.gdshaderinc"
 uniform vec3 day_color : source_color = vec3(1.0);
 uniform float effects = 1.0;
 varying vec3 local_pos;
 varying vec3 local_normal;
 void vertex() {
+ pixel_world=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;
  local_pos=VERTEX;
  local_normal=NORMAL;
 }
@@ -30,6 +32,6 @@ void fragment() {
   color*=1.0-0.20*(1.0-smoothstep(0.02,0.10,fract(roof.y)))*effects;
  }
  float light=0.76+0.24*max(0.0,dot(local_normal,vec3(-0.441,0.735,0.515)));
- ALBEDO=color*day_color*light;
- if(UV2.x>3.5) ALBEDO=mix(ALBEDO,color*vec3(1.0,0.84,0.56),clamp(1.0-day_color.r,0.0,0.8)*effects);
+ ALBEDO=color*(day_color*light+pixel_local_light(pixel_world));
+ if(UV2.x>3.5) ALBEDO=mix(ALBEDO,color*vec3(1.0,0.73,0.36),clamp(1.0-day_color.r,0.0,0.8)*effects);
 }

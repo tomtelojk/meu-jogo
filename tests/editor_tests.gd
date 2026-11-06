@@ -163,7 +163,7 @@ func run()->void:
 		game.hybrid.set_light_graphics(false);game.hybrid.set_shaders(true)
 		verify(game.hybrid.grade_rect.visible and is_equal_approx(root.scaling_3d_scale,1.0),"modo nítido inclui correção de cor em resolução integral")
 		game.light_graphics=true;game.hybrid.set_light_graphics(true)
-		verify(not game.hybrid.grade_rect.visible and is_equal_approx(root.scaling_3d_scale,0.8),"modo leve preserva água e materiais sem o custo da correção em tela cheia")
+		verify(not game.hybrid.grade_rect.visible and is_equal_approx(root.scaling_3d_scale,0.65),"modo leve preserva água e materiais sem o custo da correção em tela cheia")
 	game.close_dialog()
 	game.shaders_enabled=true
 	game.apply_map(MapDocument.original())

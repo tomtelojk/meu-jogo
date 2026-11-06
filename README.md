@@ -4,7 +4,15 @@ Um **RPG de mundo aberto 2.5D para Windows e Linux**. Personagens em pixel art v
 
 [Baixar o jogo pronto](downloads/README.md)
 
-![Aurélia](docs/rpg-aurelia.png)
+![Entre Reinos em pixel art](docs/rpg-inicio.png)
+
+O continente agora combina ruas curvas, lotes irregulares, bosques em grupos e transições suaves entre campos, pedreiras e costa. O rio varia de largura e direção. A geração usa uma semente fixa para manter o mundo consistente ao salvar e carregar.
+
+![Aurélia e a nova interface](docs/rpg-hud.png)
+
+Personagens em pixel art continuam em um cenário 3D com câmera inclinada: **2.5D**. O sol acompanha o horário, a distância ganha neblina e, à noite, postes, janelas e a lanterna criam pontos de luz. Título, diálogos, inventário, mapa e hotbar usam uma fonte bitmap própria e molduras no estilo de RPG de PC.
+
+![Noite, neblina e lanterna](docs/rpg-noite.png)
 
 ## Crie seu próprio mapa
 
@@ -25,7 +33,7 @@ Os NPCs agora misturam **nove bases visuais diferentes**, incluindo os oito pers
 - **16.000 × 12.800 unidades**, 250 × 200 tiles: cinco vezes maior em cada eixo e **25 vezes a área** do mapa anterior.
 - Dois reinos com capitais maiores: **Aurélia e Valverde**.
 - Quatro vilarejos: **Pedra Alta, Ponte Velha, Porto Claro e Cedro**.
-- **135 construções** nas capitais e povoados, com ruas, ferrarias, estalagens, castelos e fazendas.
+- **126 construções** nas capitais e povoados, com ruas, ferrarias, estalagens, castelos e fazendas.
 - **44 NPCs**, com trabalho, comércio, encontros e descanso em horários próprios.
 - Planícies, campos, pedreiras do norte, costa, rio com quatro pontes e pequenos bosques regionais.
 
@@ -72,13 +80,15 @@ Cada NPC tem carteira e equipamento próprios. Moradores recebem salário e algu
 
 Se o arvoredo ou a pedreira se esgotarem, o morador pode comprar material na loja. Converse e escolha **“Suas compras e sua casa”** para ver o dinheiro, as ferramentas, o objetivo e a etapa da construção. Os objetivos continuam sendo simulados longe da câmera; NPCs próximos usam a física e as animações de caminhada.
 
+Os horários variam por morador e profissão. Lenhadores e mineiros alternam pontos de trabalho, vendem produção e compram ferramentas; o guarda patrulha a ponte; a comerciante viaja entre os reinos. Há pausas para refeições, encontros e retorno para casa. Os moradores evitam se amontoar, procuram desvios, tentam novamente quando uma passagem está bloqueada e fogem de javalis próximos. Fome, cansaço e atividades também são salvos.
+
 ![Casa de um NPC](docs/rpg-casa-npc.png)
 
 ## Animais, combate e rio
 
 Vacas e galinhas vivem nas fazendas e fornecem provisões ao ajudar com **E**. A produção tem intervalo persistente, inclusive ao trocar de região ou carregar o save. Cervos, coelhos e javalis aparecem nos campos; animais tímidos fogem e javalis podem perseguir e atacar.
 
-**Espaço ou clique esquerdo** ataca animais próximos. A espada aumenta o dano. Caça entrega carne para venda e experiência. Provisões restauram vida; estalagens e sua casa oferecem descanso. Ao perder a vida, o personagem é socorrido, mantém o equipamento e perde cinco moedas.
+**Espaço** ataca animais próximos; com a espada selecionada, o clique esquerdo também ataca e causa mais dano. Caça entrega carne para venda e experiência. Provisões restauram vida; estalagens e sua casa oferecem descanso. Ao perder a vida, o personagem é socorrido, mantém o equipamento e perde cinco moedas.
 
 É possível nadar de uma margem à outra e passar sob as pontes. Quem caminha usa rampas e corrimãos com colisão. Os moradores continuam seguindo rotas terrestres.
 
@@ -91,7 +101,11 @@ Vacas e galinhas vivem nas fazendas e fornecem provisões ao ajudar com **E**. A
 | WASD / setas | Mover e nadar |
 | Shift | Correr / acelerar na água |
 | E | Conversar, negociar, coletar e interagir |
-| Espaço / clique esquerdo | Atacar |
+| Espaço | Atacar |
+| 1–4 | Equipar espada, machado, picareta ou martelo |
+| 5 / 6 / 7 / 8 | Comer / mapa / diário / ligar ou desligar lanterna |
+| Roda do mouse | Selecionar um espaço da hotbar |
+| Clique esquerdo | Usar o item selecionado; clicar na hotbar seleciona/ativa o espaço |
 | I | Inventário e provisões |
 | J | Objetivos e registros |
 | B | Escolher terreno / consultar sua obra |
@@ -107,7 +121,7 @@ O mundo mantém **no máximo 25 regiões próximas de 512 × 512**. Terreno, ár
 
 Árvores e rochas usam `MultiMesh`; animais usam uma instância de partes geométricas por modelo. O vento atua nos vértices, sombras de árvores ficam no terreno e personagens distantes deixam de executar física a cada quadro. A navegação considera cidades, rio, pontes e recursos das regiões ativas.
 
-O modo **leve** usa 80% da resolução por eixo no cenário 3D; a interface fica na resolução integral. Em **Esc → Gráficos**, alterne para **nítido**. Em **Esc → Shaders**, ligue ou desligue os efeitos adicionais. As preferências são salvas.
+O modo **leve** usa 65% da resolução por eixo no cenário 3D; a interface fica na resolução integral. Isso reduz o custo da neblina e das luzes e mantém o aspecto pixelizado. Em **Esc → Gráficos**, alterne para **nítido**, com resolução integral e sombras do sol. Em **Esc → Shaders**, ligue ou desligue os efeitos adicionais e a neblina. As preferências são salvas.
 
 O save versão 2 preserva posição, saúde, inventário, ferramentas, dinheiro, XP, exploração, recursos esgotados, casas, contas e equipamentos dos NPCs, produção das fazendas, encomendas e relógio. Saves antigos migram para a entrada de Aurélia e preservam aparência e a atividade antiga. O diretório de usuário `EntreFolhas` foi mantido para localizar esses dados.
 
@@ -123,6 +137,8 @@ Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambien
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/hybrid_tests.gd -- --test --hybrid
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/editor_tests.gd -- --test
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/editor_tests.gd -- --test --hybrid
+./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/world_life_tests.gd -- --test
+./scripts/godot.sh --audio-driver Dummy --script res://tests/world_life_tests.gd -- --test --hybrid
 ```
 
 A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.
