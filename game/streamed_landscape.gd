@@ -1,0 +1,248 @@
+class_name StreamedLandscape
+extends Node3D
+
+var hybrid:HybridWorld
+var game:ForestGame
+var regions:Dictionary={}
+var resource_instances:Dictionary={}
+var ground_shadows:Dictionary={}
+var materials:Dictionary={}
+var house_models:Dictionary={}
+var house_front_material:ShaderMaterial
+var house_roof_material:StandardMaterial3D
+
+func setup(renderer:HybridWorld)->void:
+	hybrid=renderer
+	game=renderer.game
+	name="StreamedWorld"
+	game.world.chunk_loaded.connect(load_region)
+	game.world.chunk_unloaded.connect(unload_region)
+	game.world.resource_removed.connect(remove_resource)
+	game.world.house_updated.connect(update_house)
+	for coord in game.world.chunks:load_region(coord,game.world.chunks[coord])
+	for id in game.rpg.houses:update_house(id)
+
+func load_region(coord:Vector2i,content:Dictionary)->void:
+	var parent:=Node3D.new()
+	parent.name="Chunk_%d_%d"%[coord.x,coord.y]
+	add_child(parent)
+	regions[coord]=parent
+	_ground(parent,content)
+	_trees(parent,content)
+	_rocks(parent,content)
+	for animal in content.animal_entries:
+		var model:=AnimalVisual.new()
+		model.setup(animal)
+		parent.add_child(model)
+
+func unload_region(coord:Vector2i)->void:
+	if regions.has(coord):regions[coord].queue_free();regions.erase(coord)
+	for id in resource_instances.keys():
+		if resource_instances[id].coord==coord:resource_instances.erase(id)
+	ground_shadows.erase(coord)
+
+func _ground(parent:Node3D,content:Dictionary)->void:
+	var view:=SubViewport.new()
+	view.name="GroundTexture"
+	view.size=Vector2i.ONE*int(WorldData.CHUNK)
+	view.disable_3d=true
+	view.world_2d=World2D.new()
+	view.render_target_update_mode=SubViewport.UPDATE_ONCE
+	parent.add_child(view)
+	var region:Rect2=content.rect
+	var terrain:=WorldData.biome(region.get_center())
+	var row:=3 if terrain=="mountains" else (2 if terrain=="coast" else 0)
+	var tiles:=TileMapLayer.new()
+	tiles.tile_set=GroundAtlas.biome_tiles(row)
+	tiles.scale=Vector2.ONE*(64.0/GroundAtlas.TILE_PIXELS)
+	tiles.modulate=WorldData.biome_color(region.get_center()) if row==0 else Color.WHITE
+	for y in 8:
+		for x in 8:tiles.set_cell(Vector2i(x,y),GroundAtlas.grass_variant(content.coord.x*8+x,content.coord.y*8+y),Vector2i.ZERO)
+	view.add_child(tiles)
+	var roads:=ForestTerrain.new()
+	roads.position=-region.position
+	roads.build_region(region)
+	view.add_child(roads)
+	var shadows:Dictionary={"view":view,"nodes":{}}
+	for tree in content.tree_entries:
+		var shape:=Polygon2D.new()
+		var points:=PackedVector2Array()
+		for i in 12:points.append(tree.body.position-region.position+Vector2(8+cos(i*TAU/12)*tree.size*0.28,6+sin(i*TAU/12)*tree.size*0.09))
+		shape.polygon=points
+		shape.color=Color(0.08,0.14,0.09,0.22)
+		view.add_child(shape)
+		shadows.nodes[tree.resource.id]=shape
+	ground_shadows[content.coord]=shadows
+	var plane:=PlaneMesh.new()
+	plane.size=Vector2.ONE*WorldData.CHUNK/64
+	var mat:=StandardMaterial3D.new()
+	mat.albedo_texture=view.get_texture()
+	mat.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	mat.roughness=1.0
+	var node:=MeshInstance3D.new()
+	node.mesh=plane
+	node.position=Vector3(region.get_center().x/64,-0.025,region.get_center().y/64)
+	node.material_override=mat
+	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(node)
+
+func _trees(parent:Node3D,content:Dictionary)->void:
+	var groups:Dictionary={}
+	for entry in content.tree_entries:
+		var row:int=entry.sprite.get_meta("atlas_row")
+		if not groups.has(row):groups[row]=[]
+		groups[row].append(entry)
+	for row in groups:
+		var entries:Array=groups[row]
+		if not materials.has(row):
+			var texture:=hybrid._bake(entries[0].sprite.sprite_frames.get_frame_texture("default",0))
+			var material:=hybrid._forest_material(texture)
+			material.set_shader_parameter("day_color",Vector3(game.world.daylight.color.r,game.world.daylight.color.g,game.world.daylight.color.b))
+			materials[row]=material
+			hybrid.foliage_materials.append(material)
+		var quad:=QuadMesh.new()
+		quad.size=TreeAtlas.FRAME_SIZE/64
+		quad.center_offset=Vector3(0,(TreeAtlas.ANCHOR.y-TreeAtlas.FRAME_SIZE.y/2)/64,0)
+		quad.subdivide_depth=6
+		var multi:=MultiMesh.new()
+		multi.transform_format=MultiMesh.TRANSFORM_3D
+		multi.mesh=quad
+		multi.instance_count=entries.size()
+		for i in entries.size():
+			var entry:Dictionary=entries[i]
+			var at:=Vector3(entry.body.position.x/64,-entry.sprite.position.y/64,entry.body.position.y/64)
+			multi.set_instance_transform(i,Transform3D(Basis.from_scale(Vector3.ONE*entry.sprite.scale.x),at))
+			resource_instances[entry.resource.id]={"multi":multi,"index":i,"coord":content.coord}
+		var origin:Vector2=content.rect.position/64
+		multi.custom_aabb=AABB(Vector3(origin.x-2,-0.5,origin.y-4),Vector3(12,6,13))
+		var node:=MultiMeshInstance3D.new()
+		node.multimesh=multi
+		node.material_override=materials[row]
+		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		parent.add_child(node)
+
+func _rocks(parent:Node3D,content:Dictionary)->void:
+	if content.rock_entries.is_empty():return
+	var multi:=MultiMesh.new()
+	multi.transform_format=MultiMesh.TRANSFORM_3D
+	multi.use_colors=true
+	var sphere:=SphereMesh.new()
+	sphere.radial_segments=8
+	sphere.rings=4
+	multi.mesh=sphere
+	multi.instance_count=content.rock_entries.size()
+	for i in content.rock_entries.size():
+		var entry:Dictionary=content.rock_entries[i]
+		var scale:=Vector3(entry.size/50,entry.size/70,entry.size/52)
+		multi.set_instance_transform(i,Transform3D(Basis.from_scale(scale),Vector3(entry.body.position.x/64,scale.y*0.5,entry.body.position.y/64)))
+		multi.set_instance_color(i,Color("92968d").darkened((i%3)*0.08))
+		resource_instances[entry.resource.id]={"multi":multi,"index":i,"coord":content.coord}
+	var node:=MultiMeshInstance3D.new()
+	node.multimesh=multi
+	var mat:=StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo=true
+	mat.roughness=1
+	node.material_override=mat
+	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(node)
+
+func remove_resource(id:String)->void:
+	if not resource_instances.has(id):return
+	var entry:Dictionary=resource_instances[id]
+	entry.multi.set_instance_transform(entry.index,Transform3D(Basis.from_scale(Vector3.ZERO),Vector3.ZERO))
+	if ground_shadows.has(entry.coord):
+		var shadows:Dictionary=ground_shadows[entry.coord]
+		if shadows.nodes.has(id):
+			shadows.nodes[id].hide()
+			shadows.nodes[id].queue_free()
+			shadows.nodes.erase(id)
+			shadows.view.render_target_update_mode=SubViewport.UPDATE_ONCE
+
+func update_house(id:String)->void:
+	if house_models.has(id):house_models[id].queue_free();house_models.erase(id)
+	if not game.rpg.houses.has(id):return
+	var house:Dictionary=game.rpg.houses[id]
+	var node:=Node3D.new()
+	node.name=id
+	add_child(node)
+	house_models[id]=node
+	var parts:Array[Dictionary]=[]
+	var x:float=house.x/64
+	var z:float=house.y/64-1
+	if house.stage==0:
+		for side in [-1,1]:
+			for front in [-1,1]:parts.append({"at":Vector3(x+side*1.5,0.3,z+front),"size":Vector3(0.08,0.6,0.08),"color":Color("a69465")})
+	else:
+		parts.append({"at":Vector3(x,0.08,z),"size":Vector3(3,0.16,2),"color":Color("818278")})
+		if house.stage>=1:
+			for side in [-1,1]:
+				for front in [-1,1]:parts.append({"at":Vector3(x+side*1.42,0.8,z+front*0.92),"size":Vector3(0.13,1.6,0.13),"color":Color("7c5938")})
+		if house.stage>=2:
+			parts.append({"at":Vector3(x,0.85,z-0.92),"size":Vector3(3,1.5,0.16),"color":Color("bdad8a")})
+			for side in [-1,1]:parts.append({"at":Vector3(x+side*1.42,0.85,z),"size":Vector3(0.16,1.5,2),"color":Color("b39a72")})
+			parts.append({"at":Vector3(x,0.85,z+0.93),"size":Vector3(3,1.5,0.16),"color":Color("c3b38d")})
+			parts.append({"at":Vector3(x,0.65,z+1.025),"size":Vector3(0.6,1.2,0.02),"color":Color("6d4b32")})
+	if not parts.is_empty():
+		var multi:=MultiMesh.new()
+		multi.transform_format=MultiMesh.TRANSFORM_3D
+		multi.use_colors=true
+		multi.mesh=BoxMesh.new()
+		multi.instance_count=parts.size()
+		for i in parts.size():
+			multi.set_instance_transform(i,Transform3D(Basis.from_scale(parts[i].size),parts[i].at))
+			multi.set_instance_color(i,parts[i].color)
+		var model:=MultiMeshInstance3D.new()
+		model.multimesh=multi
+		var mat:=StandardMaterial3D.new()
+		mat.vertex_color_use_as_albedo=true
+		mat.roughness=1
+		model.material_override=mat
+		model.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		node.add_child(model)
+	if house.stage>=3:
+		var roof:=MeshInstance3D.new()
+		var prism:=PrismMesh.new()
+		prism.size=Vector3(3.4,1.15,2.4)
+		roof.mesh=prism
+		roof.position=Vector3(x,2.2,z)
+		var material:=StandardMaterial3D.new()
+		if house_roof_material==null:
+			var texture:Texture2D=load("res://assets/tomate/villages.png")
+			var region:Rect2=load("res://game/settlements.gd").REGIONS[2]
+			var atlas:=AtlasTexture.new()
+			atlas.atlas=texture
+			atlas.region=Rect2(region.position+region.size*Vector2(0.3,0.2),region.size*Vector2(0.4,0.12))
+			house_roof_material=StandardMaterial3D.new()
+			house_roof_material.albedo_texture=hybrid._bake(atlas)
+			house_roof_material.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
+			house_roof_material.uv1_scale=Vector3(4,4,1)
+			house_roof_material.roughness=1
+		roof.material_override=house_roof_material
+		node.add_child(roof)
+	if house.stage>=2:
+		var texture:Texture2D=load("res://assets/tomate/villages.png")
+		var region:Rect2=load("res://game/settlements.gd").REGIONS[2]
+		var atlas:=AtlasTexture.new()
+		atlas.atlas=texture
+		atlas.region=Rect2(region.position+region.size*Vector2(0.12,0.55),region.size*Vector2(0.76,0.45))
+		var face:=Sprite3D.new()
+		face.texture=hybrid._bake(atlas)
+		face.centered=false
+		face.offset=Vector2(-face.texture.get_width()/2.0,0)
+		face.pixel_size=3.0/face.texture.get_width()
+		face.position=Vector3(x,0.02,z+1.035)
+		face.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		if house_front_material==null:
+			house_front_material=hybrid._material(face.texture)
+			house_front_material.set_shader_parameter("face_camera",false)
+			house_front_material.set_shader_parameter("day_color",Vector3(game.world.daylight.color.r,game.world.daylight.color.g,game.world.daylight.color.b))
+			hybrid.facade_materials.append(house_front_material)
+		face.material_override=house_front_material
+		node.add_child(face)
+	var label:=Label3D.new()
+	label.text=("Seu lar" if house.stage==3 else "Sua obra") if house.owner=="player" else "Casa de "+KingdomData.person(house.owner).get("name","morador")
+	label.position=Vector3(x,3.25 if house.stage>=2 else 0.7,z)
+	label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+	label.pixel_size=0.005
+	label.font_size=28
+	node.add_child(label)

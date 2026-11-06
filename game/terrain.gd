@@ -99,3 +99,41 @@ func _add_polygon(layer: Node2D, outline: PackedVector2Array, dirt: Texture2D = 
 		patch.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		patch.use_parent_material = true
 	layer.add_child(patch)
+
+func build_region(region:Rect2)->void:
+	# Draw complete world-coordinate outlines and let the viewport clip them.
+	# Cutting the outlines would introduce false borders between chunks.
+	var borders:=Node2D.new()
+	add_child(borders)
+	var surface:=Node2D.new()
+	add_child(surface)
+	var material:=ShaderMaterial.new()
+	var shader:=Shader.new()
+	shader.code=DIRT_SHADER
+	material.shader=shader
+	surface.material=material
+	var dirt:=GroundAtlas.tile(1,0)
+	for path in WorldData.paths():
+		var bounds:=Rect2(path[0],Vector2.ZERO)
+		for point in path:bounds=bounds.expand(point)
+		if not bounds.grow(ROAD_HALF_WIDTH+BORDER_WIDTH).intersects(region):continue
+		for outline in Geometry2D.offset_polyline(path,ROAD_HALF_WIDTH,Geometry2D.JOIN_ROUND,Geometry2D.END_ROUND):
+			_add_edge(borders,outline)
+			_add_polygon(surface,outline,dirt)
+	for town in KingdomData.SETTLEMENTS:
+		var center:Vector2=town.position
+		if region.grow(140).has_point(center):
+			var points:=PackedVector2Array()
+			for i in 32:
+				points.append(center+Vector2(cos(i*TAU/32),sin(i*TAU/32))*Vector2(140,100))
+			_add_polygon(surface,points,GroundAtlas.tile(3 if town.realm=="aurelia" else 4,2))
+		var farm:=Rect2(center+Vector2(1472,640),Vector2(384,384))
+		if region.intersects(farm):
+			var points:=PackedVector2Array([farm.position,Vector2(farm.end.x,farm.position.y),farm.end,Vector2(farm.position.x,farm.end.y)])
+			_add_polygon(surface,points,GroundAtlas.tile(1,3))
+			for i in 12:
+				var line:=Line2D.new()
+				line.points=PackedVector2Array([farm.position+Vector2(16+i*30,16),Vector2(farm.position.x+16+i*30,farm.end.y-16)])
+				line.width=7
+				line.default_color=Color("a1ae50") if i%2==0 else Color("7d9c44")
+				surface.add_child(line)

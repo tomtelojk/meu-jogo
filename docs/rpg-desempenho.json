@@ -1,0 +1,41 @@
+{
+  "buildings": 135,
+  "loaded_regions": 25,
+  "npcs": 44,
+  "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "results": [
+    {
+      "cpu_ms": 59.487,
+      "draw_calls": 78,
+      "fps": 30.2480338777979,
+      "median_ms": 33.06,
+      "p95_ms": 50.715,
+      "scene": "capital"
+    },
+    {
+      "cpu_ms": 84.531,
+      "draw_calls": 80,
+      "fps": 29.6841605319402,
+      "median_ms": 33.688,
+      "p95_ms": 54.958,
+      "scene": "ferraria"
+    },
+    {
+      "cpu_ms": 115.659,
+      "draw_calls": 73,
+      "fps": 29.8445101023667,
+      "median_ms": 33.507,
+      "p95_ms": 41.118,
+      "scene": "ponte"
+    }
+  ],
+  "scale_3d": 0.800000011920929,
+  "window_size": [
+    1280,
+    800
+  ],
+  "world_size": [
+    16000.0,
+    12800.0
+  ]
+}

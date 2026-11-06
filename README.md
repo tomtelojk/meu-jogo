@@ -1,177 +1,132 @@
-# Entre Folhas · Godot 4
+# Entre Reinos · Godot 4
 
-Os pacotes prontos para jogar no Linux e no Windows estão em [downloads/README.md](downloads/README.md).
+Um **RPG de mundo aberto 2.5D para Windows e Linux**. Personagens em pixel art vivem em cidades, vilarejos e campos com cenário 3D. Explore, negocie, compre ferramentas, enfrente animais e construa sua casa.
 
-Uma pequena aventura de exploração **2.5D**, com chão, casas e ponte em **3D** e personagens e árvores em **sprites 2D**, implementada em **Godot 4.6 / GDScript**. Encontre cinco sementes e leve uma nova primavera à árvore-mãe.
+[Baixar o jogo pronto](downloads/README.md)
 
-![Cenário híbrido no Godot](docs/hibrido-vila.png)
+![Aurélia](docs/rpg-aurelia.png)
 
-A câmera ortográfica inclinada acompanha o jogador. As construções têm volume, os sprites ficam voltados para a câmera, as copas se movem suavemente e as árvores próximas ficam transparentes quando cobrem o personagem. Os sprites fornecidos em `tomate.zip` continuam em uso, incluindo as fachadas das casas. O rio usa uma superfície 3D com textura em movimento.
+## O novo mundo
 
-A lógica de colisões e rotas continua em `CharacterBody2D`/`AStarGrid2D`, convertida do plano XY para o solo XZ na apresentação. Isso conserva as rotinas, os diálogos, as missões e os salvamentos anteriores. A altura acompanha as rampas da ponte; não há salto manual.
+- **16.000 × 12.800 unidades**, 250 × 200 tiles: cinco vezes maior em cada eixo e **25 vezes a área** do mapa anterior.
+- Dois reinos com capitais maiores: **Aurélia e Valverde**.
+- Quatro vilarejos: **Pedra Alta, Ponte Velha, Porto Claro e Cedro**.
+- **135 construções** nas capitais e povoados, com ruas, ferrarias, estalagens, castelos e fazendas.
+- **44 NPCs**, com trabalho, comércio, encontros e descanso em horários próprios.
+- Planícies, campos, pedreiras do norte, costa, rio com quatro pontes e pequenos bosques regionais.
 
-## Desempenho, colisões e natação
+A proposta principal passou a ser criar sua vida entre os reinos. As antigas sementes permanecem como uma atividade opcional do vale noroeste.
 
-A floresta usa `MultiMesh` em pequenos grupos espaciais. O vento e o recorte das copas são calculados na GPU, com uma passagem de desenho e sombras fixas no chão. A ponte também reúne suas peças em um único grupo. A simulação 2D deixa de atualizar a transparência das árvores quando a apresentação 3D está ativa.
+![Mapa do continente](docs/rpg-mapa.png)
 
-O modo **leve** é o padrão: o cenário 3D é renderizado a 80% da resolução por eixo e a interface mantém a resolução integral. Em **Esc → Gráficos**, alterne para **nítido** para usar a resolução integral também no cenário. A preferência é salva.
+## Ferramentas, comércio e experiência
 
-As casas têm paredes sólidas no mesmo perímetro usado pelas malhas, com cantos compatíveis com o corpo circular e deslizamento pela parede. A ponte tem rampas nas duas pontas, tablado elevado e corrimãos sólidos para quem caminha. Nadadores passam por baixo sem subir automaticamente no tablado.
+Comece com 100 moedas e duas provisões. As ferrarias vendem machado (25), picareta (30), martelo (15), espada (35) e provisões (5).
 
-Entre no rio pelas margens usando **WASD/setas** para nadar; **Shift** acelera as braçadas. Há aceleração gradual, correnteza suave, corpo parcialmente submerso e ondulação na água. É possível sair pelas duas margens e continuar nadando sem fôlego para a aceleração. Pausa, diálogos e salvamento também respeitam a natação. Os NPCs continuam atravessando pela ponte.
+Use **E** perto de árvores ou rochas: o machado entrega cinco unidades de madeira; a picareta entrega quatro de pedra. Cada recurso só pode ser recolhido uma vez, desaparece da cena e libera sua colisão. O estado persiste ao sair e retornar à região.
 
-![Natação no rio](docs/natacao.png)
+Venda materiais ou entregue encomendas de 15 madeira e oito pedra por 80 moedas e 40 XP, uma vez por dia em cada povoado. Explorar, recolher, construir e caçar dão experiência; o nível também aumenta o dano em combate.
 
-A medição reproduzível está em [docs/desempenho.md](docs/desempenho.md).
+![Loja](docs/rpg-loja.png)
 
-## Abrir e jogar
+## Sua casa
 
-1. Abra `project.godot` no Godot 4.6 ou superior (validado no 4.6.3).
-2. Aguarde a importação dos sprites.
-3. Pressione **F5**, ou abra `scenes/main.tscn` e pressione **F6**.
+Pressione **B** para mostrar a prévia do terreno. A cor indica se o local está livre. Clique para reservar por 20 moedas; botão direito ou Esc cancela. A obra deve ficar perto do jogador e fora de ruas, rios, pedras, árvores, outras casas e terrenos reservados aos moradores.
 
-Não é necessário Node.js, npm, plugin ou serviço externo.
+Vá até a obra e use **E**, levando um martelo:
 
-Neste ambiente na nuvem, com uma sessão gráfica ativa:
+| Etapa | Madeira | Pedra |
+| --- | ---: | ---: |
+| Fundação | 15 | 10 |
+| Paredes | 20 | 5 |
+| Telhado | 15 | 5 |
+| **Total** | **50** | **20** |
 
-```sh
-cd /workspace/meu-jogo
-./scripts/godot.sh --editor
-```
+Cada etapa muda o modelo 3D e sua colisão. A casa pronta permite descansar e serve como ponto de retorno se o personagem for socorrido após perder a vida. Construção e descanso exigem estar junto ao terreno.
 
-Para executar diretamente: `./scripts/godot.sh`.
+![Casa construída](docs/rpg-casa.png)
 
-O wrapper mantém os dados e caches do Godot em `.runtime/` quando as variáveis XDG não estão configuradas, permitindo usar o motor no ambiente restrito sem alterar HOME. No seu computador, também é possível abrir o projeto diretamente pelo editor.
+## Moradores que também compram e constroem
 
-## Versões prontas para Linux e Windows
+Cada NPC tem carteira e equipamento próprios. Moradores recebem salário e alguns compram a ferramenta de sua profissão quando visitam o comércio. Quatro construtores dos vilarejos têm um objetivo adicional:
 
-Os pacotes `EntreFolhas-Linux.zip` e `EntreFolhas-Windows.zip` contêm o jogo para PC de 64 bits, sem necessidade de instalar o Godot. No Windows, extraia o ZIP e abra `EntreFolhas.exe`. No Linux, extraia e abra `Jogar.sh`; se necessário, dê permissão de execução com `chmod +x Jogar.sh EntreFolhas.x86_64`.
+1. Ir à ferraria e pagar por machado, picareta e martelo.
+2. Reservar seu terreno com as próprias moedas.
+3. Viajar até arvoredo e pedreira, recolher materiais e esgotar os mesmos recursos que o jogador pode usar.
+4. Voltar à obra e pagar os custos de fundação, paredes e telhado.
+5. Passar a usar a casa concluída em sua rotina de descanso.
 
-Os pacotes gerados ficam em `/workspace/shared/downloads/`. O Linux é executado e validado neste ambiente; não há Windows disponível para validar a execução nativa do `.exe`.
+Se o arvoredo ou a pedreira se esgotarem, o morador pode comprar material na loja. Converse e escolha **“Suas compras e sua casa”** para ver o dinheiro, as ferramentas, o objetivo e a etapa da construção. Os objetivos continuam sendo simulados longe da câmera; NPCs próximos usam a física e as animações de caminhada.
 
-Para reconstruir, os templates oficiais de exportação da mesma versão do Godot precisam estar instalados. Nesta máquina, foram usados os templates oficiais 4.6.3, com o arquivo de origem verificado contra o SHA-512 publicado pelo Godot. Os templates selecionados e seus hashes ficam em `.runtime/data/godot/export_templates/4.6.3.stable/`.
+![Casa de um NPC](docs/rpg-casa-npc.png)
 
-```sh
-mkdir -p build/linux build/windows
-./scripts/godot.sh --headless --export-release Linux build/linux/EntreFolhas.x86_64
-./scripts/godot.sh --headless --export-release Windows build/windows/EntreFolhas.exe
-python3 scripts/package_releases.py --output /workspace/shared/downloads
-```
+## Animais, combate e rio
 
-Os recursos do jogo ficam embutidos nos executáveis. O empacotador inclui controles, licenças oficiais, preserva a permissão de execução no Linux, verifica a integridade dos ZIPs e gera `EntreFolhas-SHA256.txt`.
+Vacas e galinhas vivem nas fazendas e fornecem provisões ao ajudar com **E**. A produção tem intervalo persistente, inclusive ao trocar de região ou carregar o save. Cervos, coelhos e javalis aparecem nos campos; animais tímidos fogem e javalis podem perseguir e atacar.
 
-## Dois reinos e oito moradores
+**Espaço ou clique esquerdo** ataca animais próximos. A espada aumenta o dano. Caça entrega carne para venda e experiência. Provisões restauram vida; estalagens e sua casa oferecem descanso. Ao perder a vida, o personagem é socorrido, mantém o equipamento e perde cinco moedas.
 
-**Aurélia**, no oeste dourado, e **Valverde**, a leste do riacho, têm castelos, bandeiras, mercados e moradores. Converse usando **E** e escolha uma pergunta. Cada personagem tem saudação, história sobre os dois reinos, dicas da missão e uma descrição da sua rotina.
+É possível nadar de uma margem à outra e passar sob as pontes. Quem caminha usa rampas e corrimãos com colisão. Os moradores continuam seguindo rotas terrestres.
 
-| Morador | Reino | Rotina própria |
-| --- | --- | --- |
-| Bento, ferreiro | Aurélia | Forja, almoço na taverna, consertos e descanso às 22h. |
-| Lia, comerciante | Aurélia | Mercado oeste, viagem ao mercado leste às 10h, retorno e taverna. |
-| Tomás, guarda | Valverde | Abre o posto, patrulha a ponte em circuito e recolhe-se ao quartel. |
-| Íris, herbalista | Valverde | Colhe ervas, entrega remédios no mercado e volta ao jardim. |
-| Eron, sábio | Aurélia | Arquivo, observação da árvore-mãe e escrita ao entardecer. |
-| Rei Aurel | Aurélia | Jardim, audiências às 9h e visita ao mercado às 14h. |
-| Rei Caio | Valverde | Jardim, audiências às 10h, plantações e relatos da guarda. |
-| Mila, camponesa | Valverde | Rega às 5h, jardim de ervas, feira às 13h e retorno à plantação. |
-
-Um dia dura 12 minutos reais. Os moradores caminham por caminhos calculados com `AStarGrid2D`, respeitam o rio e os edifícios, voltam para descansar e acordam em horários diferentes. Ao iniciar uma conversa ou pausar, o relógio e as rotinas param. O acampamento permite descansar até as 7h do dia seguinte. A luz e os marcadores dos moradores acompanham o horário.
-
-Os dois reis podem dar sua palavra para renovar o **Acordo das Raízes**. A aliança só é concluída com o aval dos dois e a árvore-mãe restaurada. O salvamento preserva dia, horário, posições dos NPCs, encontros e compromisso dos reinos, mantendo compatibilidade com a jornada anterior.
-
-O protagonista e os oito NPCs usam as cinco folhas complementares do agricultor fornecidas em `tomate.zip`, com variações discretas na roupa dos moradores. Nomes, reinos, diálogos e rotinas são mantidos. Os dez PNGs do pacote estão em `assets/tomate/`, preservando os bytes originais. O [manifesto de origem](assets/tomate/sources.json) registra nomes recebidos, papéis e hashes SHA-256. Para personalizar uma aparência no jogo pronto, converse com o morador e escolha **Escolher sprite deste morador**.
+![Fazenda](docs/rpg-animais.png)
 
 ## Controles
 
-| Ação | Controle |
+| Tecla | Ação |
 | --- | --- |
-| Caminhar | WASD ou setas |
-| Correr | Shift |
-| Recolher sementes, ler e plantar | E |
-| Abrir/fechar o mapa | M |
-| Pausar/voltar | Esc |
+| WASD / setas | Mover e nadar |
+| Shift | Correr / acelerar na água |
+| E | Conversar, negociar, coletar e interagir |
+| Espaço / clique esquerdo | Atacar |
+| I | Inventário e provisões |
+| J | Objetivos e registros |
+| B | Escolher terreno / consultar sua obra |
+| M | Mapa do continente |
+| Esc | Cancelar prévia, fechar menu ou pausar |
 
-Em telas menores ou dispositivos com toque, a interface oferece um controle de movimento e botão de interação. Som ambiente e efeitos são sintetizados localmente, com ativação opcional no botão de música.
+Nas estalagens, caravanas de cinco moedas ligam os seis povoados. O mapa mostra cidades, posição do jogador e seu lar.
 
-## Sprites e personagens
+## Desempenho e salvamento
 
-As quatro árvores de `tomate.zip` são carvalho, pinheiro, árvore seca e macieira. Recebem vento contínuo na copa, com pequenas rajadas e raízes imóveis. A árvore-mãe começa seca e volta a ser um carvalho ao concluir a missão. As três casas fornecidas representam os edifícios dos dois reinos, preservando proporção, portas, nomes, profundidade e colisões.
+O mundo mantém **no máximo 25 regiões próximas de 512 × 512**. Terreno, árvores, rochas e animais são criados e liberados conforme o jogador se move. Cada terreno é desenhado uma vez para uma textura local; não há uma textura gigante do continente inteiro.
 
-Grama, flores, pedras, terra, areia, calçamento e musgo vêm da nova folha de terrenos. As transições formam as bordas dos caminhos. O rio 3D usa textura em movimento e margens estáticas; o atlas de quatro fases continua disponível na apresentação 2D auxiliar. Recortes inteiros excluem as grades das folhas, e as texturas dos caminhos ficam fixas nas coordenadas do mundo. A decoração do chão faz parte dos tiles e não deixa obstáculos invisíveis da arte anterior.
+Árvores e rochas usam `MultiMesh`; animais usam uma instância de partes geométricas por modelo. O vento atua nos vértices, sombras de árvores ficam no terreno e personagens distantes deixam de executar física a cada quadro. A navegação considera cidades, rio, pontes e recursos das regiões ativas.
 
-**Escolher personagem**, na introdução ou no menu de pausa, abre um seletor de arquivo PNG nativo do Godot. Ele aceita as pranchas de cinco colunas e oito linhas das imagens enviadas. As primeiras quatro linhas representam frente, costas, direita e esquerda ao caminhar; as quatro seguintes representam corrida. A primeira coluna contém a pose parada, e as demais contêm os quatro quadros de movimento. Os sprites laterais não são espelhados.
+O modo **leve** usa 80% da resolução por eixo no cenário 3D; a interface fica na resolução integral. Em **Esc → Gráficos**, alterne para **nítido**. A preferência é salva.
 
-O pacote fornece uma folha de repouso nas quatro direções e quatro folhas de caminhada, uma por direção. Elas são combinadas em 12 animações. A corrida reutiliza as poses de caminhada em sua cadência própria. A escala é normalizada nas viradas, e o fundo magenta dos PNGs RGB é removido apenas durante a renderização, sem alterar os arquivos.
+O save versão 2 preserva posição, saúde, inventário, ferramentas, dinheiro, XP, exploração, recursos esgotados, casas, contas e equipamentos dos NPCs, produção das fazendas, encomendas e relógio. Saves antigos migram para a entrada de Aurélia e preservam aparência e a atividade antiga. O diretório de usuário `EntreFolhas` foi mantido para localizar esses dados.
 
-Os passos avançam conforme a distância realmente percorrida: moradores mais lentos têm uma passada mais calma, e a corrida usa um passo mais comprido. O ciclo para junto com o personagem e mantém a fase nas viradas, independentemente da taxa de quadros.
+Os PNGs originais de `tomate.zip` continuam intactos; os hashes estão em [assets/tomate/sources.json](assets/tomate/sources.json). Animais e etapas de obra usam geometria procedural do projeto.
 
-O protagonista usa o agricultor por padrão e permite importar uma prancha local. A imagem escolhida é copiada, sem modificar o original, para `user://characters/selected.png`. As artes recebidas anteriormente continuam arquivadas no projeto e são excluídas dos executáveis atuais.
+## Abrir e validar
 
-## Salvamento
-
-O progresso é salvo automaticamente em `user://journey.json` a cada dois segundos, ao recolher sementes, plantar, pausar ou fechar a janela. A posição, as sementes, a vitória e a escolha de personagem são restauradas ao continuar. Reiniciar requer confirmação e mantém o personagem escolhido. Dados inválidos são filtrados, com retorno à posição inicial quando necessário.
-
-Com o wrapper e sem variáveis XDG predefinidas, `user://` corresponde a `.runtime/data/EntreFolhas/`. No editor aberto diretamente, é o diretório de dados do usuário escolhido pelo Godot. Os dados do antigo protótipo de navegador não são migrados automaticamente.
-
-## Validação
-
-Importar os recursos e analisar os scripts:
+Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambiente:
 
 ```sh
-./scripts/godot.sh --headless --audio-driver Dummy --editor --import --quit
-```
-
-Executar os testes nativos (as suítes de lógica usam a apresentação 2D isolada):
-
-```sh
+./scripts/godot.sh --editor
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/run.gd -- --test
-./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/swimming_physics_tests.gd -- --test
-```
-
-A suíte termina com código diferente de zero se uma verificação falhar e inclui regressões para a duração do vento, as raízes do atlas novo, o alinhamento dos passos, as viradas e a textura das ruas. A suíte principal usa dados temporários, não altera a jornada do jogador e tem limite de 60 segundos. Verifica acessibilidade dos objetivos, movimento e colisões reais, travessia da ponte, interação pela tecla E, coleta única, plantio, vitória, salvamento em disco, validação dos dados, importação e quadros dos personagens, menus e controles de toque.
-
-A validação atual soma 189 verificações da suíte principal, 31 de colisões e natação e 24 da apresentação gráfica.
-
-As prévias de movimento anteriores em `docs/movimento.gif` e `.mp4` mostram a versão 2D anterior; as imagens `docs/hibrido-*.png` mostram a versão atual.
-
-Para validar a apresentação atual com uma sessão gráfica:
-
-```sh
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/hybrid_tests.gd -- --test --hybrid
 ```
 
-`tests/capture_motion.gd` oferece uma conferência gráfica dos 128 quadros de caminhada dos NPCs, nas quatro direções, com guias de alinhamento.
+A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.
 
-`tests/natural_motion_preview.gd` renderiza uma sequência temporal usando o controlador de passos dos oito NPCs e o material de vento do jogo. A simulação por instantes definidos permite conferir a cadência e o vento sem alterar o ritmo por causa do custo da gravação. As rotas e colisões reais são verificadas separadamente pela suíte nativa.
+Os resultados desta versão estão em [docs/rpg-desempenho.md](docs/rpg-desempenho.md). Foram aprovadas 238 verificações nativas e 24 gráficas.
 
-[Ver a prévia animada](docs/movimento.gif) · [Vídeo da prévia](docs/movimento.mp4)
-
-Uma verificação gráfica opcional, em uma sessão com display ativo:
+Para medir uma versão já aquecida, sem outros processos Godot concorrentes:
 
 ```sh
-./scripts/godot.sh --audio-driver Dummy --script res://tests/capture.gd -- --capture
+./scripts/godot.sh --audio-driver Dummy --disable-vsync --script res://tests/performance_benchmark.gd -- --test --hybrid /tmp/rpg-performance.json
 ```
 
-Ela renderiza o cenário no próprio Godot e salva capturas temporárias de introdução, jogo, mapa, árvore restaurada, dois reinos, conversas, rotinas, noite e tela estreita em `/tmp/entre-folhas-godot-*.png`. A migração foi validada com o renderizador Compatibility / OpenGL e Mesa llvmpipe. Não é necessário instalar templates de exportação para editar e jogar no motor; um executável distribuível é uma etapa separada no menu de exportação do Godot.
+## Exportar
 
-## Estrutura do projeto
+Com os templates oficiais da mesma versão do Godot instalados:
 
-- `project.godot`: projeto Godot 4.6, renderização híbrida 2.5D Compatibility e filtro de pixels.
-- `scenes/main.tscn`: cena principal com mundo, personagem, câmera e HUD.
-- `game/main.gd`: objetivos, diálogos, entradas e salvamento.
-- `game/hybrid_world.gd`: apresentação 3D, câmera inclinada, sprites, casas, rio, ponte e conversão de coordenadas.
-- `game/world.gd`: chão em `TileMapLayer`, árvores em `AnimatedSprite2D`, profundidade por Y e colisões em `StaticBody2D`.
-- `game/world_data.gd`: mapa determinístico, destinos e regras de navegação.
-- `game/terrain.gd`: ruas e clareiras com textura fixa nas coordenadas do mundo, sem esticar a imagem nas curvas ou sobrepor bordas nos cruzamentos.
-- `game/player.gd`: `CharacterBody2D`, movimento, animações e sensor de interação em `Area2D`.
-- `game/seed.gd`: colecionável com `Area2D` e brilho animado.
-- `game/npc.gd`, `game/kingdom_data.gd` e `game/world_clock.gd`: moradores, reinos, diálogos, navegação e relógio.
-- `game/character_sheet.gd`: importação compartilhada das pranchas para jogador e NPCs.
-- `game/hud.gd`, `game/minimap.gd` e `game/joystick.gd`: interface nativa e controles de toque.
-- `game/forest_audio.gd`: vento e efeitos em `AudioStreamPlayer`.
-- `assets/`: sprites originais, ícone e shader de iluminação.
-- `tests/`: validação do motor e captura gráfica.
+```sh
+mkdir -p build/linux build/windows
+./scripts/godot.sh --headless --audio-driver Dummy --export-release Linux build/linux/EntreReinos.x86_64
+./scripts/godot.sh --headless --audio-driver Dummy --export-release Windows build/windows/EntreReinos.exe
+python3 scripts/package_releases.py --output /workspace/shared/downloads
+```
 
-O protótipo web anterior foi preservado em `/workspace/scratch/meu-jogo-web-antes-godot.zip`. O projeto principal não depende dele.
-
-Cada tarefa na nuvem já usa um ambiente isolado. Trabalhe no checkout existente; não crie um Git worktree sem solicitação explícita.
+O Linux é executado neste ambiente. O Windows é exportado e o pacote verificado; não há Windows nativo disponível para teste aqui.

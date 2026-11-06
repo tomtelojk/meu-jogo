@@ -7,9 +7,12 @@ func run():
 	root.add_child(game)
 	game.start_journey()
 	game.world.set_population_active(false)
+	game.economy.set_process(false)
 	var rows=[]
-	for spot in [{"name":"bosque","point":WorldData.SPAWN},{"name":"vila","point":KingdomData.point("forge")+Vector2(0,90)},{"name":"ponte","point":Vector2(WorldData.river_x(1280),1280)}]:
+	for spot in [{"name":"capital","point":WorldData.SPAWN},{"name":"ferraria","point":KingdomData.point("forge")+Vector2(0,90)},{"name":"ponte","point":Vector2(WorldData.river_x(4800),4800)}]:
 		game.player.position=spot.point
+		game.player.restore_surface()
+		game.world.ensure_region(spot.point,true)
 		game.hybrid.snap_camera()
 		for i in 10:
 			await process_frame
@@ -34,5 +37,5 @@ func run():
 		print("BENCH ",JSON.stringify(row))
 	var out=OS.get_cmdline_user_args()[-1]
 	var f=FileAccess.open(out,FileAccess.WRITE)
-	f.store_string(JSON.stringify({"renderer":RenderingServer.get_video_adapter_name(),"window_size":[root.size.x,root.size.y],"scale_3d":root.scaling_3d_scale,"results":rows},"  "))
+	f.store_string(JSON.stringify({"renderer":RenderingServer.get_video_adapter_name(),"window_size":[root.size.x,root.size.y],"scale_3d":root.scaling_3d_scale,"world_size":[WorldData.SIZE.x,WorldData.SIZE.y],"loaded_regions":game.world.chunks.size(),"buildings":KingdomData.BUILDINGS.size(),"npcs":game.world.npcs.size(),"results":rows},"  "))
 	quit()

@@ -1,0 +1,2 @@
+ed21de83e4de1a95627e0e75ab20aa089458bccf35351b3d248713e452fb5494  EntreReinos-Linux.zip
+199c3af0fb2e2c8cd2c9d367e935025fd487ec2bdc920e8962b0cb3b388efcaa  EntreReinos-Windows.zip

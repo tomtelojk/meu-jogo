@@ -2,8 +2,8 @@
 config_version=5
 
 [application]
-config/name="Entre Folhas"
-config/description="Uma aventura 2.5D: personagens em pixel art, cenário 3D e dois reinos para explorar."
+config/name="Entre Reinos"
+config/description="RPG de mundo aberto 2.5D: explore dois reinos, negocie, reúna recursos e construa sua casa."
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://assets/icon.svg"

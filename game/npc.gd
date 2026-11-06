@@ -23,6 +23,9 @@ var waiting: float = 0.0
 var stalled: float = 0.0
 var custom_sprite: bool = false
 var gait_phase: float = 0.75
+var home_override:=Vector2(INF,INF)
+var economic_target := Vector2(INF,INF)
+var economic_activity := ""
 
 func setup(profile: Dictionary, fallback: SpriteFrames, grid: AStarGrid2D, minute: float) -> void:
 	definition = profile
@@ -80,16 +83,17 @@ func apply_schedule(minute: float, snap: bool = false) -> void:
 	waiting = 0.0
 	stalled = 0.0
 	if snap:
-		position = nearest_walkable(KingdomData.point(entry.points[0]))
+		position = nearest_walkable(_scheduled_point())
 	refresh_presence()
 	plan_route()
 	queue_redraw()
 
 func activity() -> String:
+	if economic_target.is_finite() and not sleeping and not wants_rest:return economic_activity
 	return "Voltando para descansar" if wants_rest and not sleeping else String(current_schedule.activity)
 
 func refresh_presence() -> void:
-	sleeping = wants_rest and position.distance_to(nearest_walkable(KingdomData.point(current_schedule.points[0]))) < 10.0
+	sleeping = wants_rest and position.distance_to(nearest_walkable(_scheduled_point())) < 10.0
 	visible = not sleeping
 	interaction_area.set_deferred("monitorable", not sleeping)
 	name_label.text = "%s · %s\n%s" % [definition.name, definition.role, activity()]
@@ -117,7 +121,7 @@ func _nearest_cell(point: Vector2) -> Vector2i:
 	return Vector2i(48, 54)
 
 func plan_route() -> void:
-	var target := KingdomData.point(current_schedule.points[stop_index])
+	var target := economic_target if economic_target.is_finite() and not wants_rest else _scheduled_point(stop_index)
 	route = navigator.get_point_path(_nearest_cell(position), _nearest_cell(target))
 	path_index = 0
 	while path_index < route.size() and position.distance_to(route[path_index]) < 7:
@@ -156,6 +160,34 @@ func _physics_process(delta: float) -> void:
 	if stalled > 1.0:
 		stalled = 0.0
 		plan_route()
+
+func set_economic_goal(point:Vector2,label:String)->void:
+	economic_activity=label
+	if economic_target.is_equal_approx(point):return
+	economic_target=point
+	plan_route()
+
+func advance_offscreen(delta:float)->void:
+	if not active or sleeping:return
+	if waiting>0:
+		waiting=maxf(0,waiting-delta)
+		if waiting<=0 and current_schedule.get("loop",false):
+			stop_index=(stop_index+1)%current_schedule.points.size()
+			plan_route()
+		return
+	var remaining:float=definition.speed*delta
+	while path_index<route.size() and remaining>0:
+		var distance:=position.distance_to(route[path_index])
+		if distance<=remaining:
+			position=route[path_index]
+			remaining-=distance
+			path_index+=1
+		else:
+			position=position.move_toward(route[path_index],remaining)
+			remaining=0
+	if path_index>=route.size():
+		if wants_rest:refresh_presence()
+		if current_schedule.get("loop",false):waiting=2.0
 
 func _idle() -> void:
 	velocity = Vector2.ZERO
@@ -241,3 +273,6 @@ func _draw() -> void:
 			draw_rect(Rect2(-10, -59, 20, 7), Color("d4b764"))
 			for x in [-10, -2, 6]:
 				draw_rect(Rect2(x, -63, 4, 6), Color("e7d18d"))
+
+func _scheduled_point(index:int=0)->Vector2:
+	return home_override if wants_rest and home_override.is_finite() else KingdomData.point(current_schedule.points[index])

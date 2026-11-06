@@ -1,25 +1,18 @@
-# Baixar Entre Folhas
+# Baixar Entre Reinos
 
-Jogo para PC de 64 bits, sem precisar instalar o Godot.
+RPG de mundo aberto 2.5D para PC de 64 bits. Não é necessário instalar o Godot.
 
-Atualização de desempenho e natação: floresta agrupada, sombras fixas e modo gráfico leve por padrão. Casas com deslizamento nas paredes; ponte com rampas e corrimãos sólidos. Agora você pode nadar no rio e passar sob a ponte.
+- [Windows — baixar ZIP](https://github.com/tomtelojk/meu-jogo/raw/refs/heads/main/downloads/EntreReinos-Windows.zip)
+- [Linux — baixar ZIP](https://github.com/tomtelojk/meu-jogo/raw/refs/heads/main/downloads/EntreReinos-Linux.zip)
 
-Visual 2.5D: cenário, casas e ponte em 3D com personagens e árvores em sprites 2D. Câmera inclinada, sombras, copas ao vento e água em movimento. A arte de `tomate.zip` permanece nos personagens, árvores, solo, rio e fachadas.
+Extraia o ZIP inteiro. No Windows, abra **EntreReinos.exe**. No Linux, abra **Jogar.sh**; se necessário, dê permissão de execução aos dois arquivos.
 
-[Ver a natação](../docs/natacao.png) · [Ver o cenário atual](../docs/hibrido-vila.png) · [Ver o bosque](../docs/hibrido-bosque.png)
+O mapa tem **25 vezes a área anterior**, dois reinos maiores, quatro vilarejos, 135 construções, 44 NPCs e animais. Compre ferramentas, recolha materiais, negocie, suba de nível e construa sua casa. Quatro moradores também compram equipamento e constroem casas com recursos próprios.
 
+**E** interage e negocia, **I** abre inventário, **B** escolhe terreno, **J** mostra objetivos, **M** abre mapa e **Espaço** ataca. Nas estalagens, use caravanas para visitar outros povoados. O modo gráfico leve é o padrão.
 
-- [Windows — baixar ZIP](https://github.com/tomtelojk/meu-jogo/raw/refs/heads/main/downloads/EntreFolhas-Windows.zip)
-- [Linux — baixar ZIP](https://github.com/tomtelojk/meu-jogo/raw/refs/heads/main/downloads/EntreFolhas-Linux.zip)
+[Ver Aurélia](../docs/rpg-aurelia.png) · [Ver animais](../docs/rpg-animais.png) · [Ver construção](../docs/rpg-casa.png) · [Ver mapa](../docs/rpg-mapa.png) · [Ver casa de um NPC](../docs/rpg-casa-npc.png)
 
-WASD/setas também controlam a natação; Shift acelera. Em Esc → Gráficos, escolha leve ou nítido.
+Inventário, moedas, exploração, recursos, construções e progresso dos moradores são salvos automaticamente. As antigas sementes viraram uma atividade opcional. Os saves anteriores migram para a nova entrada de Aurélia.
 
-Extraia o ZIP inteiro. No Windows, abra `EntreFolhas.exe`. No Linux, abra `Jogar.sh`.
-
-O jogo inclui oito NPCs, diálogos, Aurélia e Valverde, rotinas diferentes, ciclo de dia e noite e salvamento. As cinco folhas complementares do agricultor formam o novo personagem nas quatro direções, com roupas levemente diferentes entre moradores. Cada NPC continua aceitando uma prancha personalizada pelo diálogo. Os PNGs estão preservados sem alterações; nomes e hashes SHA-256 estão em [assets/tomate/sources.json](../assets/tomate/sources.json) e em `FONTES-SPRITES.json` de cada pacote.
-
-As verificações cobrem alinhamento dos passos, cadência em velocidades diferentes, viradas, colisões, raízes imóveis, vento contínuo, iluminação e transparência. Os testes da apresentação 3D também verificam os pivôs dos sprites, a câmera, os controles, os diálogos e a coleta de sementes. O executável Linux foi executado e inspecionado. O Windows foi exportado, sem teste em um Windows nativo.
-
-O roteiro e os resultados da medição de desempenho estão em [docs/desempenho.md](../docs/desempenho.md).
-
-Os hashes para conferir os ZIPs estão em `EntreFolhas-SHA256.txt`. Os arquivos seguem a visibilidade e as permissões deste repositório.
+Os hashes estão em **EntreReinos-SHA256.txt**. Linux foi testado neste ambiente; Windows foi exportado, sem teste nativo em Windows. Os downloads seguem a visibilidade e as permissões deste repositório.

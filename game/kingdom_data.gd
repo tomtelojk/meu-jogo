@@ -2,132 +2,141 @@ class_name KingdomData
 extends RefCounted
 
 const REALMS := {
-	"aurelia": {"name": "Reino de Aurélia", "color": Color("cdab67"), "capital": Vector2(576, 704)},
-	"valverde": {"name": "Reino de Valverde", "color": Color("8fb7a5"), "capital": Vector2(2880, 960)},
+	"aurelia": {"name":"Reino de Aurélia","color":Color("cdab67"),"capital":Vector2(4608,4096)},
+	"valverde": {"name":"Reino de Valverde","color":Color("8fb7a5"),"capital":Vector2(11264,5376)},
 }
-
-# Named locations are shared by schedules, navigation and the painted settlements.
-const PLACES := {
-	"aurel_court": Vector2(9, 11), "aurel_garden": Vector2(10.5, 10), "aurel_home": Vector2(8, 10.5),
-	"forge": Vector2(12.5, 15), "bento_home": Vector2(11, 16.5), "west_market": Vector2(14, 25),
-	"west_tavern": Vector2(14.5, 21), "lia_home": Vector2(15.5, 24),
-	"bridge_west": Vector2(36, 20), "bridge_east": Vector2(41, 20), "guard_post": Vector2(41.5, 20.2),
-	"barracks": Vector2(42, 21.5), "east_market": Vector2(43, 18), "east_tavern": Vector2(43, 19.5),
-	"iris_garden": Vector2(30.5, 32), "iris_home": Vector2(31, 30),
-	"mila_farm": Vector2(33, 32), "mila_home": Vector2(33, 34),
-	"caio_court": Vector2(45, 15), "caio_garden": Vector2(46, 16.5), "caio_home": Vector2(46.5, 14.5),
-	"archives": Vector2(25.5, 10.5), "mother_meet": Vector2(22.8, 24.2), "eron_home": Vector2(25, 12),
-}
-
-const BUILDINGS: Array[Dictionary] = [
-	{"name": "Castelo de Aurélia", "kind": "castle", "realm": "aurelia", "tile": Vector2(9, 10)},
-	{"name": "Forja de Bento", "kind": "forge", "realm": "aurelia", "tile": Vector2(12.5, 14)},
-	{"name": "Casa de Bento", "kind": "home", "realm": "aurelia", "tile": Vector2(11, 15.5)},
-	{"name": "Taverna da Folha Dourada", "kind": "tavern", "realm": "aurelia", "tile": Vector2(14.5, 20)},
-	{"name": "Mercado de Aurélia", "kind": "market", "realm": "aurelia", "tile": Vector2(14, 24)},
-	{"name": "Casa de Lia", "kind": "home", "realm": "aurelia", "tile": Vector2(15.5, 23)},
-	{"name": "Arquivo do Bosque", "kind": "library", "realm": "aurelia", "tile": Vector2(24.5, 10.5)},
-	{"name": "Casa de Eron", "kind": "home", "realm": "aurelia", "tile": Vector2(24, 12)},
-	{"name": "Castelo de Valverde", "kind": "castle", "realm": "valverde", "tile": Vector2(45, 14)},
-	{"name": "Mercado de Valverde", "kind": "market", "realm": "valverde", "tile": Vector2(44.6, 18.8)},
-	{"name": "Quartel da Ponte", "kind": "home", "realm": "valverde", "tile": Vector2(43, 21.5)},
-	{"name": "Casa de Íris", "kind": "home", "realm": "valverde", "tile": Vector2(31, 29)},
-	{"name": "Casa de Mila", "kind": "home", "realm": "valverde", "tile": Vector2(34, 34)},
+const SETTLEMENTS: Array[Dictionary] = [
+	{"id":"aurelia","name":"Aurélia","realm":"aurelia","position":Vector2(4608,4096),"capital":true},
+	{"id":"valverde","name":"Valverde","realm":"valverde","position":Vector2(11264,5376),"capital":true},
+	{"id":"pedra_alta","name":"Pedra Alta","realm":"aurelia","position":Vector2(5760,1664),"capital":false},
+	{"id":"ponte_velha","name":"Ponte Velha","realm":"aurelia","position":Vector2(3200,8192),"capital":false},
+	{"id":"porto_claro","name":"Porto Claro","realm":"valverde","position":Vector2(10880,10240),"capital":false},
+	{"id":"cedro","name":"Cedro","realm":"valverde","position":Vector2(13568,8192),"capital":false},
 ]
+static var PLACES: Dictionary = _make_places()
+static var BUILDINGS: Array[Dictionary] = _make_buildings()
+static var PEOPLE: Array[Dictionary] = _make_people()
+static var _roads: Array[PackedVector2Array] = []
 
-const PEOPLE: Array[Dictionary] = [
-	{"id": "bento", "name": "Bento", "role": "Ferreiro", "realm": "aurelia", "color": Color("bc9879"), "speed": 59.0,
-	 "greeting": "Uma ferramenta bem cuidada dura mais que uma briga de reis. Sou Bento, ferreiro de Aurélia. Se encontrar madeira caída, deixe as árvores vivas em paz.",
-	 "realm_text": "Aurélia vive do ferro e dos campos dourados. O rei Aurel quer proteger nossas oficinas, mas sem as ervas de Valverde ninguém trata as mãos de quem trabalha.",
-	 "other_text": "Dizem que a gente do outro lado do rio é diferente. Pois a melhor curandeira que conheço mora lá. Um bom ferreiro aprende a unir peças, não a separá-las.",
-	 "hint": "A semente da memória está no Bosque dourado, perto da minha forja. Procure o círculo de arbustos junto ao caminho.",
-	 "routine": [{"hour": 0, "activity": "Descansando em casa", "points": ["bento_home"], "rest": true}, {"hour": 7, "activity": "Trabalhando na forja", "points": ["forge"]}, {"hour": 12, "activity": "Almoçando na taverna", "points": ["west_tavern"]}, {"hour": 14, "activity": "Consertando ferramentas", "points": ["forge"]}, {"hour": 19, "activity": "Conversando na taverna", "points": ["west_tavern"]}, {"hour": 22, "activity": "Descansando em casa", "points": ["bento_home"], "rest": true}]},
-	{"id": "lia", "name": "Lia", "role": "Comerciante", "realm": "aurelia", "color": Color("c9aa8c"), "speed": 76.0,
-	 "greeting": "Bem-vindo! Tenho histórias dos dois lados da ponte. Levo ferramentas de Aurélia e volto com ervas e sementes de Valverde.",
-	 "realm_text": "Meu reino é Aurélia, mas meu trabalho me leva aos dois mercados. Quando a ponte fecha, os preços sobem dos dois lados. Ninguém ganha com isso.",
-	 "other_text": "Em Valverde o mercado começa mais tarde, depois da colheita. A guarda Tomás sempre pergunta pelas notícias, nunca pelo tamanho da minha bolsa.",
-	 "hint": "Há uma semente na margem leste do riacho. Atravesse a ponte de madeira e siga para o norte. Também visite Mila, no jardim ao sul.",
-	 "routine": [{"hour": 0, "activity": "Descansando em casa", "points": ["lia_home"], "rest": true}, {"hour": 6, "activity": "Abrindo a banca de Aurélia", "points": ["west_market"]}, {"hour": 10, "activity": "Levando mercadorias a Valverde", "points": ["east_market"]}, {"hour": 16, "activity": "Voltando ao mercado de Aurélia", "points": ["west_market"]}, {"hour": 20, "activity": "Contando histórias na taverna", "points": ["west_tavern"]}, {"hour": 23, "activity": "Descansando em casa", "points": ["lia_home"], "rest": true}]},
-	{"id": "tomas", "name": "Tomás", "role": "Guarda da ponte", "realm": "valverde", "color": Color("aab1a0"), "speed": 84.0,
-	 "greeting": "Pode passar, viajante. Minha missão é manter a ponte segura para quem vive dos dois lados. Hoje há paz, e quero que continue assim.",
-	 "realm_text": "Valverde me confiou a travessia. Patrulho a ponte e o posto leste; só volto ao quartel depois que o mercado fecha.",
-	 "other_text": "Os guardas de Aurélia usam outras cores, mas também querem voltar para casa no fim do turno. Uma fronteira não precisa ser uma ameaça.",
-	 "hint": "Não tente cruzar a água pelo bosque. A ponte está livre. Depois dela, o caminho ao norte leva ao rei Caio e à semente do riacho.",
-	 "routine": [{"hour": 0, "activity": "Descansando no quartel", "points": ["barracks"], "rest": true}, {"hour": 5, "activity": "Abrindo a travessia", "points": ["guard_post"]}, {"hour": 8, "activity": "Patrulhando a ponte", "points": ["bridge_east", "bridge_west", "guard_post"], "loop": true}, {"hour": 18, "activity": "Vigiando o posto leste", "points": ["guard_post"]}, {"hour": 22, "activity": "Descansando no quartel", "points": ["barracks"], "rest": true}]},
-	{"id": "iris", "name": "Íris", "role": "Herbalista", "realm": "valverde", "color": Color("a9b385"), "speed": 64.0,
-	 "greeting": "Caminhe com cuidado entre os brotos. Colho apenas o que pode voltar a crescer. O bosque cuida de nós quando aprendemos a cuidar dele.",
-	 "realm_text": "Valverde guarda os jardins e as nascentes. Se as raízes secarem, nossas ervas desaparecem. Nenhuma muralha protege um reino da falta de água.",
-	 "other_text": "Bento, de Aurélia, faz minhas tesouras. Eu preparo os unguentos da oficina dele. Nossa amizade já é um pequeno tratado de paz.",
-	 "hint": "A árvore-mãe precisa das cinco sementes, não de um remédio. A esperança cresce no jardim ao sul; a alegria, entre as flores do caminho oeste.",
-	 "routine": [{"hour": 0, "activity": "Descansando em casa", "points": ["iris_home"], "rest": true}, {"hour": 6, "activity": "Colhendo ervas no jardim", "points": ["iris_garden"]}, {"hour": 11, "activity": "Entregando remédios no mercado", "points": ["east_market"]}, {"hour": 15, "activity": "Cuidando dos brotos", "points": ["iris_garden"]}, {"hour": 19, "activity": "Preparando remédios em casa", "points": ["iris_home"]}, {"hour": 22, "activity": "Descansando em casa", "points": ["iris_home"], "rest": true}]},
-	{"id": "eron", "name": "Eron", "role": "Sábio do bosque", "realm": "aurelia", "color": Color("aaa28c"), "speed": 46.0,
-	 "greeting": "O bosque existia antes dos nomes dos reinos. Ainda assim, foi ele que ensinou Aurélia e Valverde a viverem juntos. Sou Eron, guardião dessas histórias.",
-	 "realm_text": "Os arquivos de Aurélia registram um antigo acordo: o ferro sustenta os caminhos, as raízes sustentam a terra. Nenhum dos reinos prospera sozinho.",
-	 "other_text": "Caio preserva as nascentes de Valverde; Aurel mantém as estradas de Aurélia. Falta-lhes lembrar que a mesma ponte une as duas responsabilidades.",
-	 "hint": "Procure a semente do tempo nas Pedras antigas, junto ao arquivo ao norte. Depois fale com os dois reis. Palavras também podem criar raízes.",
-	 "routine": [{"hour": 0, "activity": "Descansando em casa", "points": ["eron_home"], "rest": true}, {"hour": 7, "activity": "Estudando os arquivos", "points": ["archives"]}, {"hour": 10, "activity": "Observando a árvore-mãe", "points": ["mother_meet"]}, {"hour": 15, "activity": "Escrevendo a história dos reinos", "points": ["archives"]}, {"hour": 20, "activity": "Recolhendo-se em casa", "points": ["eron_home"]}, {"hour": 22, "activity": "Descansando em casa", "points": ["eron_home"], "rest": true}]},
-	{"id": "aurel", "name": "Rei Aurel", "role": "Rei de Aurélia", "realm": "aurelia", "color": Color("dec17e"), "speed": 56.0,
-	 "greeting": "Recebo quem chega com boas intenções. Sou Aurel. Meu povo precisa de ferramentas, estradas e campos vivos — e o bosque está enfraquecendo.",
-	 "realm_text": "Aurélia é o reino das folhas douradas e das oficinas. Nosso castelo fica a oeste. Ouço o povo pela manhã e visito o mercado à tarde.",
-	 "other_text": "Caio teme que usemos madeira demais. Eu temo que ele feche nossas rotas. Talvez estejamos defendendo o mesmo futuro sem nos escutar.",
-	 "hint": "Encontre as sementes e ouça meus moradores. Bento conhece o Bosque dourado, Lia atravessa os dois reinos e Eron conhece o passado da árvore-mãe.",
-	 "routine": [{"hour": 0, "activity": "Descansando no castelo", "points": ["aurel_home"], "rest": true}, {"hour": 7, "activity": "Caminhando no jardim real", "points": ["aurel_garden"]}, {"hour": 9, "activity": "Recebendo o povo em audiência", "points": ["aurel_court"]}, {"hour": 14, "activity": "Visitando o mercado", "points": ["west_market"]}, {"hour": 17, "activity": "Voltando ao jardim real", "points": ["aurel_garden"]}, {"hour": 21, "activity": "Descansando no castelo", "points": ["aurel_home"], "rest": true}]},
-	{"id": "caio", "name": "Rei Caio", "role": "Rei de Valverde", "realm": "valverde", "color": Color("b198ad"), "speed": 61.0,
-	 "greeting": "As portas de Valverde estão abertas. Protejo as nascentes deste reino, mas uma floresta não entende fronteiras. Diga-me o que viu em sua jornada.",
-	 "realm_text": "Valverde floresce a leste do riacho. Nossos jardins alimentam o povo, e a guarda mantém a travessia segura. À tarde, prefiro ouvir quem trabalha na terra.",
-	 "other_text": "Aurel conhece cada estrada do oeste. Precisamos dessas estradas para levar nossa colheita ao mercado. Quero um acordo que proteja as árvores e o trabalho dos dois povos.",
-	 "hint": "Íris e Mila cuidam do jardim ao sul. Tomás conhece a passagem do riacho. Se conseguir restaurar a árvore-mãe, terei uma boa razão para renovar nossa aliança.",
-	 "routine": [{"hour": 0, "activity": "Descansando no castelo", "points": ["caio_home"], "rest": true}, {"hour": 6, "activity": "Visitando o jardim real", "points": ["caio_garden"]}, {"hour": 10, "activity": "Recebendo visitantes no castelo", "points": ["caio_court"]}, {"hour": 15, "activity": "Visitando as plantações", "points": ["mila_farm"]}, {"hour": 19, "activity": "Recebendo relatos da guarda", "points": ["caio_court"]}, {"hour": 23, "activity": "Descansando no castelo", "points": ["caio_home"], "rest": true}]},
-	{"id": "mila", "name": "Mila", "role": "Camponesa", "realm": "valverde", "color": Color("bd9780"), "speed": 68.0,
-	 "greeting": "Bom ver outro par de botas por aqui! Sou Mila. Estas plantas precisam de água, paciência e um pouco de conversa. Pode rir: acho que elas escutam.",
-	 "realm_text": "A vida em Valverde começa cedo. Cuido da plantação pela manhã e levo a colheita à feira depois do almoço. À noite, volto para casa.",
-	 "other_text": "Minha avó veio de Aurélia. Plantamos a mesma comida e contamos as mesmas estrelas. Espero que os reis se lembrem disso.",
-	 "hint": "A semente da esperança está pertinho da plantação. Veja o círculo de flores no jardim. Se cansar, descanse na barraca do acampamento até a manhã seguinte.",
-	 "routine": [{"hour": 0, "activity": "Descansando em casa", "points": ["mila_home"], "rest": true}, {"hour": 5, "activity": "Regando a plantação", "points": ["mila_farm"]}, {"hour": 9, "activity": "Ajudando no jardim de ervas", "points": ["iris_garden"]}, {"hour": 13, "activity": "Vendendo a colheita na feira", "points": ["east_market"]}, {"hour": 17, "activity": "Cuidando da última rega", "points": ["mila_farm"]}, {"hour": 20, "activity": "Descansando em casa", "points": ["mila_home"], "rest": true}]},
-]
+static func _make_places() -> Dictionary:
+	var p := {
+		"aurel_court":Vector2(4608,3712),"aurel_garden":Vector2(4864,3584),"aurel_home":Vector2(4480,3648),
+		"forge":Vector2(4224,4288),"bento_home":Vector2(3840,4672),"west_market":Vector2(4608,4608),
+		"west_tavern":Vector2(4992,4416),"lia_home":Vector2(5376,4672),
+		"east_market":Vector2(11264,5888),"east_tavern":Vector2(11648,5696),
+		"iris_garden":Vector2(11904,6144),"iris_home":Vector2(12032,6016),
+		"mila_farm":Vector2(12288,6528),"mila_home":Vector2(12416,6400),
+		"caio_court":Vector2(11264,4992),"caio_garden":Vector2(11520,4864),"caio_home":Vector2(11136,4928),
+		"archives":Vector2(4992,3904),"mother_meet":Vector2(1536,1600),"eron_home":Vector2(5376,3904),
+		"bridge_west":Vector2(7552,4800),"bridge_east":Vector2(8320,4800),"guard_post":Vector2(8448,4800),"barracks":Vector2(8704,4800),
+	}
+	for town in SETTLEMENTS:
+		var c:Vector2=town.position
+		p[town.id+"_shop"]=c+Vector2(-192,192)
+		p[town.id+"_inn"]=c+Vector2(192,192)
+		p[town.id+"_wood"]=c+Vector2(-832,1472)
+		p[town.id+"_stone"]=c+Vector2(-1152,1344)
+		p[town.id+"_plot"]=c+Vector2(768,1152)
+		p[town.id+"_farm"]=c+Vector2(1600,832)
+		p[town.id+"_market"]=c+Vector2(0,448)
+		for i in 6:
+			p[town.id+"_home_"+str(i)]=c+Vector2([-768,-384,384,768,-384,384][i],192 if i<4 else -192)
+			p[town.id+"_shop_"+str(i)]=c+Vector2(-192+(i%3-1)*48,208+(i/3)*48)
+			p[town.id+"_inn_"+str(i)]=c+Vector2(192+(i%3-1)*48,208+(i/3)*48)
+	return p
 
-static func point(id: String) -> Vector2:
-	return PLACES.get(id, Vector2(24, 27)) * 64.0
-
-static func person(id: String) -> Dictionary:
-	for entry in PEOPLE:
-		if entry.id == id:
-			return entry
-	return {}
-
-static func schedule(person_data: Dictionary, minute: float) -> Dictionary:
-	var selected: Dictionary = person_data.routine.back()
-	for entry in person_data.routine:
-		if minute >= float(entry.hour) * 60:
-			selected = entry
-	return selected
-
-static func routine_text(person_data: Dictionary) -> String:
-	var lines := PackedStringArray()
-	for entry in person_data.routine:
-		lines.append("%02d:00 · %s" % [entry.hour, entry.activity])
-	return "Meu dia costuma seguir este ritmo:\n\n" + "\n".join(lines)
-
-static func paths() -> Array[PackedVector2Array]:
-	var result: Array[PackedVector2Array] = []
-	for keys in [["aurel_garden", "aurel_court", "aurel_home"], ["bento_home", "forge"], ["west_tavern", "bento_home"], ["lia_home", "west_market"], ["bridge_east", "guard_post", "barracks"], ["east_market", "east_tavern", "bridge_east"], ["east_market", "caio_court", "caio_garden", "caio_home"], ["iris_home", "iris_garden", "mila_farm", "mila_home"], ["archives", "eron_home"], ["mother_meet", "west_market"]]:
-		var path := PackedVector2Array()
-		for key in keys:
-			path.append(point(key))
-		result.append(path)
+static func _make_buildings() -> Array[Dictionary]:
+	var result:Array[Dictionary]=[]
+	for town in SETTLEMENTS:
+		var c:Vector2=town.position
+		if town.capital:
+			result.append({"name":"Castelo de "+town.name,"kind":"castle","realm":town.realm,"tile":(c+Vector2(0,-512))/64.0,"size":Vector2(512,320)})
+		for side in [-1,1]:
+			for col in (3 if town.capital else 2):
+				for row in (6 if town.capital else 3):
+					var pos:=c+Vector2(side*(384+col*384),-640+row*384)
+					if pos in [Vector2(4224,4224),Vector2(4992,3840)]:continue
+					result.append({"name":"Casa de "+town.name+" %d"%result.size(),"kind":"home","realm":town.realm,"tile":pos/64.0,"size":Vector2(176,128)})
+		for entry in [{"name":"Ferraria e comércio","kind":"forge","offset":Vector2(-192,128)}, {"name":"Estalagem","kind":"tavern","offset":Vector2(192,128)}]:
+			result.append({"name":entry.name+" de "+town.name,"kind":entry.kind,"realm":town.realm,"tile":(c+entry.offset)/64.0,"size":Vector2(208,160)})
+	# The named craftsmen occupy real buildings along the capital avenues.
+	for entry in [{"name":"Forja de Bento","kind":"forge","realm":"aurelia","at":Vector2(4224,4224)}, {"name":"Arquivo dos Reinos","kind":"library","realm":"aurelia","at":Vector2(4992,3840)}, {"name":"Quartel da Travessia","kind":"barracks","realm":"valverde","at":Vector2(8704,4736)}]:
+		result.append({"name":entry.name,"kind":entry.kind,"realm":entry.realm,"tile":entry.at/64.0,"size":Vector2(176,128)})
 	return result
 
-static func building_rect(building: Dictionary) -> Rect2:
-	var size := Vector2(152, 100) if building.kind == "castle" else Vector2(96, 74)
-	return Rect2(building.tile * 64.0 - Vector2(size.x / 2, size.y), size)
+static func _make_people() -> Array[Dictionary]:
+	var people:Array[Dictionary]=[]
+	var named := [
+		["bento","Bento","Ferreiro","aurelia","forge","bento_home","west_tavern","Ferramentas abrem caminhos. Posso negociar machados, picaretas e martelos; uma boa casa começa com material e trabalho.","Compre ferramentas na ferraria. Madeira e pedra também podem ser vendidas por moedas."],
+		["lia","Lia","Comerciante","aurelia","west_market","lia_home","east_market","Levo mercadorias entre Aurélia e Valverde. Os vilarejos têm histórias e oportunidades bem diferentes.","Use a estalagem para viajar de caravana. Encomendas de materiais rendem moedas."],
+		["tomas","Tomás","Guarda da travessia","valverde","guard_post","barracks","bridge_west","Mantenho as estradas e a ponte seguras. Nos campos, alguns javalis não recebem viajantes com tanta educação.","Espaço ataca. Uma espada ajuda contra animais hostis; você também pode fugir ou nadar."],
+		["iris","Íris","Herbalista","valverde","iris_garden","iris_home","east_market","Vendo provisões e estudo as plantas destes campos. Animais e pessoas precisam de espaço para viver.","Coma uma provisão no inventário para recuperar vida. A estalagem oferece descanso."],
+		["eron","Eron","Cartógrafo","aurelia","archives","eron_home","west_market","Este continente é maior que os mapas antigos. Há montanhas, planícies, fazendas e caminhos que atravessam os dois reinos.","M abre o mapa do continente. Descobrir vilarejos dá experiência."],
+		["aurel","Rei Aurel","Rei de Aurélia","aurelia","aurel_court","aurel_home","west_market","Aurélia vive de suas oficinas, minas e lavouras. Nosso reino tem lugar para quem quer negociar, explorar ou construir uma vida.","Nossos moradores recebem salários, compram ferramentas e constroem casas. Converse para conhecer seus objetivos."],
+		["caio","Rei Caio","Rei de Valverde","valverde","caio_court","caio_home","east_market","Valverde reúne pastores, viajantes e artesãos. As portas da capital estão abertas, e os vilarejos precisam de bons vizinhos.","Um terreno livre pode ser seu. Use B para escolher o lugar e um martelo para erguer a casa."],
+		["mila","Mila","Agricultora","valverde","mila_farm","mila_home","east_market","Começo o dia na plantação e termino na feira. Quero que meu próximo teto seja feito com as minhas próprias mãos.","Madeira, pedra e martelo: a casa cresce em três etapas, da fundação ao telhado."],
+	]
+	for i in named.size():
+		var n:Array=named[i]
+		people.append({"id":n[0],"name":n[1],"role":n[2],"realm":n[3],"color":Color("bc9879").lerp(Color("88afa0"),i/10.0),"speed":70.0+i*2,"greeting":n[7],"realm_text":REALMS[n[3]].name+" reúne cidades, rotas comerciais e pequenos povoados.","other_text":"As caravanas mantêm os dois reinos em contato. Cada morador tem seus planos.","hint":n[8],"routine":[{"hour":0,"activity":"Descansando em casa","points":[n[5]],"rest":true},{"hour":6+i%3,"activity":"Trabalhando como "+String(n[2]).to_lower(),"points":[n[4]]},{"hour":12,"activity":"Visitando o mercado","points":[n[6]]},{"hour":14,"activity":"Cuidando do trabalho","points":[n[4]]},{"hour":19,"activity":"Encontrando os vizinhos","points":[n[6]]},{"hour":22,"activity":"Descansando em casa","points":[n[5]],"rest":true}]})
+	var names:PackedStringArray=["Rui","Nara","Caetano","Dora","Ivo","Luna","Bruno","Cora","Davi","Eva","Flora","Gil","Hugo","Inês","Jana","Lino","Maia","Nilo","Olívia","Pedro","Raul","Sara","Téo","Vera","Yara","Zeca","Ada","Bia","Ciro","Dina","Elisa","Fábio","Gabi","Heitor","Isa","João"]
+	for t in SETTLEMENTS.size():
+		var town:Dictionary=SETTLEMENTS[t]
+		for i in 6:
+			var home:String=town.id+"_home_"+str(i)
+			var builder:bool=i==0 and not town.capital
+			var work:String=town.id+["_wood","_stone","_farm","_farm","_shop","_market"][i]
+			people.append({"id":town.id+"_resident_"+str(i),"name":names[t*6+i],"role":"Construtor" if builder else ["Lenhador","Mineiro","Pastor","Agricultor","Artesã","Mercador"][i],"realm":town.realm,"town":town.id,"builder":builder,"color":Color(0.7+(i%3)*0.08,0.7+(t%3)*0.08,0.65+(i%2)*0.15),"speed":68.0+i*4,"greeting":"Moro em "+town.name+". Trabalho, negócio e guardo recursos para melhorar minha casa. Os preços das ferramentas são os mesmos para todos.","realm_text":REALMS[town.realm].name+" é minha terra. Este vilarejo tem comércio, animais e terrenos para novos moradores.","other_text":"No fim do dia, prefiro encontrar meus vizinhos a ficar na estrada.","hint":"Converse comigo sobre minhas compras e construção para acompanhar meu progresso.","routine":[{"hour":0,"activity":"Descansando em casa","points":[home],"rest":true},{"hour":6+i%3,"activity":["Cortando madeira","Extraindo pedra","Cuidando dos animais","Trabalhando na plantação","Fabricando ferramentas","Negociando na feira"][i],"points":[work]},{"hour":12,"activity":"Comprando no comércio","points":[town.id+"_shop_"+str(i)]},{"hour":14,"activity":"Preparando materiais","points":[work]},{"hour":19,"activity":"Encontrando os vizinhos","points":[town.id+"_inn_"+str(i)]},{"hour":22,"activity":"Descansando em casa","points":[home],"rest":true}]})
+	return people
 
-static func reserved_points() -> Array[Vector2]:
-	var points: Array[Vector2] = []
-	for key in PLACES:
-		points.append(point(key))
-	for building in BUILDINGS:
-		points.append(building.tile * 64.0)
-	return points
+static func point(id:String)->Vector2:
+	return PLACES.get(id,REALMS.aurelia.capital)
 
-static func realm_at(position: Vector2) -> String:
-	return "aurelia" if position.x < 37.5 * 64 and position.y < 27 * 64 else "valverde"
+static func person(id:String)->Dictionary:
+	for entry in PEOPLE:
+		if entry.id==id:return entry
+	return {}
+
+static func schedule(profile:Dictionary,minute:float)->Dictionary:
+	var selected:Dictionary=profile.routine.back()
+	for entry in profile.routine:
+		if minute>=float(entry.hour)*60:selected=entry
+	return selected
+
+static func routine_text(profile:Dictionary)->String:
+	var lines:=PackedStringArray()
+	for entry in profile.routine:lines.append("%02d:00 · %s"%[entry.hour,entry.activity])
+	return "Minha rotina:\n\n"+"\n".join(lines)
+
+static func paths()->Array[PackedVector2Array]:
+	if not _roads.is_empty():return _roads
+	for town in SETTLEMENTS:
+		var c:Vector2=town.position
+		_roads.append(PackedVector2Array([c+Vector2(0,-1152),c+Vector2(0,1600)]))
+		for y in [-576,-192,192,576,960,1344]:
+			_roads.append(PackedVector2Array([c+Vector2(-1408,y),c+Vector2(1408,y)]))
+		for x in [-960,-576,576,960]:
+			_roads.append(PackedVector2Array([c+Vector2(x,-960),c+Vector2(x,1408)]))
+	for points in [[Vector2(4608,1664),Vector2(5760,1664)],[Vector2(4608,4096),Vector2(4608,1664)],[Vector2(4608,4096),Vector2(4608,4800),Vector2(11264,4800),Vector2(11264,5376)],[Vector2(4608,4800),Vector2(3200,4800),Vector2(3200,8192)],[Vector2(3200,8192),Vector2(7800,8192),Vector2(10880,8192),Vector2(10880,10240)],[Vector2(11264,5376),Vector2(13568,5376),Vector2(13568,8192)],[Vector2(1536,1664),Vector2(4608,1664)]]:
+		_roads.append(PackedVector2Array(points))
+	return _roads
+
+static func building_rect(building:Dictionary)->Rect2:
+	var size:Vector2=building.get("size",Vector2(176,128))
+	return Rect2(building.tile*64.0-Vector2(size.x/2,size.y),size)
+
+static func reserved_points()->Array[Vector2]:
+	var result:Array[Vector2]=[]
+	for p in PLACES.values():result.append(p)
+	return result
+
+static func realm_at(position:Vector2)->String:
+	return "aurelia" if position.x<8000 else "valverde"
+
+static func nearest_town(point_value:Vector2)->Dictionary:
+	var best:Dictionary=SETTLEMENTS[0]
+	var distance:=INF
+	for town in SETTLEMENTS:
+		var d:=point_value.distance_squared_to(town.position)
+		if d<distance:best=town;distance=d
+	return best

@@ -89,3 +89,17 @@ static func bank_texture(left: bool) -> Texture2D:
 		var bank := Rect2i(18, 0, 44, TILE_PIXELS) if left else Rect2i(112, 0, 58, TILE_PIXELS)
 		_textures[key] = ImageTexture.create_from_image(channel.get_region(bank))
 	return _textures[key]
+
+static var _tile_sets:Dictionary={}
+static func biome_tiles(row:int)->TileSet:
+	if _tile_sets.has(row):return _tile_sets[row]
+	var tiles:=TileSet.new()
+	tiles.tile_size=Vector2i(TILE_PIXELS,TILE_PIXELS)
+	for column in 8:
+		var source:=TileSetAtlasSource.new()
+		source.texture=tile(row,column)
+		source.texture_region_size=Vector2i(TILE_PIXELS,TILE_PIXELS)
+		source.create_tile(Vector2i.ZERO)
+		tiles.add_source(source,column)
+	_tile_sets[row]=tiles
+	return tiles

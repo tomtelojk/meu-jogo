@@ -55,6 +55,8 @@ var joystick: ForestJoystick
 var touch_action: Button
 var serif: SystemFont
 var game_started: bool = false
+var modal_scroll:ScrollContainer
+var modal_content:VBoxContainer
 var portrait: TextureRect
 
 func _ready() -> void:
@@ -143,10 +145,10 @@ func _build_header() -> void:
 	brand_icon.size = Vector2(36, 36)
 	brand_icon.position.y = 4
 	brand.add_child(brand_icon)
-	brand_title = _text("entre folhas", 28, CREAM, true)
+	brand_title = _text("entre reinos", 28, CREAM, true)
 	brand_title.position = Vector2(48, 0)
 	brand.add_child(brand_title)
-	brand_subtitle = _text("UM PEQUENO MUNDO PARA EXPLORAR", 8, MUTED)
+	brand_subtitle = _text("RPG DE MUNDO ABERTO", 8, MUTED)
 	brand_subtitle.position = Vector2(49, 38)
 	brand.add_child(brand_subtitle)
 	location = _text("•  Bosque do vento     |     ☼ Fim de tarde", 11, Color("dee1c5"))
@@ -170,41 +172,24 @@ func _build_header() -> void:
 		button.add_theme_font_size_override("font_size", 18)
 
 func _build_quest() -> void:
-	quest = _panel(root, Color(0.945, 0.933, 0.875, 0.97), 20)
-	quest.name = "QuestCard"
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 10)
+	quest=_panel(root,Color(0.945,0.933,0.875,0.97),20)
+	quest.name="RPGStatus"
+	var box:=VBoxContainer.new()
+	box.add_theme_constant_override("separation",9)
 	quest.add_child(box)
-	box.add_child(_text("❧  UM RECOMEÇO", 9, Color("6b7654")))
-	quest_title = _text("Sementes de um novo bosque", 16, INK, true)
-	quest_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	quest_title.custom_minimum_size.x = 240
+	box.add_child(_text("AVENTUREIRO DOS DOIS REINOS",9,Color("6b7654")))
+	quest_title=_text("Viajante · Nível 1",17,INK,true)
+	quest_title.custom_minimum_size.x=240
 	box.add_child(quest_title)
-	quest_description = _text("Encontre as sementes levadas pelo vento.", 10, Color("75806b"))
-	quest_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	quest_description.custom_minimum_size.x = 240
+	seed_counter=_text("100 moedas",18,Color("786345"),true)
+	box.add_child(seed_counter)
+	quest_description=_text("Vida 100 / 100",11,Color("75806b"))
+	quest_description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	quest_description.custom_minimum_size.x=240
 	box.add_child(quest_description)
-	var progress := HBoxContainer.new()
-	progress.add_theme_constant_override("separation", 7)
-	box.add_child(progress)
-	for i in 5:
-		var slot := _panel(progress, Color.TRANSPARENT, 0)
-		slot.custom_minimum_size = Vector2(27, 27)
-		var label := _text("❧", 17, Color("a3ab8c"))
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		slot.add_child(label)
-		seed_slots.append(slot)
-	var space := Control.new()
-	space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	progress.add_child(space)
-	seed_counter = _text("0 / 5", 20, Color("4c5943"), true)
-	progress.add_child(seed_counter)
-	var divider := HSeparator.new()
-	divider.modulate = Color(0.55, 0.6, 0.45, 0.35)
-	box.add_child(divider)
-	quest_note = _text("◇ Procure por pequenos brilhos dourados", 9, Color("7a8267"))
-	quest_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	quest_note.custom_minimum_size.x = 240
+	quest_note=_text("I · Inventário    J · Objetivos",10,Color("7a8267"))
+	quest_note.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	quest_note.custom_minimum_size.x=240
 	box.add_child(quest_note)
 	quest.hide()
 
@@ -222,13 +207,13 @@ func _build_intro() -> void:
 	intro_body = VBoxContainer.new()
 	intro_body.add_theme_constant_override("separation", 20)
 	intro.add_child(intro_body)
-	intro_body.add_child(_text("—   CAPÍTULO 01 · O DESPERTAR", 10, Color("e0d39c")))
-	intro_title = _text("Toda floresta começa\ncom uma semente.", 48, CREAM, true)
+	intro_body.add_child(_text("—   DOIS REINOS · MUITOS CAMINHOS", 10, Color("e0d39c")))
+	intro_title = _text("Um mundo aberto.\nSeu próprio caminho.", 48, CREAM, true)
 	intro_body.add_child(intro_title)
-	var description := _text("Dois reinos. Oito histórias. Um bosque para cuidar.\nEncontre as sementes, conheça os moradores e una os dois povos.", 13, Color("e0e1ce"))
+	var description := _text("Explore cidades, vilarejos e campos. Compre ferramentas, enfrente animais\ne reúna materiais para construir sua casa. Cada morador também tem seus planos.", 13, Color("e0e1ce"))
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro_body.add_child(description)
-	play_button = _button("Explorar o bosque     ↗", play_requested.emit, true)
+	play_button = _button("Começar a aventura     ↗", play_requested.emit, true)
 	play_button.name = "PlayButton"
 	play_button.custom_minimum_size = Vector2(220, 50)
 	play_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
@@ -237,7 +222,7 @@ func _build_intro() -> void:
 	character_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	intro_body.add_child(character_button)
 	intro_body.add_child(_text("W A S D  ou setas   caminhar      E   interagir", 10, MUTED))
-	caption = _text("—   Respire. O bosque está vivo.", 11, Color("e2e2c9"))
+	caption = _text("—   Explore. Negocie. Construa seu lugar.", 11, Color("e2e2c9"))
 	root.add_child(caption)
 
 func _build_bottom() -> void:
@@ -270,7 +255,7 @@ func _build_bottom() -> void:
 	stamina.size = Vector2(124, 4)
 	bottom_player.add_child(stamina)
 	stamina.set_deferred("size", Vector2(124, 4))
-	controls = _text("W A S D / setas  caminhar     Shift  correr     E  interagir", 10, Color("e0e3cd"))
+	controls = _text("WASD mover   Shift correr   E interagir   I inventário   B construir   Espaço atacar", 10, Color("e0e3cd"))
 	root.add_child(controls)
 	map_panel = _panel(root, Color(0.145, 0.22, 0.17, 0.93), 10)
 	var box := VBoxContainer.new()
@@ -278,7 +263,7 @@ func _build_bottom() -> void:
 	map_panel.add_child(box)
 	var heading := HBoxContainer.new()
 	box.add_child(heading)
-	var map_title := _text("BOSQUE DO VENTO", 8, Color("dee2bf"))
+	var map_title := _text("MAPA DOS REINOS", 8, Color("dee2bf"))
 	map_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(map_title)
 	var map_button := _button("M", map_requested.emit)
@@ -287,8 +272,9 @@ func _build_bottom() -> void:
 	map_button.add_theme_font_size_override("font_size", 9)
 	heading.add_child(map_button)
 	minimap = ForestMinimap.new()
+	minimap.local_mode=true
 	box.add_child(minimap)
-	box.add_child(_text("● você     • sementes     ○ árvore-mãe", 8, Color("bec8a1")))
+	box.add_child(_text("● você    ■ cidades    ◇ seu lar", 8, Color("bec8a1")))
 	bottom_player.hide()
 	controls.hide()
 	map_panel.hide()
@@ -376,29 +362,26 @@ func show_game() -> void:
 	map_panel.show()
 	_layout()
 
-func update_quest(collected: Dictionary, complete: bool, peace: bool = false) -> void:
-	var count := collected.size()
-	seed_counter.text = "%d / 5" % count
-	quest_description.text = "A primavera encontrou o caminho de volta." if complete else ("Leve as sementes de volta à árvore-mãe." if count == 5 else "Encontre as sementes levadas pelo vento.")
-	quest_note.text = "✦ Bosque restaurado · os reinos estão unidos" if peace else ("✦ Fale com os dois reis para selar a paz" if complete else ("◇ A árvore-mãe é o ponto claro no mapa" if count == 5 else "◇ Procure por pequenos brilhos dourados"))
-	for i in 5:
-		var filled := collected.has(WorldData.SEEDS[i].id)
-		var slot_style := _style(Color("75804e") if filled else Color(0.66, 0.7, 0.55, 0.12), 20, Color(0.6, 0.65, 0.5, 0.3))
-		slot_style.set_content_margin_all(0)
-		seed_slots[i].add_theme_stylebox_override("panel", slot_style)
-		seed_slots[i].get_child(0).add_theme_color_override("font_color", PAPER if filled else Color("a3ab8c"))
-	minimap.collected = collected
-	minimap.restored = complete
-	minimap.queue_redraw()
+func update_quest(_collected:Dictionary,_complete:bool,_peace:bool=false)->void:
+	pass
+
+func update_rpg(state:RPGState)->void:
+	quest_title.text="Viajante · Nível %d"%state.level()
+	seed_counter.text="%d moedas"%state.gold
+	quest_description.text="Vida %d / 100   •   XP %d\nMadeira %d   •   Pedra %d\nProvisões %d   •   Vilarejos %d / 6"%[state.health,state.xp,state.wood,state.stone,state.food,state.discovered.size()]
+	var home:Dictionary=state.houses.get("home_player",{})
+	quest_note.text="I · Inventário   J · Objetivos\n"+("B · Escolher terreno para sua casa" if home.is_empty() else "Sua casa: "+RPGState.STAGES[home.stage])
+	minimap.home_position=Vector2(home.x,home.y) if not home.is_empty() else Vector2(-1,-1)
 
 func update_status(player: ForestPlayer, data: Dictionary, clock: WorldClock = null) -> void:
 	var realm: Dictionary = KingdomData.REALMS[KingdomData.realm_at(player.position)]
 	var time := clock.label() if clock != null else "Dia 1 · 08:30 · Manhã"
-	location.text = "%s     |     %s" % [realm.name, time]
+	var district:=WorldData.location_name(player.position)
+	location.text = "%s  |  %s" % [realm.name if district==String(realm.name).trim_prefix("Reino de ") else realm.name+" · "+district,time]
 	location.tooltip_text = WorldData.location_name(player.position)
 	time_label.text = time
 	stamina.value = player.stamina * 100
-	controls.text = "W A S D / setas  nadar     Shift  acelerar     E  interagir" if player.swimming else "W A S D / setas  caminhar     Shift  correr     E  interagir"
+	controls.text = "W A S D / setas  nadar     Shift  acelerar     E  interagir" if player.swimming else "WASD mover   Shift correr   E interagir   I inventário   B construir   Espaço atacar"
 	minimap.world_data = data
 	minimap.player_position = player.position
 	minimap.queue_redraw()
@@ -445,9 +428,15 @@ func show_dialog(eyebrow: String, title: String, body: String, actions: Array[Di
 	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	modal.add_child(backdrop)
 	modal_panel = _panel(modal, PAPER, 28)
+	modal_scroll=ScrollContainer.new()
+	modal_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	modal_scroll.follow_focus=true
+	modal_panel.add_child(modal_scroll)
 	var box := VBoxContainer.new()
+	modal_content=box
+	box.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	box.add_theme_constant_override("separation", 16)
-	modal_panel.add_child(box)
+	modal_scroll.add_child(box)
 	var header := HBoxContainer.new()
 	box.add_child(header)
 	var kicker := _text(eyebrow, 9, Color("6b7654"))
@@ -484,8 +473,10 @@ func show_dialog(eyebrow: String, title: String, body: String, actions: Array[Di
 func _layout_modal() -> void:
 	if modal_panel == null:
 		return
+	var available:=get_viewport().get_visible_rect().size
+	modal_scroll.custom_minimum_size=Vector2(minf(460,available.x-104),minf(modal_content.get_combined_minimum_size().y,available.y-104))
 	modal_panel.reset_size()
-	modal_panel.position = (get_viewport().get_visible_rect().size - modal_panel.size) / 2.0
+	modal_panel.position=(available-modal_panel.size)/2.0
 
 func close_dialog() -> void:
 	if modal != null:

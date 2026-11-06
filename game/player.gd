@@ -88,13 +88,13 @@ func _physics_process(delta: float) -> void:
 func update_surface() -> void:
 	# A swimmer stays below the bridge. Only entry from dry land boards its
 	# ramps; deck rails block walkers, while swimmers can pass underneath.
-	if on_bridge and not WorldData.BRIDGE_RECT.has_point(position):
+	if on_bridge and WorldData.bridge_at(position).size==Vector2.ZERO:
 		on_bridge = false
 	if not on_bridge:
 		if swimming:
 			swimming = WorldData.in_river(position)
 		if not swimming:
-			on_bridge = WorldData.BRIDGE_RECT.has_point(position)
+			on_bridge = WorldData.bridge_at(position).size!=Vector2.ZERO
 			swimming = WorldData.in_river(position) and not on_bridge
 	collision_mask = WorldData.SOLID_LAYER | (0 if swimming else WorldData.BRIDGE_RAIL_LAYER)
 

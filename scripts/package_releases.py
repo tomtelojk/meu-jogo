@@ -7,35 +7,54 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CONTROLS = """\nCOMO JOGAR\nEncontre as cinco sementes douradas e leve-as de volta à árvore-mãe.\n\nWASD ou setas: caminhar e nadar\nShift: correr ou acelerar as braçadas\nE: recolher sementes, ler e plantar\nM: abrir e fechar o mapa\nEsc: pausar e voltar\n\nSeu progresso é salvo automaticamente neste computador.\nSom ambiente é opcional, no botão de música.\n"""
+CONTROLS = """
+ENTRE REINOS — RPG DE MUNDO ABERTO
+
+WASD ou setas: caminhar e nadar
+Shift: correr ou acelerar na água
+E: conversar, negociar, coletar e interagir
+Espaço ou clique esquerdo: atacar animais próximos
+I: inventário, ferramentas e provisões
+J: objetivos e registros
+B: escolher terreno; clique confirma, botão direito/Esc cancela
+M: mapa do continente
+Esc: pausa e gráficos (leve / nítido)
+
+O modo leve é o padrão. Som ambiente é opcional.
+Seu progresso é salvo automaticamente neste computador.
+"""
 VILLAGERS = """
-OS DOIS REINOS
-Aurélia fica no oeste dourado; Valverde, a leste do riacho.
-Converse com os oito moradores usando E. Cada um tem histórias, dicas e horários próprios.
-Os NPCs trabalham, viajam, patrulham e voltam para casa ao longo do dia.
-O relógio aparece na tela. Na barraca do acampamento, você pode descansar até a manhã seguinte.
-Fale com os dois reis e restaure a árvore-mãe para renovar o Acordo das Raízes.
+DOIS REINOS, QUATRO VILAREJOS
+Mapa 25 vezes maior: 16.000 x 12.800 unidades.
+Explore Aurélia, Valverde, Pedra Alta, Ponte Velha, Porto Claro e Cedro.
+As capitais e vilarejos somam 135 construções e 44 moradores.
+Nas estalagens você pode descansar e viajar de caravana.
 
-APARÊNCIAS DOS MORADORES
-O protagonista e os oito NPCs usam as cinco folhas complementares de tomate.zip.
-Para personalizar uma aparência, converse com o NPC e escolha
-'Escolher sprite deste morador'. Isso não exige instalar o Godot.
-As rotinas e os diálogos continuam funcionando com a prancha escolhida.
+SUA VIDA DE AVENTUREIRO
+Compre machado, picareta, martelo e espada nas ferrarias.
+Use E perto de árvores e rochas para recolher madeira e pedra.
+Venda materiais ou entregue encomendas diárias para ganhar moedas e experiência.
+Vacas e galinhas fornecem provisões; cervos, coelhos e javalis vivem nos campos.
+Javalis podem atacar. Provisões e descanso recuperam a vida.
 
-DESEMPENHO E FÍSICA
-Modo gráfico leve por padrão. Em Esc → Gráficos, alterne entre leve e nítido.
-Floresta agrupada e sombras fixas reduzem o trabalho por quadro.
-As casas têm paredes sólidas e a ponte tem rampas e corrimãos com colisão.
-Entre no rio pelas margens para nadar; saia por qualquer margem.
-É possível nadar sob a ponte. Sem fôlego, continue nadando normalmente.
-As rotinas dos NPCs continuam atravessando pela ponte.
+CONSTRUA SUA CASA
+Use B perto de um terreno livre de ruas, água, árvores e pedras.
+Reservar o terreno custa 20 moedas. Depois, vá até a obra e use E.
+Um martelo, 50 madeira e 20 pedra completam fundação, paredes e telhado.
+Sua casa permite descansar e serve como retorno se você for socorrido.
 
-ATUALIZAÇÃO VISUAL 2.5D
-Cenário, casas e ponte em 3D com personagens e árvores em sprites 2D.
-A câmera inclinada acompanha o jogador, com sombras e água em movimento.
-Personagens, quatro árvores, terrenos, água e três estilos de casas usam tomate.zip.
-As árvores têm vento contínuo na copa e troncos firmes.
-Os passos dos moradores acompanham sua velocidade e param quando eles param.
+MORADORES COM PLANOS PRÓPRIOS
+Os NPCs trabalham, recebem moedas, visitam lojas e voltam para casa.
+Quatro construtores dos vilarejos compram ferramentas, recolhem materiais e
+constroem suas próprias casas ao longo do dia. Converse sobre compras e casa
+para acompanhar a carteira, as ferramentas e o objetivo de cada um.
+
+DESEMPENHO E SALVAMENTO
+O mundo carrega no máximo 25 regiões próximas, liberando as que ficam longe.
+Árvores usam grupos de instâncias, com vento e sombras leves.
+Posição, inventário, moedas, saúde, casas, recursos retirados e progresso dos
+moradores são salvos. Saves antigos migram para a entrada de Aurélia.
+As antigas sementes continuam como uma atividade opcional do vale noroeste.
 """
 
 
@@ -52,8 +71,8 @@ def verify_player(path: Path, prefix: bytes) -> None:
 
 def package(system: str, output: Path) -> Path:
     linux = system == "Linux"
-    binary = "EntreFolhas.x86_64" if linux else "EntreFolhas.exe"
-    stage = ROOT / "build" / "packages" / f"EntreFolhas-{system}"
+    binary = "EntreReinos.x86_64" if linux else "EntreReinos.exe"
+    stage = ROOT / "build" / "packages" / f"EntreReinos-{system}"
     stage.mkdir(parents=True, exist_ok=True)
     player = ROOT / "build" / system.lower() / binary
     verify_player(player, b"\x7fELF" if linux else b"MZ")
@@ -64,29 +83,30 @@ def package(system: str, output: Path) -> Path:
         launcher.write_text(
             '#!/usr/bin/env sh\nset -eu\n'
             'game_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
-            'cd "$game_dir"\nexec ./EntreFolhas.x86_64 "$@"\n',
+            'cd "$game_dir"\nexec ./EntreReinos.x86_64 "$@"\n',
             encoding="utf-8",
         )
         launcher.chmod(0o755)
-        instructions = """ENTRE FOLHAS — LINUX 64 BITS\n\nEste jogo está pronto para jogar. Não é necessário instalar o Godot.\n\n1. Extraia este ZIP inteiro.\n2. Abra Jogar.sh, ou execute ./Jogar.sh em um terminal nesta pasta.\n3. Se aparecer 'Permissão negada', execute:\n   chmod +x Jogar.sh EntreFolhas.x86_64\n   ./Jogar.sh\n\nRequer um desktop Linux de 64 bits com suporte a OpenGL 3.3.\n"""
+        instructions = """ENTRE REINOS — LINUX 64 BITS\n\nEste jogo está pronto para jogar. Não é necessário instalar o Godot.\n\n1. Extraia este ZIP inteiro.\n2. Abra Jogar.sh, ou execute ./Jogar.sh em um terminal nesta pasta.\n3. Se aparecer 'Permissão negada', execute:\n   chmod +x Jogar.sh EntreReinos.x86_64\n   ./Jogar.sh\n\nRequer um desktop Linux de 64 bits com suporte a OpenGL 3.3.\n"""
     else:
-        instructions = """ENTRE FOLHAS — WINDOWS 64 BITS\n\nEste jogo está pronto para jogar. Não é necessário instalar o Godot.\n\n1. Extraia este ZIP inteiro para uma pasta.\n2. Abra EntreFolhas.exe com dois cliques.\n\nRequer Windows 10/11 de 64 bits com suporte a OpenGL 3.3.\n"""
+        instructions = """ENTRE REINOS — WINDOWS 64 BITS\n\nEste jogo está pronto para jogar. Não é necessário instalar o Godot.\n\n1. Extraia este ZIP inteiro para uma pasta.\n2. Abra EntreReinos.exe com dois cliques.\n\nRequer Windows 10/11 de 64 bits com suporte a OpenGL 3.3.\n"""
     (stage / "LEIA-ME.txt").write_text(instructions + CONTROLS + VILLAGERS, encoding="utf-8")
     for license_file in (ROOT / "licenses").glob("*.txt"):
         shutil.copy2(license_file, stage / license_file.name)
     shutil.copy2(ROOT / "assets" / "tomate" / "sources.json", stage / "FONTES-SPRITES.json")
     (stage / "FONTES-ARVORES.json").unlink(missing_ok=True)
     (stage / "CREDITOS.txt").write_text(
-        "Entre Folhas\nMotor: Godot 4.6.3, licença MIT.\n"
+        "Entre Reinos\nMotor: Godot 4.6.3, licença MIT.\n"
         "Os avisos do Godot e de suas dependências acompanham este pacote.\n"
         "Sprites: dez PNGs originais de tomate.zip, fornecidos pelo autor do projeto.\n"
         "Inclui personagens, árvores, terrenos, transições, água e casas.\n"
+        "Modelos 3D dos animais e das construções por etapas: geometria procedural do projeto.\n"
         "Os PNGs foram copiados e renomeados, preservando seus bytes originais.\n"
         "O fundo magenta é removido pelo renderizador do jogo.\n"
         "FONTES-SPRITES.json relaciona nomes recebidos, papéis e hashes SHA-256 das imagens e de tomate.zip.\n",
         encoding="utf-8",
     )
-    archive = output / f"EntreFolhas-{system}.zip"
+    archive = output / f"EntreReinos-{system}.zip"
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as file:
         for path in sorted(stage.iterdir()):
             file.write(path, f"{stage.name}/{path.name}")
@@ -112,7 +132,7 @@ def main() -> None:
         f"{hashlib.file_digest(path.open('rb'), 'sha256').hexdigest()}  {path.name}\n"
         for path in archives
     )
-    (args.output / "EntreFolhas-SHA256.txt").write_text(checksums, encoding="ascii")
+    (args.output / "EntreReinos-SHA256.txt").write_text(checksums, encoding="ascii")
 
 
 if __name__ == "__main__":

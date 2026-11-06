@@ -89,6 +89,8 @@ var tree_batches: Array[MultiMeshInstance3D] = []
 var mother_card: Sprite3D
 var swim_ripple: MeshInstance3D
 var last_daylight := Color(-1,-1,-1)
+var landscape:StreamedLandscape
+var build_ghost:MeshInstance3D
 
 func setup(source: ForestGame) -> void:
 	game=source
@@ -103,6 +105,7 @@ func setup(source: ForestGame) -> void:
 	_water()
 	_landmarks()
 	_build_forest()
+	_settlement_labels()
 	for body in [game.player]+game.world.npcs.values():
 		var card:=_card(body.sprite)
 		actors.append({"card":card,"body":body})
@@ -138,47 +141,10 @@ func _point(p:Vector2)->Vector3:
 	return Vector3(p.x/UNIT,0,p.y/UNIT)
 
 func _ground()->void:
-	ground_view=SubViewport.new()
-	ground_view.name="GroundTexture"
-	ground_view.size=Vector2i(3200,2560)
-	ground_view.disable_3d=true
-	ground_view.world_2d=World2D.new()
-	ground_view.render_target_update_mode=SubViewport.UPDATE_ONCE
-	add_child(ground_view)
-	var tiles:=game.world.get_node("GrassTiles").duplicate() as TileMapLayer
-	ground_view.add_child(tiles)
-	var paths:=ForestTerrain.new()
-	paths.build()
-	ground_view.add_child(paths)
-	# Ground shadows are drawn once, rather than rendering hundreds of alpha
-	# silhouettes into four directional shadow maps on every frame.
-	for tree in game.world.trees:
-		var shadow:Polygon2D=tree.body.get_child(0).duplicate()
-		shadow.position=tree.body.position
-		ground_view.add_child(shadow)
-	for building in KingdomData.BUILDINGS:
-		var rect:=KingdomData.building_rect(building)
-		var offset:=Vector2(24,32)*(rect.size.x/96.0)
-		var points:=PackedVector2Array([rect.position,Vector2(rect.end.x,rect.position.y),rect.end,Vector2(rect.position.x,rect.end.y)])
-		for point in points.duplicate():
-			points.append(point+offset)
-		var shadow:=Polygon2D.new()
-		shadow.polygon=Geometry2D.convex_hull(points)
-		shadow.color=Color(0.08,0.13,0.11,0.22)
-		ground_view.add_child(shadow)
-	var plane:=PlaneMesh.new()
-	plane.size=Vector2(50,40)
-	var material:=StandardMaterial3D.new()
-	material.albedo_texture=ground_view.get_texture()
-	material.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	material.roughness=1.0
-	var mesh:=MeshInstance3D.new()
-	mesh.name="Ground3D"
-	mesh.mesh=plane
-	mesh.material_override=material
-	mesh.position=Vector3(25,-0.025,20)
-	add_child(mesh)
-	_box(Vector3(25,-0.3,20),Vector3(50,0.5,40),Color("574532"))
+	landscape=StreamedLandscape.new()
+	landscape.name="Ground3D"
+	add_child(landscape)
+	landscape.setup(self)
 
 func _lighting()->void:
 	atmosphere=WorldEnvironment.new()
@@ -259,10 +225,12 @@ func _buildings()->void:
 		add_child(face)
 
 func _bridge()->void:
+	for rect in WorldData.bridges():_bridge_mesh(rect)
+
+func _bridge_mesh(rect:Rect2)->void:
 	# One instanced box mesh for all planks, sloping rails and supports.
 	# Physics uses these same floor/rail dimensions in WorldData.
 	var parts: Array[Dictionary]=[]
-	var rect:=WorldData.BRIDGE_RECT
 	var z:=rect.get_center().y/UNIT
 	for i in 28:
 		var x0:=lerpf(rect.position.x,rect.end.x,i/28.0)
@@ -273,7 +241,7 @@ func _bridge()->void:
 		var size:=Vector3(Vector2(x1-x0,h1-h0).length()/UNIT+0.008,0.075,rect.size.y/UNIT)
 		parts.append({"at":Vector3((x0+x1)/2/UNIT,(h0+h1)/2/UNIT-0.0375,z),"size":size,"angle":angle,"color":Color("b59a67") if i%2==0 else Color("ac8d5c")})
 	var stops: Array[float]=[rect.position.x,rect.position.x+WorldData.BRIDGE_RAMP,rect.get_center().x,rect.end.x-WorldData.BRIDGE_RAMP,rect.end.x]
-	for rail in WorldData.bridge_rails():
+	for rail in WorldData.rails_for_bridge(rect):
 		var rail_z:=rail.get_center().y/UNIT
 		for x in stops:
 			var height:=WorldData.bridge_height(Vector2(x,rect.get_center().y))/UNIT
@@ -305,13 +273,13 @@ func _bridge()->void:
 func _water()->void:
 	var surface:=SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for i in 80:
-		var y0:=i*WorldData.SIZE.y/80
-		var y1:=(i+1)*WorldData.SIZE.y/80
-		var a:=_point(Vector2(WorldData.river_x(y0)-80,y0))
-		var b:=_point(Vector2(WorldData.river_x(y0)+80,y0))
-		var c:=_point(Vector2(WorldData.river_x(y1)-80,y1))
-		var d:=_point(Vector2(WorldData.river_x(y1)+80,y1))
+	for i in 400:
+		var y0:=i*WorldData.SIZE.y/400
+		var y1:=(i+1)*WorldData.SIZE.y/400
+		var a:=_point(Vector2(WorldData.river_x(y0)-WorldData.river_width(y0),y0))
+		var b:=_point(Vector2(WorldData.river_x(y0)+WorldData.river_width(y0),y0))
+		var c:=_point(Vector2(WorldData.river_x(y1)-WorldData.river_width(y1),y1))
+		var d:=_point(Vector2(WorldData.river_x(y1)+WorldData.river_width(y1),y1))
 		for v in [a,c,b,b,c,d]:
 			surface.set_uv(Vector2(v.x,v.z))
 			surface.add_vertex(v+Vector3(0,-0.005,0))
@@ -351,60 +319,14 @@ func _forest_material(texture:Texture2D)->ShaderMaterial:
 	return material
 
 func _build_forest()->void:
-	var groups:Dictionary={}
-	var row_materials:Dictionary={}
-	for tree in game.world.trees:
-		if tree.sprite==game.world.mother_sprite:
-			mother_card=_card(tree.sprite)
-			mother_card.position=_point(tree.body.position)
-			var material:=_forest_material(mother_card.texture)
-			mother_card.material_override=material
-			material.set_shader_parameter("foliage_height",TreeAtlas.FRAME_SIZE.y*tree.sprite.scale.y/UNIT)
-			material.set_shader_parameter("wind",8.0*tree.sprite.scale.x/UNIT)
-			foliage_materials.append(material)
-			tree_cards.append({"card":mother_card,"source":tree})
-			continue
-		var row:int=tree.sprite.get_meta("atlas_row")
-		if not row_materials.has(row):
-			var texture:=_bake(tree.sprite.sprite_frames.get_frame_texture("default",0))
-			var material:=_forest_material(texture)
-			material.set_shader_parameter("wind",8.0/UNIT)
-			row_materials[row]=material
-			foliage_materials.append(material)
-		var point:Vector2=tree.body.position
-		var key:=Vector3i(floori(point.x/512.0),floori(point.y/512.0),row)
-		if not groups.has(key):
-			groups[key]=[]
-		groups[key].append(tree)
-	for key in groups:
-		var entries:Array=groups[key]
-		var quad:=QuadMesh.new()
-		quad.size=TreeAtlas.FRAME_SIZE/UNIT
-		quad.center_offset=Vector3(0,(TreeAtlas.ANCHOR.y-TreeAtlas.FRAME_SIZE.y/2.0)/UNIT,0)
-		quad.subdivide_depth=6
-		var multi:=MultiMesh.new()
-		multi.transform_format=MultiMesh.TRANSFORM_3D
-		multi.mesh=quad
-		multi.instance_count=entries.size()
-		var minimum:=Vector3(INF,0,INF)
-		var maximum:=Vector3(-INF,0,-INF)
-		for i in entries.size():
-			var tree:Dictionary=entries[i]
-			var at:=_point(tree.body.position)+Vector3(0,-tree.sprite.position.y/UNIT,0)
-			multi.set_instance_transform(i,Transform3D(Basis.from_scale(Vector3.ONE*tree.sprite.scale.x),at))
-			minimum=minimum.min(at)
-			maximum=maximum.max(at)
-			tree_cards.append({"batch":multi,"index":i,"source":tree})
-		# Account for the card facing the tilted camera, rather than the mesh's
-		# undeformed vertical bounds. Small chunks still cull independently.
-		multi.custom_aabb=AABB(Vector3(minimum.x-2,-0.6,minimum.z-5),Vector3(maximum.x-minimum.x+4,6,maximum.z-minimum.z+6))
-		var node:=MultiMeshInstance3D.new()
-		node.name="ForestBatch_%s"%key
-		node.multimesh=multi
-		node.material_override=row_materials[key.z]
-		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		add_child(node)
-		tree_batches.append(node)
+	var tree:Dictionary=game.world.mother_entry
+	mother_card=_card(tree.sprite)
+	mother_card.position=_point(tree.body.position)
+	var material:=_forest_material(mother_card.texture)
+	mother_card.material_override=material
+	material.set_shader_parameter("foliage_height",TreeAtlas.FRAME_SIZE.y*tree.sprite.scale.y/UNIT)
+	material.set_shader_parameter("wind",8.0*tree.sprite.scale.x/UNIT)
+	foliage_materials.append(material)
 
 func _card(source:AnimatedSprite2D)->Sprite3D:
 	var card:=Sprite3D.new()
@@ -450,9 +372,15 @@ func _shadow(body:Node2D)->void:
 func _process(delta:float)->void:
 	if game==null: return
 	for actor in actors:
+		var nearby:bool=actor.body.position.distance_squared_to(game.player.position)<1600.0*1600.0 and actor.body.visible
+		if not nearby:
+			if actor.has("card"):actor.card.visible=false
+			elif actor.has("label"):actor.label.visible=false
+			else:actor.shadow.visible=false
+			continue
 		if actor.has("label"):
 			actor.label.position=_point(actor.body.position)+Vector3(0,_body_height(actor.body)+1.5,0)
-			actor.label.visible=actor.body.visible
+			actor.label.visible=actor.body.visible and actor.body.position.distance_squared_to(game.player.position)<600.0*600.0
 		elif actor.has("shadow"):
 			actor.shadow.position=_point(actor.body.position)+Vector3(0,_body_height(actor.body)+0.005,0)
 			actor.shadow.visible=actor.body.visible and not (actor.body==game.player and game.player.swimming)
@@ -511,7 +439,7 @@ func _bake(texture:Texture2D)->Texture2D:
 	# Sprite3D needs a real texture: retain each atlas frame's padded pivot
 	# instead of sampling neighboring poses from the source sheet.
 	if not texture is AtlasTexture: return texture
-	var key:=texture.get_instance_id()
+	var key:="%s:%s:%s"%[texture.atlas.get_instance_id(),texture.region,texture.margin]
 	if not baked.has(key):
 		var image:=Image.create(int(texture.get_width()),int(texture.get_height()),false,Image.FORMAT_RGBA8)
 		image.fill(Color.TRANSPARENT)
@@ -564,10 +492,59 @@ func _landmarks()->void:
 	_box(sign+Vector3(0,0.35,0),Vector3(0.08,0.7,0.08),Color("735636"))
 	_box(sign+Vector3(0,0.62,0),Vector3(0.65,0.22,0.08),Color("ad8b56"))
 	var mother:=Label3D.new()
-	mother.text="ÁRVORE-MÃE"
+	mother.text="ÁRVORE ANCESTRAL"
 	mother.position=_point(WorldData.MOTHER)+Vector3(0,3.5,0)
 	mother.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 	mother.no_depth_test=true
 	mother.font_size=40
 	mother.pixel_size=0.008
 	add_child(mother)
+
+func world_position(screen:Vector2)->Vector2:
+	var origin:=camera.project_ray_origin(screen)
+	var direction:=camera.project_ray_normal(screen)
+	var point:=origin+direction*(-origin.y/direction.y)
+	return Vector2(point.x,point.z)*UNIT
+
+func preview_house(point:Vector2,valid:bool)->void:
+	if build_ghost==null:
+		build_ghost=MeshInstance3D.new()
+		var mesh:=BoxMesh.new()
+		mesh.size=Vector3(3,0.07,2)
+		build_ghost.mesh=mesh
+		var material:=StandardMaterial3D.new()
+		material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
+		material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+		build_ghost.material_override=material
+		build_ghost.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(build_ghost)
+	build_ghost.visible=true
+	build_ghost.position=_point(point)+Vector3(0,0.045,-1)
+	build_ghost.material_override.albedo_color=Color(0.35,0.8,0.45,0.5) if valid else Color(0.9,0.3,0.22,0.5)
+
+func cancel_preview()->void:
+	if build_ghost!=null:build_ghost.visible=false
+
+func _settlement_labels()->void:
+	for town in KingdomData.SETTLEMENTS:
+		var title:=Label3D.new()
+		title.text=town.name
+		title.position=_point(town.position)+Vector3(0,1.8,0)
+		title.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+		title.font_size=64
+		title.pixel_size=0.01
+		add_child(title)
+		for kind in ["shop","inn"]:
+			var label:=Label3D.new()
+			label.text="Ferraria • Comércio" if kind=="shop" else "Estalagem • Caravanas"
+			label.position=_point(KingdomData.point(town.id+"_"+kind))+Vector3(0,1.6,0)
+			label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+			label.font_size=32
+			label.pixel_size=0.008
+			add_child(label)
+		if town.capital:
+			var at:=_point(town.position+Vector2(0,-512))
+			for side in [-1,1]:
+				_box(at+Vector3(side*3.7,2.5,-1.5),Vector3(1.3,5.0,1.5),Color("a1a09a"))
+				_box(at+Vector3(side*2.5,1.4,0.05),Vector3(0.06,2.8,0.06),Color("66513c"))
+				_box(at+Vector3(side*2.5+0.35,2.4,0.05),Vector3(0.7,0.6,0.035),KingdomData.REALMS[town.realm].color)

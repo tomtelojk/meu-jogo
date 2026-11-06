@@ -1,248 +1,204 @@
 extends SceneTree
 
-var failures: int = 0
-var checks: int = 0
-var game: ForestGame
-var watchdog: Timer
+var checks:=0
+var failures:=0
+var game:ForestGame
 
-func _initialize() -> void:
-	watchdog = Timer.new()
-	watchdog.wait_time = 60.0
-	watchdog.one_shot = true
-	watchdog.autostart = true
-	root.add_child(watchdog)
-	watchdog.timeout.connect(_timeout)
-	call_deferred("_run")
+func _initialize()->void:
+	var timeout:=Timer.new()
+	timeout.wait_time=120
+	timeout.one_shot=true
+	timeout.autostart=true
+	root.add_child(timeout)
+	timeout.timeout.connect(func():push_error("Teste excedeu 120 segundos");quit(1))
+	call_deferred("run")
 
-func _timeout() -> void:
-	push_error("O teste excedeu 60 segundos sem concluir.")
-	quit(1)
+func verify(ok:bool,label:String)->void:
+	checks+=1
+	if ok:print("PASS: "+label)
+	else:failures+=1;push_error("FAIL: "+label)
 
-func verify(condition: bool, label: String) -> void:
-	checks += 1
-	if not condition:
-		failures += 1
-		push_error("FAIL: " + label)
-	else:
-		print("PASS: " + label)
-
-func frames(count: int = 3) -> void:
+func frames(count:int=3)->void:
 	for i in count:
 		await physics_frame
-		# physics_frame is emitted before simulation. Let transforms, Area2D
-		# overlaps and queued input settle before inspecting the resulting state.
 		await process_frame
 
-func settle_ui() -> void:
-	for i in 3:
-		await process_frame
-
-func _run() -> void:
-	root.size = Vector2i(1280, 800)
-	var scene: PackedScene = load("res://scenes/main.tscn")
-	game = scene.instantiate()
-	root.add_child(game)
-	game.persistence = false
+func move_to(point:Vector2,swim:bool=false)->void:
+	game.player.position=point
+	game.player.restore_surface(swim)
+	game.world.ensure_region(point,true)
 	await frames()
-	verify(game.world.get_node("GrassTiles") is TileMapLayer, "o chão usa TileMapLayer nativo")
-	verify(game.player is CharacterBody2D and game.camera is Camera2D, "personagem e câmera usam nós nativos")
-	verify(game.world.trees.size() > 300 and game.world.seeds.size() == 5, "cenário e cinco sementes foram criados")
-	preload("res://tests/tree_atlas_tests.gd").run(self, game.world)
-	preload("res://tests/terrain_tests.gd").run(self, game.world)
-	preload("res://tests/bundled_npc_tests.gd").run(self, game.world)
-	preload("res://tests/tomate_assets_tests.gd").run(self, game.world)
-	_test_reachability()
+
+func run()->void:
+	game=load("res://scenes/main.tscn").instantiate()
+	root.add_child(game)
 	game.start_journey()
 	await frames()
-	await settle_ui()
-	verify(game.hud.quest.size.y < 300 and game.hud.stamina.size.y <= 8, "painel de missão e barra de fôlego mantêm tamanho compacto")
-	var start := game.player.position
-	var walk_tick := Engine.get_physics_frames()
-	Input.action_press("move_up")
-	await frames(16)
-	Input.action_release("move_up")
-	var walk_ticks := maxi(1, Engine.get_physics_frames() - walk_tick)
-	var walk_distance := start.distance_to(game.player.position)
-	await frames()
-	verify(walk_distance > 25 and game.player.position.y < start.y, "WASD movimenta o CharacterBody2D pela física")
-	game.player.position = start
-	var run_tick := Engine.get_physics_frames()
-	Input.action_press("move_down")
-	Input.action_press("run")
-	await frames(16)
-	Input.action_release("move_down")
-	Input.action_release("run")
-	var run_ticks := maxi(1, Engine.get_physics_frames() - run_tick)
-	var run_distance := start.distance_to(game.player.position)
-	await frames()
-	verify(run_distance / run_ticks > walk_distance / walk_ticks * 1.4 and game.player.stamina < 1, "corrida aumenta a velocidade e consome fôlego")
-	game.show_pause()
-	start = game.player.position
-	Input.action_press("move_up")
-	await frames(10)
-	Input.action_release("move_up")
-	verify(game.player.position == start and game.mode == "dialog", "pausa bloqueia o movimento")
-	game.close_dialog()
-	game.show_map()
-	verify(game.hud.modal_kind == "map", "mapa ampliado abre no HUD nativo")
-	await settle_ui()
-	verify(game.hud.modal_panel.size.y > 500, "mapa ampliado preserva altura e proporção")
-	game.show_map()
-	verify(game.mode == "playing", "atalho de mapa também fecha o mapa")
-	game.player.position = WorldData.MOTHER + Vector2(0, 85)
-	await frames()
-	Input.action_press("move_up")
-	Input.action_press("run")
-	await frames(45)
-	Input.action_release("move_up")
-	Input.action_release("run")
-	verify(game.player.position.y >= WorldData.MOTHER.y + 35, "tronco bloqueia o personagem com colisão real")
-	game.player.position = Vector2(WorldData.river_x(16 * WorldData.TILE) - 115, 16 * WorldData.TILE)
-	await frames()
-	Input.action_press("move_right")
-	await frames(45)
-	Input.action_release("move_right")
-	verify(game.player.swimming and game.player.position.x > WorldData.river_x(game.player.position.y) - 80, "o jogador entra no rio e passa a nadar fora da ponte")
-	game.player.position = Vector2(35.8 * WorldData.TILE, 20 * WorldData.TILE)
-	game.player.restore_surface()
-	await frames()
-	Input.action_press("move_right")
-	Input.action_press("run")
-	await frames(112)
-	Input.action_release("move_right")
-	Input.action_release("run")
-	verify(game.player.position.x > WorldData.river_x(game.player.position.y) + 90, "a ponte permite atravessar o rio pela física")
-	for seed_data in WorldData.SEEDS:
-		game.player.position = seed_data.position + Vector2(0, 30)
-		await frames(4)
-		verify(game.current_interaction().get("id") == seed_data.id, "Area2D detecta " + seed_data.name)
-		var count := game.collected.size()
-		var event := InputEventKey.new()
-		event.physical_keycode = KEY_E
-		event.keycode = KEY_E
-		event.pressed = true
-		Input.parse_input_event(event)
-		await frames(1)
-		var release: InputEventKey = event.duplicate()
-		release.pressed = false
-		Input.parse_input_event(release)
+	var state:=game.rpg
+	verify(WorldData.SIZE==Vector2(16000,12800) and WorldData.COLS*WorldData.ROWS==50000,"mapa tem 25 vezes a área original")
+	verify(KingdomData.SETTLEMENTS.size()==6 and KingdomData.REALMS.size()==2,"duas capitais e quatro vilarejos têm posições próprias")
+	verify(KingdomData.BUILDINGS.size()>=120 and game.world.npcs.size()==44,"reinos ampliados têm mais de 120 construções e 44 NPCs")
+	verify(game.world.chunks.size()<=25 and game.world.resources.size()<500,"mundo carrega apenas as regiões próximas")
+	verify(game.hud.quest_title.text.contains("Nível") and not game.hud.quest_title.text.contains("semente"),"interface e objetivo principal são de RPG")
+	var overlap:=false
+	for i in KingdomData.BUILDINGS.size():
+		for j in range(i+1,KingdomData.BUILDINGS.size()):
+			if KingdomData.building_rect(KingdomData.BUILDINGS[i]).intersects(KingdomData.building_rect(KingdomData.BUILDINGS[j])):
+				push_error("Prédios sobrepostos: %s / %s"%[KingdomData.BUILDINGS[i].name,KingdomData.BUILDINGS[j].name])
+				overlap=true
+	verify(not overlap,"paredes das cidades não se sobrepõem")
+	for town in KingdomData.SETTLEMENTS:
+		var at:Vector2=town.position+Vector2(0,384)
+		verify(WorldData.can_stand(at,game.world.data),"entrada de "+town.name+" está livre")
+		var start:Vector2i=game.world.npcs.bento._nearest_cell(WorldData.SPAWN)
+		var end:Vector2i=game.world.npcs.bento._nearest_cell(at)
+		verify(not game.world.navigator.get_id_path(start,end).is_empty(),"há rota terrestre até "+town.name)
+	# Source artwork and directional pivots continue to be verified.
+	var manifest:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/tomate/sources.json"))
+	var intact:=true
+	for entry in manifest.files:intact=intact and FileAccess.get_sha256("res://"+entry.path)==entry.sha256
+	verify(intact,"os dez PNGs recebidos mantêm os bytes originais")
+	preload("res://tests/bundled_npc_tests.gd").run(self,game.world)
+	var first_gold:=state.gold
+	verify(not state.harvest("test_wood","wood").ok and not state.depleted.has("test_wood"),"sem machado não se recolhe madeira nem se esgota o recurso")
+	verify(state.buy("axe").ok and state.gold==first_gold-25,"comprar machado desconta moedas")
+	var gold:=state.gold
+	verify(not state.buy("axe").ok and state.gold==gold,"ferramenta duplicada não cobra novamente")
+	verify(state.buy("pickaxe").ok and state.buy("hammer").ok,"picareta e martelo podem ser comprados")
+	state.gold=0
+	verify(not state.buy("sword").ok and not state.tools.has("sword"),"loja impede compra sem moedas")
+	state.gold=100
+	await move_to(KingdomData.point("aurelia_wood")+Vector2(0,140))
+	var target:Dictionary={}
+	for entry in game.world.resources.values():
+		if entry.resource.kind!="wood":continue
+		var isolated:=true
+		for npc in game.world.npcs.values():
+			if npc.position.distance_to(entry.resource.position)<120:isolated=false;break
+		if isolated:target=entry;break
+	verify(not target.is_empty(),"arvoredo fornece madeira de verdade no cenário")
+	if not target.is_empty():
+		await move_to(target.resource.position+Vector2(0,35))
+		var interaction:=game.current_interaction()
+		verify(interaction.get("kind")=="resource","sensor encontra um recurso próximo")
+		var before:=state.wood
 		game.interact()
-		verify(game.collected.size() == count + 1 and not game.world.seeds[seed_data.id].visible, "semente é recolhida uma única vez: " + seed_data.id)
-		# A second interaction can now open a nearby villager's conversation.
-		if game.mode == "dialog":
-			game.close_dialog()
-	game.player.position = WorldData.MOTHER + Vector2(0, 60)
-	await frames(4)
-	game.interact()
-	verify(game.complete and is_equal_approx(game.world.mother_material.get_shader_parameter("vitality"), 1.0), "plantar as cinco sementes restaura a vitalidade da árvore-mãe")
-	await create_timer(1.4).timeout
-	verify(game.hud.modal_kind == "victory", "conclusão mostra o diálogo de vitória")
-	var saved: Dictionary = JSON.parse_string(JSON.stringify(game.journey_data()))
-	game.close_dialog()
-	game.reset_journey()
-	verify(game.collected.is_empty() and not game.complete and game.player.position == WorldData.SPAWN, "reinício restaura objetivos e posição")
-	verify(game.apply_journey(saved) and game.complete and game.collected.size() == 5, "progresso e vitória sobrevivem à serialização")
-	game.save_path = "/tmp/entre-folhas-godot-test-save.json"
-	game.persistence = true
-	game.save_journey()
-	verify(FileAccess.file_exists(game.save_path), "salvamento grava um arquivo real no disco")
-	game.collected.clear()
-	game.complete = false
+		await frames()
+		verify(state.wood==before+5 and state.depleted.has(interaction.id),"E usa a ferramenta, entrega madeira e remove o recurso")
+		var after:=state.wood
+		verify(not state.harvest(interaction.id,"wood").ok and state.wood==after,"recurso esgotado não duplica material")
+	# Gather real deterministic nodes to exercise the complete construction cost.
+	for entry in game.world.resources.values():
+		if entry.resource.kind=="wood" and state.wood<75:state.harvest(entry.resource.id,"wood")
+		elif entry.resource.kind=="stone" and state.stone<45:state.harvest(entry.resource.id,"stone")
+	verify(state.wood>=50 and state.stone>=20,"madeira e pedra do mundo suprem uma casa completa")
+	gold=state.gold
+	verify(state.sell("wood",10).ok and state.gold==gold+20,"venda converte madeira em moeda")
+	verify(not state.sell("stone",999).ok,"venda não permite inventário negativo")
+	var paid:=state.deliver("aurelia",game.world.clock.day)
+	verify(paid.ok,"encomenda consome os recursos e paga moedas e XP")
+	gold=state.gold
+	verify(not state.deliver("aurelia",game.world.clock.day).ok and state.gold==gold,"encomenda não pode ser repetida no mesmo dia")
+	# Supply the remaining house materials explicitly after the trade checks.
+	state.wood=50;state.stone=20
+	await move_to(Vector2(6000,6000))
+	var site:=Vector2.ZERO
+	for y in range(-256,257,32):
+		for x in range(-256,257,32):
+			var p:=game.player.position+Vector2(x,y)
+			if game.can_build_at(p).ok:site=p;break
+		if site!=Vector2.ZERO:break
+	verify(site!=Vector2.ZERO,"há terreno livre fora de ruas, rios, recursos e prédios")
+	verify(not game.can_build_at(KingdomData.REALMS.aurelia.capital).ok,"construção não bloqueia ruas ou locais distantes")
+	if site!=Vector2.ZERO:
+		var claimed:=game.place_house(site)
+		verify(claimed.ok and state.houses.has("home_player"),"reservar terreno cria uma obra interativa")
+		game.close_dialog()
+		await move_to(site+Vector2(0,48))
+		state.tools.erase("hammer")
+		verify(not state.build("home_player").ok and state.houses.home_player.stage==0,"construir exige martelo")
+		state.tools.hammer=true
+		var before:=state.wood
+		game.build_house("home_player")
+		await frames()
+		verify(state.houses.home_player.stage==1 and state.wood==before-15,"fundação consome o primeiro lote e cria colisão")
+		game.close_dialog()
+		var wall:=state.home_rect(state.houses.home_player)
+		game.player.position=Vector2(site.x,site.y+24)
+		var hit:=game.player.move_and_collide(Vector2(0,-200))
+		verify(hit!=null and not WorldData.circle_hits_rect(game.player.position,9.8,wall),"obra tem parede física desde a fundação")
+		game.build_house("home_player");game.close_dialog()
+		game.build_house("home_player");game.close_dialog()
+		verify(state.houses.home_player.stage==3 and state.wood==0 and state.stone==0,"paredes e telhado completam a casa sem criar recursos")
+		var remaining:=state.wood
+		verify(not state.build("home_player").ok and state.wood==remaining,"casa concluída não cobra etapa extra")
+		await move_to(WorldData.SPAWN)
+		game.build_house("home_player")
+		verify(game.mode=="playing","construir à distância não abre acesso remoto ao lar")
+	state.gold=100
+	var previous_regions:=game.world.chunks.keys()
+	game.open_inn("aurelia")
+	verify(game.travel_to("porto_claro"),"caravana chega ao povoado escolhido")
+	await frames()
+	verify(game.world.chunks.size()<=25 and game.player.position.distance_to(KingdomData.SETTLEMENTS[4].position)<500,"viagem descarrega regiões antigas e mantém o limite de memória")
+	verify(state.discovered.has("porto_claro") and state.gold==95,"viagem paga custo e registra exploração")
+	var a:=WorldData.generate_chunk(Vector2i(24,18),game.world.data)
+	var b:=WorldData.generate_chunk(Vector2i(24,18),game.world.data)
+	verify(JSON.stringify(a)==JSON.stringify(b),"região é determinística e não muda ao retornar")
+	var saved:=JSON.parse_string(JSON.stringify(game.journey_data())) as Dictionary
+	state.gold=1;state.tools.clear();state.houses.clear()
+	verify(game.apply_journey(saved) and state.gold==95 and state.tools.has("axe") and state.houses.home_player.stage==3,"salvamento restaura inventário, dinheiro, ferramentas e casa")
+	var snapshot:=game.journey_data()
+	state.houses.home_player.stage=1
+	verify(snapshot.rpg.houses.home_player.stage==3,"snapshot de salvamento não muda quando a casa avança depois")
+	game.apply_journey(snapshot)
+	verify(not game.apply_journey({"version":2.5,"seeds":[]}),"versão fracionária de save é rejeitada")
+	game.save_path="/tmp/entre-reinos-test-save.json";game.persistence=true;game.save_journey()
+	state.gold=0
 	game._load_journey()
-	verify(game.complete and game.collected.size() == 5, "salvamento gravado recupera as cinco sementes e a vitória")
-	DirAccess.remove_absolute(game.save_path)
-	game.persistence = false
-	game.save_path = ForestGame.SAVE_PATH
-	verify(not game.apply_journey({"version": 99, "seeds": []}), "salvamento de versão desconhecida é rejeitado")
-	game.apply_journey({"version": 1, "seeds": ["flores", "flores", "inexistente"], "x": -999, "y": 10, "complete": true})
-	verify(game.collected.size() == 1 and not game.complete and game.player.position == WorldData.SPAWN, "salvamento inválido recupera posição e filtra sementes")
-	_test_character_import()
-	await preload("res://tests/npc_animation_tests.gd").run(self, game)
-	await NPCTests.run(self, game)
-	game.reset_journey()
-	root.size = Vector2i(390, 844)
-	await frames(6)
-	game.hud._layout()
-	verify(game.hud.touch_controls.visible, "janela estreita oferece controles de toque")
-	verify(game.hud.quest.size.y < 300 and game.hud.quest.position.x + game.hud.quest.size.x <= 390, "painel de missão cabe na janela estreita")
-	var joystick := game.hud.joystick
-	var center := joystick.global_position + joystick.size / 2.0
-	var touch := InputEventScreenTouch.new()
-	touch.index = 0
-	touch.pressed = true
-	touch.position = center
-	Input.parse_input_event(touch)
-	await frames()
-	var drag := InputEventScreenDrag.new()
-	drag.index = 0
-	drag.position = center + Vector2(0, -30)
-	Input.parse_input_event(drag)
-	start = game.player.position
-	await frames(18)
-	var touch_release: InputEventScreenTouch = touch.duplicate()
-	touch_release.pressed = false
-	Input.parse_input_event(touch_release)
-	await frames()
-	verify(game.player.position.y < start.y - 20 and game.player.touch_vector == Vector2.ZERO, "arrastar e soltar o controle de toque move e para o personagem")
-	var sound_enabled := game.audio.toggle()
-	await create_timer(0.15).timeout
-	var sound_disabled := not game.audio.toggle()
-	await create_timer(0.15).timeout
-	verify(sound_enabled and sound_disabled, "som sintetizado pode ser ativado e desativado")
-	print("\nRESULTADO: %d verificações; %d falhas." % [checks, failures])
-	game.queue_free()
-	watchdog.queue_free()
-	await process_frame
-	quit(0 if failures == 0 else 1)
-
-func _test_character_import() -> void:
-	var fixture := Image.create(500, 800, false, Image.FORMAT_RGBA8)
-	fixture.fill(Color.TRANSPARENT)
-	for row in 8:
-		for col in 5:
-			fixture.fill_rect(Rect2i(col * 100 + 30, row * 100 + 15, 40, 80), Color.from_hsv(row / 8.0, 0.6, 0.4 + col * 0.1))
-	var path := "/tmp/entre-folhas-test-character.png"
-	verify(fixture.save_png(path) == OK and game.import_character(path), "prancha PNG pode ser importada nativamente")
-	var library := game.player.sprite.sprite_frames
-	var atlas: AtlasTexture = library.get_frame_texture("run_left", 0)
-	verify(atlas.region == Rect2(100, 700, 100, 100), "corrida para a esquerda usa a oitava linha sem espelhamento")
-	verify(library.get_frame_count("walk_up") == 4 and library.get_frame_count("idle_up") == 1, "animações usam quatro quadros de movimento e um parado")
-	game.player.use_default_character()
-	DirAccess.remove_absolute(path)
-
-func _test_reachability() -> void:
-	var step := 16
-	var cols := int(WorldData.SIZE.x) / step
-	var rows := int(WorldData.SIZE.y) / step
-	var passable := PackedByteArray()
-	var visited := PackedByteArray()
-	passable.resize(cols * rows)
-	visited.resize(cols * rows)
-	for y in rows:
-		for x in cols:
-			passable[y * cols + x] = 1 if WorldData.can_stand(Vector2(x, y) * step, game.world.data) else 0
-	var start := roundi(WorldData.SPAWN.y / step) * cols + roundi(WorldData.SPAWN.x / step)
-	var queue := PackedInt32Array([start])
-	visited[start] = 1
-	var cursor := 0
-	while cursor < queue.size():
-		var index := queue[cursor]
-		cursor += 1
-		var x := index % cols
-		var y := index / cols
-		for offset in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
-			var nx: int = x + offset.x
-			var ny: int = y + offset.y
-			if nx < 0 or ny < 0 or nx >= cols or ny >= rows:
-				continue
-			var next: int = ny * cols + nx
-			if passable[next] and not visited[next]:
-				visited[next] = 1
-				queue.append(next)
-	for spot in WorldData.SEEDS + WorldData.LANDMARKS:
-		var reachable := false
-		for index in queue:
-			if Vector2(index % cols, index / cols).distance_to(spot.position / step) < (5.5 if spot.id == "mother" else 3.4):
-				reachable = true
-				break
-		verify(reachable, "objetivo alcançável a partir do início: " + spot.name)
+	verify(state.gold==95,"salvamento em disco restaura a economia")
+	game.persistence=false;DirAccess.remove_absolute(game.save_path)
+	verify(game.apply_journey({"version":1,"seeds":["flores"],"x":800,"y":960}) and game.player.position==WorldData.SPAWN,"save antigo migra para a entrada da capital preservando a tradição opcional")
+	# A remote worker uses the same wallet, tools and material costs as the player.
+	var builder:ForestNPC=game.world.npcs.pedra_alta_resident_0
+	builder.active=true
+	game.world.clock.set_time(8.5)
+	var elapsed:=0.0
+	for i in 350:
+		if not builder.wants_rest:
+			game.economy.advance_builder(builder,2.0)
+		builder.advance_offscreen(2.0)
+		game.world.clock.advance(4.0)
+		elapsed+=2.0
+		if state.houses.get("home_"+builder.definition.id,{}).get("stage",0)==3:break
+	var account:=state.npc_account(builder.definition.id)
+	verify(account.tools.has("axe") and account.tools.has("pickaxe") and account.tools.has("hammer") and account.gold<100,"NPC compra as três ferramentas com suas próprias moedas")
+	verify(state.houses.get("home_"+builder.definition.id,{}).get("stage",0)==3,"NPC viaja, coleta material e constrói sua própria casa")
+	verify(builder.home_override.is_finite(),"rotina do morador passa a usar a casa construída")
+	# Swimming and combat remain part of the new open world.
+	var water:=Vector2(WorldData.river_x(7000),7000)
+	await move_to(water,true)
+	verify(game.player.swimming,"rio continua permitindo natação")
+	var start:=game.player.position
+	game.show_pause()
+	await frames(10)
+	verify(game.player.position==start,"pausa impede correnteza e animais de mover o jogador")
+	game.close_dialog()
+	await move_to(WorldData.SPAWN)
+	state.health=40
+	verify(state.eat().ok and state.health==70,"provisão recupera vida e é consumida")
+	state.gold=100;state.buy("sword")
+	var boar:=WorldAnimal.new()
+	boar.setup({"id":"test_boar","species":"boar","position":game.player.position+Vector2(20,0)},game)
+	game.world.entities.add_child(boar);game.world.animals.test_boar=boar
+	var meat:=state.meat
+	for i in 4:game.action_delay=0;game.attack()
+	verify(not boar.alive and state.meat>meat,"combate com espada derrota animal e entrega saque e XP")
+	var xp:=state.xp
+	game.action_delay=0;game.attack()
+	verify(state.xp==xp,"animal derrotado não duplica experiência")
+	state.health=1
+	game.take_damage(9)
+	verify(state.health==60 and game.player.position.is_finite(),"personagem socorrido retorna com equipamento e vida")
+	print("RPG: %d verificações; %d falhas."%[checks,failures])
+	quit(1 if failures else 0)

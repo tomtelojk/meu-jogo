@@ -15,7 +15,7 @@ script = ExtResource("2_world")
 y_sort_enabled = true
 
 [node name="Player" type="CharacterBody2D" parent="World/Entities"]
-position = Vector2(1536, 1740.8)
+position = Vector2(4608, 4480)
 motion_mode = 1
 script = ExtResource("3_player")
 
@@ -25,8 +25,8 @@ position_smoothing_enabled = true
 position_smoothing_speed = 6.0
 limit_left = 0
 limit_top = 0
-limit_right = 3200
-limit_bottom = 2560
+limit_right = 16000
+limit_bottom = 12800
 limit_smoothed = true
 
 [node name="HUD" type="CanvasLayer" parent="."]

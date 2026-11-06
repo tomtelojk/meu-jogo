@@ -1,2 +1,0 @@
-93af64ffbaac53648d502cdd4108a5921d5b018e6f3a009da798418725d3bfc3  EntreFolhas-Linux.zip
-28ce9b8f61d53ceeca210695b1a527025d52a351ab371ccf53ea72cb975db3b8  EntreFolhas-Windows.zip
