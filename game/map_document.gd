@@ -8,7 +8,7 @@ const DRAFT_PATH := "user://maps/draft.json"
 const TERRAIN := ["grass", "dirt", "sand", "stone", "moss", "water"]
 const BUILDINGS := ["cottage", "timber", "stone_house", "tavern", "forge", "tower", "castle"]
 const STRUCTURES := ["cottage", "timber", "stone_house", "tavern", "forge", "tower", "castle", "bridge"]
-const NATURE := ["tree", "autumn_tree", "rock"]
+const NATURE := ["tree", "autumn_tree", "rock", "hard_stone", "copper_ore", "iron_ore", "basalt"]
 const ANIMALS := ["cow", "chicken", "deer", "rabbit", "boar"]
 const FACES := ["bento", "lia", "tomas", "iris", "eron", "aurel", "caio", "mila", "farmer"]
 const LIMIT := Vector2(16000,12800)
@@ -101,8 +101,8 @@ static func filter_chunk(content: Dictionary) -> Dictionary:
 	for obj in objects_in(content.rect):
 		var at := Vector2(obj.x,obj.y)
 		if obj.kind in NATURE:
-			var wood: bool = obj.kind != "rock"
-			content["trees" if wood else "rocks"].append({"id":obj.id,"position":at,"radius":12.0 if wood else 14.0,"size":obj.size,"kind":"wood" if wood else "stone","active":true,"variant":obj.kind})
+			var wood: bool = obj.kind in ["tree","autumn_tree"]
+			content["trees" if wood else "rocks"].append({"id":obj.id,"position":at,"radius":12.0 if wood else 14.0,"size":obj.size if wood else minf(55,obj.size*0.3),"kind":"wood" if wood else "stone","type":"wood" if wood else ("stone" if obj.kind=="rock" else obj.kind),"active":true,"variant":obj.kind})
 		elif obj.kind in ANIMALS:
 			content.animals.append({"id":obj.id,"position":at,"species":obj.kind})
 	return content

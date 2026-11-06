@@ -32,6 +32,7 @@ var simulation_timer:=0.0
 var population_active:=false
 var mother_entry:Dictionary
 var nav_resource_cells:Dictionary={}
+var regrowth_regions:Dictionary={}
 
 func _ready()->void:
 	rpg=get_parent().rpg
@@ -138,6 +139,8 @@ func _build_population()->void:
 	_update_population()
 
 func _update_population()->void:
+	rpg.resources.day=clock.day
+	rpg.resources.minute=clock.minute
 	for npc in npcs.values():npc.apply_schedule(clock.minute)
 	var hour:=clock.minute/60.0
 	var color:=Color(0.98,0.98,0.94)
@@ -197,12 +200,12 @@ func _load_chunk(coord:Vector2i)->void:
 	content.rock_entries=[]
 	content.animal_entries=[]
 	for resource in content.trees:
-		if rpg.depleted.has(resource.id):continue
+		if _spent(resource):continue
 		var entry:=_add_tree(resource,node)
 		content.tree_entries.append(entry)
 		resources[resource.id]=entry
 	for resource in content.rocks:
-		if rpg.depleted.has(resource.id):continue
+		if _spent(resource):continue
 		var body:=StaticBody2D.new()
 		body.position=resource.position
 		var shape:=CollisionShape2D.new()
@@ -225,6 +228,24 @@ func _load_chunk(coord:Vector2i)->void:
 		content.animal_entries.append(animal)
 	chunks[coord]=content
 	chunk_loaded.emit(coord,content)
+
+func _spent(resource:Dictionary)->bool:
+	if not rpg.depleted.has(resource.id):return false
+	if not rpg.resources.states.has(resource.id):rpg.resources.mark(resource)
+	rpg.resources.states[resource.id].x=resource.position.x;rpg.resources.states[resource.id].y=resource.position.y
+	return true
+
+func regrow_resource(id:String,saved_position:Vector2)->void:
+	var p:Vector2=resources[id].resource.position if resources.has(id) else saved_position
+	if p==Vector2.ZERO:return
+	var pending:=regrowth_regions.is_empty()
+	regrowth_regions[Vector2i((p/WorldData.CHUNK).floor())]=true
+	if pending:call_deferred("_reload_regrowth")
+
+func _reload_regrowth()->void:
+	for coord in regrowth_regions:
+		if chunks.has(coord):_unload_chunk(coord);_load_chunk(coord)
+	regrowth_regions.clear();_reindex_active()
 
 func _unload_chunk(coord:Vector2i)->void:
 	var content:Dictionary=chunks[coord]
@@ -290,7 +311,7 @@ func _add_tree(resource:Dictionary,parent:Node2D,mother:bool=false)->Dictionary:
 
 func _add_resource_area(body:Node2D,resource:Dictionary)->void:
 	var area:=_interaction_area(Vector2.ZERO,62)
-	area.set_meta("interaction",{"kind":"resource","id":resource.id,"resource_kind":resource.kind,"name":"Árvore" if resource.kind=="wood" else "Rocha","range":62.0})
+	area.set_meta("interaction",{"kind":"resource","id":resource.id,"resource_kind":resource.kind,"name":ResourceRules.definition(resource).name,"range":62.0})
 	body.add_child(area)
 
 func _interaction_area(point:Vector2,radius:float)->Area2D:
@@ -309,6 +330,7 @@ func _interaction_area(point:Vector2,radius:float)->Area2D:
 func _deplete_resource(id:String)->void:
 	if not resources.has(id):return
 	var entry:Dictionary=resources[id]
+	if rpg.resources.states.has(id):rpg.resources.states[id].x=entry.resource.position.x;rpg.resources.states[id].y=entry.resource.position.y
 	entry.resource.active=false
 	if entry.has("sprite"):entry.sprite.hide()
 	for child in entry.body.get_children():

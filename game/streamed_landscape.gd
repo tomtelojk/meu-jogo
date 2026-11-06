@@ -143,6 +143,7 @@ func _trees(parent:Node3D,content:Dictionary)->void:
 
 func _rocks(parent:Node3D,content:Dictionary)->void:
 	if content.rock_entries.is_empty():return
+	var veins:Array[Dictionary]=[]
 	var multi:=MultiMesh.new()
 	multi.transform_format=MultiMesh.TRANSFORM_3D
 	multi.use_colors=true
@@ -155,7 +156,11 @@ func _rocks(parent:Node3D,content:Dictionary)->void:
 		var entry:Dictionary=content.rock_entries[i]
 		var scale:=Vector3(entry.size/50,entry.size/70,entry.size/52)
 		multi.set_instance_transform(i,Transform3D(Basis.from_scale(scale),Vector3(entry.body.position.x/64,scale.y*0.5,entry.body.position.y/64)))
-		multi.set_instance_color(i,Color("92968d").darkened((i%3)*0.08))
+		var kind:String=entry.resource.get("type","stone")
+		multi.set_instance_color(i,Color({"stone":"92968d","hard_stone":"656c78","copper_ore":"777a71","iron_ore":"737d83","basalt":"454354"}.get(kind,"92968d")).darkened((i%3)*0.08))
+		if kind in ["copper_ore","iron_ore"]:
+			for chip in 4:
+				veins.append({"at":Vector3(entry.body.position.x/64+sin(chip*2.1)*scale.x*0.26,scale.y*(0.68+(chip%2)*0.12),entry.body.position.y/64+cos(chip*2.1)*scale.z*0.30),"color":Color("d78e56") if kind=="copper_ore" else Color("c3d2da"),"id":entry.resource.id})
 		resource_instances[entry.resource.id]={"multi":multi,"index":i,"coord":content.coord}
 	var node:=MultiMeshInstance3D.new()
 	node.multimesh=multi
@@ -165,11 +170,22 @@ func _rocks(parent:Node3D,content:Dictionary)->void:
 	node.material_override=mat
 	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(node)
+	if not veins.is_empty():
+		var flecks:=MultiMesh.new();flecks.transform_format=MultiMesh.TRANSFORM_3D;flecks.use_colors=true
+		var chip_mesh:=BoxMesh.new();chip_mesh.size=Vector3(0.10,0.045,0.08);flecks.mesh=chip_mesh;flecks.instance_count=veins.size()
+		for i in veins.size():
+			flecks.set_instance_transform(i,Transform3D(Basis(Vector3.UP,i*1.3),veins[i].at));flecks.set_instance_color(i,veins[i].color)
+			var resource:Dictionary=resource_instances[veins[i].id]
+			if not resource.has("veins"):resource.veins=[]
+			resource.veins.append({"multi":flecks,"index":i})
+		var ore:=MultiMeshInstance3D.new();ore.multimesh=flecks;ore.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var ore_mat:=StandardMaterial3D.new();ore_mat.vertex_color_use_as_albedo=true;ore_mat.roughness=0.75;ore.material_override=ore_mat;parent.add_child(ore)
 
 func remove_resource(id:String)->void:
 	if not resource_instances.has(id):return
 	var entry:Dictionary=resource_instances[id]
 	entry.multi.set_instance_transform(entry.index,Transform3D(Basis.from_scale(Vector3.ZERO),Vector3.ZERO))
+	for vein in entry.get("veins",[]):vein.multi.set_instance_transform(vein.index,Transform3D(Basis.from_scale(Vector3.ZERO),Vector3.ZERO))
 	if ground_shadows.has(entry.coord):
 		var shadows:Dictionary=ground_shadows[entry.coord]
 		if shadows.nodes.has(id):

@@ -15,6 +15,8 @@ Os moradores agora usam nove bases visuais, com os sprites originais de NPCs env
 
 Os NPCs têm turnos de trabalho, comércio, refeições, patrulhas, encontros e descanso. Evitam aglomerações, procuram desvios e fogem de javalis. Quatro moradores também compram equipamento e constroem casas. A iluminação acompanha o dia, com neblina de distância, postes e lanterna à noite. O título e toda a interface seguem o estilo de RPG em pixel art.
 
+**Coleta por golpes:** recursos têm vida, ferramenta mínima e drops próprios. Árvores tremem, caem e deixam tocos; materiais saltam para o chão e são recolhidos por atração ao se aproximar. Há partículas, fragmentos, som e números de dano. Ferramentas evoluem de madeira para pedra e ferro; habilidades de lenhador/mineiro melhoram dano e gasto de energia. Árvores regeneram em três dias e rochas/minérios em cinco a sete. O editor também permite colocar os depósitos. [Guia da coleta](../docs/coleta-e-ferramentas.md).
+
 [Guia do editor](../docs/editor-de-mapas.md) · [Ver o ateliê](../docs/editor-mapa.png) · [Mapa de exemplo](../docs/mapa-exemplo.json)
 
 **E** interage, **I** abre inventário e **B** escolhe terreno. A hotbar usa **1–4** para ferramentas, **5** para comer, **6** para mapa, **7** para diário e **8** para lanterna. A roda do mouse seleciona e o clique esquerdo usa o item. **Espaço** ataca. Nas estalagens, use caravanas para visitar outros povoados. O modo gráfico leve é o padrão.

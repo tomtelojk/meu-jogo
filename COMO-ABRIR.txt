@@ -18,5 +18,8 @@ Roda do mouse: selecionar | Clique esquerdo: usar o item selecionado
 F2: criar / editar o mapa | Esc > Shaders: ligar ou desligar efeitos
 
 Compre ferramentas na ferraria; recolha madeira e pedra; negocie ou construa.
+Use vários golpes. Materiais caem no chão e são atraídos ao chegar perto.
+Melhore ferramentas para pedra e ferro; golpes gastam energia e treinam habilidades.
+Árvores regeneram em 3 dias; rochas/minérios em 5–7. Veja docs/coleta-e-ferramentas.md.
 O mapa é 25 vezes maior, com duas capitais, quatro vilarejos e moradores com rotinas.
 O jogo salva automaticamente. As estalagens oferecem caravanas e descanso.

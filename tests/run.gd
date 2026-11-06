@@ -84,7 +84,11 @@ func run()->void:
 		var before:=state.wood
 		game.interact()
 		await frames()
-		verify(state.wood==before+5 and state.depleted.has(interaction.id),"E usa a ferramenta, entrega madeira e remove o recurso")
+		verify(state.wood==before and not state.depleted.has(interaction.id),"primeiro golpe danifica a árvore sem entregar madeira antes da queda")
+		for i in 3:
+			game.action_delay=0;game.player.stamina=1;game.gathering.strike(interaction.id)
+		await frames(120)
+		verify(state.wood>=before+5 and state.depleted.has(interaction.id),"golpes derrubam a árvore e o imã recolhe os materiais do chão")
 		var after:=state.wood
 		verify(not state.harvest(interaction.id,"wood").ok and state.wood==after,"recurso esgotado não duplica material")
 	# Gather real deterministic nodes to exercise the complete construction cost.

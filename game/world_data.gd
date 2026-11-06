@@ -210,7 +210,9 @@ static func generate_chunk(coord:Vector2i,data:Dictionary)->Dictionary:
 			if terrain!="mountains" and terrain!="coast" and rng.randf()<chance:
 				result.trees.append({"id":"wood_"+id,"position":point,"radius":12.0,"size":115.0+rng.randf()*40,"kind":"wood","active":true})
 			elif rng.randf()<(0.17 if terrain=="mountains" else 0.025):
-				result.rocks.append({"id":"stone_"+id,"position":point,"radius":14.0,"size":30+rng.randf()*15,"kind":"stone","active":true})
+				var rock_type:="stone"
+				if terrain=="mountains":rock_type=["stone","hard_stone","copper_ore","iron_ore","basalt"][rng.randi_range(0,4)]
+				result.rocks.append({"id":"stone_"+id,"position":point,"radius":14.0,"size":30+rng.randf()*15,"kind":"stone","type":rock_type,"active":true})
 	# Dedicated groves and quarries make each town's gathering economy usable.
 	for town in KingdomData.SETTLEMENTS:
 		for kind in ["wood","stone"]:

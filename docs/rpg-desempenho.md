@@ -20,13 +20,15 @@ Para reproduzir:
 
 ## Validação funcional
 
-- 239 verificações de mundo, sprites originais, NPCs, compras, coleta, venda, encomendas, construção, colisão da obra, viagens, simulação de um construtor, combate e salvamento/migração.
+- 240 verificações de mundo, sprites originais, NPCs, compras, coleta, venda, encomendas, construção, colisão da obra, viagens, simulação de um construtor, combate e salvamento/migração.
 - 46 verificações independentes de cabeça e pés nas caminhadas e corridas dos 44 moradores, incluindo a regressão de Caio nos PNGs reais.
 - 24 verificações gráficas do RPG: câmera, resolução, compras por botões reais, prévia, três etapas da casa, casa de NPC, viagens, animais, mapa e rio.
 - 40 verificações funcionais e 48 gráficas do editor validam pincéis, histórico, arquivos JSON, importação inválida, criação de mundo, rotinas, lojas, pontes, lagos e retorno à aventura anterior. A versão gráfica usa mouse e atalhos reais e testa os dois modos de qualidade.
 
-No executável Linux exportado, um teste com teclado e mouse reais abriu F2, renomeou e salvou um rascunho, ativou o mapa, reabriu o ateliê e confirmou que a jornada original permaneceu no disco. O processo encerrou com código 0. O Windows é exportado e verificado, sem Windows nativo disponível aqui.
+A exportação Linux final também passa por inicialização gráfica do executável e encerramento pelo motor. Os testes de teclado, mouse, mapas e persistência são executados nas suítes gráficas acima. O Windows é exportado e seu pacote verificado, sem Windows nativo disponível aqui.
 
 A validação de rotinas e interface acrescenta 22 verificações sem renderização e 26 gráficas: geração reproduzível, bairros irregulares, patrulhas com física real, trabalho, descanso, fuga, refeições, comércio, recuperação de rotas, atalhos da hotbar, save, luz e neblina. Os novos registros também incluem capturas de dia, de noite e do menu.
 
-Todas as suítes passaram: **445 verificações**, contando a execução sem renderização e a gráfica do editor e das rotinas.
+A coleta acrescenta 32 verificações sem renderização e 34 gráficas: vida parcial, tiers e custos, energia, habilidades, minério, drops pendentes no save, clique com a ferramenta equipada, som, queda, partículas, atração, prevenção de duplicação, troca de região e regeneração segura.
+
+Todas as suítes passaram: **512 verificações**, contando as execuções sem renderização e gráficas do editor, das rotinas e da coleta.

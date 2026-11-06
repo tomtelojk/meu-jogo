@@ -35,6 +35,7 @@ var met_npcs: Dictionary = {}
 var royal_seals: Dictionary = {}
 var rpg := RPGState.new()
 var economy:OpenEconomy
+var gathering:ResourceGathering
 var building_preview:=false
 var building_point:=Vector2.ZERO
 var action_delay:=0.0
@@ -85,6 +86,7 @@ func _ready() -> void:
 	economy=OpenEconomy.new()
 	add_child(economy)
 	economy.setup(self)
+	gathering=ResourceGathering.new();add_child(gathering);gathering.setup(self)
 	camera.reset_smoothing()
 	if not "--test" in OS.get_cmdline_user_args() or "--hybrid" in OS.get_cmdline_user_args():
 		hybrid = HybridWorld.new()
@@ -179,7 +181,12 @@ func _interaction_label(item: Dictionary) -> String:
 	if item.kind=="shop":return "Negociar na ferraria"
 	if item.kind=="inn":return "Estalagem e caravanas"
 	if item.kind=="house":return item.name
-	if item.kind=="resource":return "Cortar madeira" if item.resource_kind=="wood" else "Extrair pedra"
+	if item.kind=="resource":
+		var entry:Dictionary=world.resources.get(item.id,{})
+		if entry.is_empty():return item.name
+		var definition:=ResourceRules.definition(entry.resource)
+		var hp:int=rpg.resources.states.get(item.id,{}).get("hp",definition.hp)
+		return "%s · %d/%d"%[definition.name,hp,definition.hp]
 	if item.kind=="animal":return "Ajudar na fazenda · "+item.name
 	if item.kind == "seed":
 		return "Recolher semente"
@@ -199,11 +206,7 @@ func interact() -> void:
 	if item.kind=="inn":open_inn(item.id);return
 	if item.kind=="house":open_house(item.id);return
 	if item.kind=="resource":
-		if action_delay>0:return
-		action_delay=0.6
-		var result:=rpg.harvest(item.id,item.resource_kind)
-		hud.toast(result.message)
-		if result.ok:audio.chime();save_journey()
+		gathering.strike(item.id)
 		return
 	if item.kind=="animal":
 		hud.toast(world.animals[item.id].produce().message)
@@ -421,7 +424,7 @@ func apply_map(document:Dictionary) -> bool:
 	return true
 
 func show_help()->void:
-	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e colher\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Escolher terreno para sua casa\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nEsc · Pausar\n\nCompre machado, picareta e martelo no comércio. Madeira e pedra servem para construir ou podem ser vendidas. A casa cresce em três etapas. Vilarejos têm estalagens, caravanas e encomendas. Alguns moradores também compram ferramentas e constroem casas. Javalis podem atacar; provisões e descanso recuperam vida.",[{"label":"Continuar","callback":close_dialog}],"help")
+	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e colher\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Escolher terreno para sua casa\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nEsc · Pausar\n\nCompre machado, picareta e martelo no comércio. Dê vários golpes nos recursos; materiais caem no chão e são atraídos ao chegar perto. Golpes gastam energia e treinam lenhador/mineiro. Melhore ferramentas para pedra e ferro na ferraria. Madeira e pedra servem para construir ou podem ser vendidas. A casa cresce em três etapas. Vilarejos têm estalagens, caravanas e encomendas. Alguns moradores também compram ferramentas e constroem casas. Javalis podem atacar; provisões e descanso recuperam vida.",[{"label":"Continuar","callback":close_dialog}],"help")
 
 func show_map() -> void:
 	if mode == "dialog" and hud.modal_kind == "map":
@@ -523,7 +526,7 @@ func _use_default_character() -> void:
 	close_dialog()
 
 func journey_data() -> Dictionary:
-	return {"version": 2,"rpg":rpg.save_data(), "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
+	return {"version": 2,"rpg":rpg.save_data(), "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled,"stamina":player.stamina, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
 
 func apply_journey(data: Dictionary) -> bool:
 	if (data.get("version")!=1 and data.get("version")!=2) or not data.get("seeds",[]) is Array:
@@ -549,6 +552,7 @@ func apply_journey(data: Dictionary) -> bool:
 		player.position=MapDocument.spawn_point()
 		world.ensure_region(player.position,true)
 	player.restore_surface(data.get("swimming", false) == true)
+	player.stamina=clampf(float(data.get("stamina",1.0)),0,1) if ResourceProgress.number(data.get("stamina",1.0)) else 1.0
 	equipped_slot=clampi(int(data.get("equipped_slot",0)),0,7)
 	lantern_enabled=data.get("lantern",false)==true
 	hud.hotbar.slot=equipped_slot;hud.hotbar.lantern=lantern_enabled
@@ -646,9 +650,14 @@ func open_shop(town:String,page:String="main")->void:
 		for item in ["axe","pickaxe","hammer","sword"]:
 			var owned:=rpg.tools.has(item)
 			actions.append({"label":RPGState.ITEMS[item].name+(" · adquirido" if owned else " · %d moedas"%RPGState.ITEMS[item].price),"callback":buy_item.bind(town,item)})
+		for tool in ["axe","pickaxe"]:
+			var tier:=rpg.resources.tier(tool,rpg.tools)
+			if tier>0 and tier<3:actions.append({"label":"Melhorar "+RPGState.ITEMS[tool].name+" para "+ResourceRules.TIERS[tier+1]+(" · 40 moedas, 5 madeira, 10 pedra" if tier==1 else " · 90 moedas, 6 ferro"),"callback":upgrade_tool.bind(town,tool)})
 		actions.append({"label":"Voltar ao comércio","callback":open_shop.bind(town)})
 	elif page=="sell":
 		actions=[{"label":"Vender 10 madeira · +20 moedas","callback":sell_item.bind(town,"wood",10)},{"label":"Vender 8 pedra · +24 moedas","callback":sell_item.bind(town,"stone",8)},{"label":"Vender 2 carne · +8 moedas","callback":sell_item.bind(town,"meat",2)},{"label":"Voltar","callback":open_shop.bind(town)}]
+		actions.insert(3,{"label":"Vender 3 cobre · +21 moedas","callback":sell_item.bind(town,"copper",3)})
+		actions.insert(4,{"label":"Vender 3 ferro · +36 moedas","callback":sell_item.bind(town,"iron",3)})
 	else:
 		actions=[{"label":"Comprar ferramentas e espada","callback":open_shop.bind(town,"tools")},{"label":"Comprar provisão · 5 moedas","callback":buy_item.bind(town,"bread")},{"label":"Vender materiais","callback":open_shop.bind(town,"sell")},{"label":"Entregar encomenda · 15 madeira e 8 pedra","callback":deliver_order.bind(town)},{"label":"Continuar explorando","callback":close_dialog}]
 	_open_dialog("COMÉRCIO DOS REINOS","Ferramentas e provisões",body,actions,"shop")
@@ -658,6 +667,9 @@ func buy_item(town:String,item:String)->void:
 	open_shop(town,"tools" if item!="bread" else "main")
 	hud.toast(result.message)
 	save_journey()
+
+func upgrade_tool(town:String,tool:String)->void:
+	var result:=rpg.upgrade_tool(tool);open_shop(town,"tools");hud.toast(result.message);save_journey()
 
 func sell_item(town:String,kind:String,amount:int)->void:
 	var result:=rpg.sell(kind,amount)
@@ -707,8 +719,9 @@ func travel_to(id:String)->bool:
 
 func show_inventory()->void:
 	var names:=PackedStringArray()
-	for tool in rpg.tools:names.append(RPGState.ITEMS[tool].name)
+	for tool in rpg.tools:names.append(RPGState.ITEMS[tool].name+(" de "+ResourceRules.TIERS[rpg.resources.tier(tool,rpg.tools)] if tool in ["axe","pickaxe"] else ""))
 	var body:="Nível %d · %d XP\nVida %d / 100 · Moedas %d\nMadeira %d · Pedra %d\nProvisões %d · Carne %d\n\nFerramentas: %s"%[rpg.level(),rpg.xp,rpg.health,rpg.gold,rpg.wood,rpg.stone,rpg.food,rpg.meat,", ".join(names) if not names.is_empty() else "nenhuma — visite uma ferraria"]
+	body+="\nCobre %d · Ferro %d\nEnergia %d / 100\nLenhador nível %d · Mineiro nível %d\n\nUse E ou a ferramenta da hotbar para golpear. Materiais caem no chão: aproxime-se para recolher. Árvores voltam em 3 dias; rochas e minérios em 5–7 dias."%[rpg.copper,rpg.iron,roundi(player.stamina*100),rpg.resources.level("woodcutting"),rpg.resources.level("mining")]
 	_open_dialog("SEU EQUIPAMENTO","Inventário",body,[{"label":"Comer provisão · recuperar 30 vida","callback":eat_food},{"label":"Ver objetivos e registros","callback":show_journal},{"label":"Construir minha casa","callback":start_building},{"label":"Voltar à aventura","callback":close_dialog}],"inventory")
 
 func eat_food()->void:
@@ -859,8 +872,12 @@ func use_equipped()->void:
 		0:attack()
 		1,2:
 			var kind:="wood" if equipped_slot==1 else "stone"
-			var item:=current_interaction()
-			if item.get("kind")=="resource" and item.get("resource_kind")==kind:interact()
+			var nearest:="";var distance:=65.0
+			for entry in world.resources.values():
+				if not entry.resource.active or entry.resource.kind!=kind:continue
+				var gap:float=entry.resource.position.distance_to(player.position)
+				if gap<distance:nearest=entry.resource.id;distance=gap
+			if not nearest.is_empty():gathering.strike(nearest)
 			else:hud.toast("Aproxime-se de uma árvore." if equipped_slot==1 else "Aproxime-se de uma rocha.")
 		3:
 			if not rpg.tools.has("hammer"):hud.toast("Compre um martelo na ferraria.");return

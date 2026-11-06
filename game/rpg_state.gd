@@ -17,6 +17,9 @@ const BUILD_COSTS := [{"wood":15,"stone":10},{"wood":20,"stone":5},{"wood":15,"s
 var gold := 100
 var wood := 0
 var stone := 0
+var copper:=0
+var iron:=0
+var resources:=ResourceProgress.new()
 var food := 2
 var meat := 0
 var xp := 0
@@ -53,13 +56,16 @@ func buy(item:String,owner:String="player")->Dictionary:
 	return result(true,("Você comprou " if owner=="player" else "Comprou ")+data.name+".")
 
 func sell(kind:String,amount:int)->Dictionary:
-	var owned:int=wood if kind=="wood" else (stone if kind=="stone" else meat)
+	if not kind in ["wood","stone","meat","copper","iron"]:return result(false,"Material desconhecido.")
+	var owned:int=get(kind)
 	if amount<=0 or owned<amount:return result(false,"Você não tem material suficiente.")
 	if kind=="wood":wood-=amount
 	elif kind=="stone":stone-=amount
 	elif kind=="meat":meat-=amount
+	elif kind=="copper":copper-=amount
+	elif kind=="iron":iron-=amount
 	else:return result(false,"Material desconhecido.")
-	gold+=amount*(3 if kind=="stone" else (4 if kind=="meat" else 2))
+	gold+=amount*{"wood":2,"stone":3,"meat":4,"copper":7,"iron":12}[kind]
 	changed.emit()
 	return result(true,"Venda concluída. As moedas estão na sua bolsa.")
 
@@ -77,6 +83,7 @@ func harvest(id:String,kind:String,owner:String="player")->Dictionary:
 	var bag:Dictionary=tools if owner=="player" else npc_account(owner).tools
 	if not bag.has(tool):return result(false,"É preciso um "+ITEMS[tool].name.to_lower()+". Visite uma ferraria.")
 	depleted[id]=true
+	resources.mark({"id":id,"kind":kind})
 	if owner=="player":
 		if kind=="wood":wood+=5
 		else:stone+=4
@@ -87,6 +94,27 @@ func harvest(id:String,kind:String,owner:String="player")->Dictionary:
 	resource_depleted.emit(id)
 	changed.emit()
 	return result(true,"+5 madeira · +8 XP" if kind=="wood" else "+4 pedra · +8 XP")
+
+func strike_resource(resource:Dictionary,energy:float)->Dictionary:
+	if depleted.has(resource.id):return result(false,"Este recurso está se regenerando.")
+	var hit:=resources.strike(resource,tools,energy)
+	if hit.ok:
+		if hit.finished:
+			depleted[resource.id]=true;xp+=8;resource_depleted.emit(resource.id)
+		changed.emit()
+	return hit
+
+func upgrade_tool(tool:String)->Dictionary:
+	if not tool in ["axe","pickaxe"] or not tools.has(tool):return result(false,"Compre a ferramenta primeiro.")
+	var tier:=resources.tier(tool,tools)
+	if tier>=3:return result(false,"Sua ferramenta já é de ferro.")
+	var price:=40 if tier==1 else 90
+	if gold<price or (tier==1 and (wood<5 or stone<10)) or (tier==2 and iron<6):return result(false,"Melhoria de pedra: 40 moedas, 5 madeira, 10 pedra. Ferro: 90 moedas e 6 ferro.")
+	gold-=price
+	if tier==1:wood-=5;stone-=10
+	else:iron-=6
+	resources.tiers[tool]=tier+1;changed.emit()
+	return result(true,ITEMS[tool].name+" de "+ResourceRules.TIERS[tier+1]+" preparado.")
 
 func discover(id:String)->bool:
 	if discovered.has(id):return false
@@ -150,13 +178,14 @@ func home_rect(house:Dictionary)->Rect2:
 	return Rect2(Vector2(house.x-96,house.y-128),Vector2(192,128))
 
 func save_data()->Dictionary:
-	return {"gold":gold,"wood":wood,"stone":stone,"food":food,"meat":meat,"xp":xp,"health":health,"tools":tools.keys(),"discovered":discovered.keys(),"depleted":depleted.keys(),"houses":houses.duplicate(true),"npc_accounts":npc_accounts.duplicate(true),"contracts":contracts.duplicate(),"produce_times":produce_times.duplicate()}
+	return {"gold":gold,"wood":wood,"stone":stone,"copper":copper,"iron":iron,"resources":resources.save_data(),"food":food,"meat":meat,"xp":xp,"health":health,"tools":tools.keys(),"discovered":discovered.keys(),"depleted":depleted.keys(),"houses":houses.duplicate(true),"npc_accounts":npc_accounts.duplicate(true),"contracts":contracts.duplicate(),"produce_times":produce_times.duplicate()}
 
 func restore(data:Dictionary)->void:
-	for key in ["gold","wood","stone","food","meat","xp","health"]:
+	for key in ["gold","wood","stone","copper","iron","food","meat","xp","health"]:
 		var value=data.get(key,get(key))
 		if (value is int or value is float) and is_finite(float(value)):set(key,clampi(int(value),0,999999))
 	health=clampi(health,1,100)
+	resources.restore(data.get("resources",{}))
 	tools.clear();discovered.clear();depleted.clear();houses.clear();npc_accounts.clear();contracts.clear();produce_times.clear()
 	for key in ["tools","discovered","depleted"]:
 		var values=data.get(key,[])

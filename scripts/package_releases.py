@@ -52,7 +52,16 @@ Nas estalagens você pode descansar e viajar de caravana.
 
 SUA VIDA DE AVENTUREIRO
 Compre machado, picareta, martelo e espada nas ferrarias.
-Use E perto de árvores e rochas para recolher madeira e pedra.
+Use E ou a ferramenta da hotbar para golpear árvores e rochas.
+Golpes gastam energia. Árvores tremem, caem e deixam um toco.
+Materiais saltam para o chão e são atraídos quando você chega perto.
+Árvores regeneram após 3 dias; rochas e minérios após 5 a 7 dias.
+Fome de material? Melhore machado e picareta na ferraria:
+pedra custa 40 moedas, 5 madeira, 10 pedra; ferro custa 90 moedas e 6 ferro.
+Rochas duras e minérios exigem pedra; basalto exige ferro.
+Lenhador e mineiro ganham níveis, melhorando dano e uso de energia.
+O inventário mostra habilidades, cobre, ferro e energia.
+Ative Som na interface para ouvir os impactos.
 Venda materiais ou entregue encomendas diárias para ganhar moedas e experiência.
 Vacas e galinhas fornecem provisões; cervos, coelhos e javalis vivem nos campos.
 Javalis podem atacar. Provisões e descanso recuperam a vida.
@@ -126,6 +135,9 @@ def package(system: str, output: Path) -> Path:
         guide.replace("(mapa-exemplo.json)", "(MAPA-EXEMPLO.json)"), encoding="utf-8"
     )
     shutil.copy2(ROOT / "docs" / "editor-mapa.png", stage / "editor-mapa.png")
+    shutil.copy2(ROOT / "docs" / "coleta-e-ferramentas.md", stage / "GUIA-DA-COLETA.md")
+    for image_name in ["coleta-queda.png", "coleta-toco.png"]:
+        shutil.copy2(ROOT / "docs" / image_name, stage / image_name)
     (stage / "FONTES-ARVORES.json").unlink(missing_ok=True)
     (stage / "CREDITOS.txt").write_text(
         "Entre Reinos\nMotor: Godot 4.6.3, licença MIT.\n"

@@ -105,6 +105,7 @@ var lamp_posts:Array[Sprite3D]=[]
 var held_tool:Sprite3D
 var light_timer:=0.0
 var pixel_light_timer:=0.0
+var resource_fx:ResourceEffects
 
 func setup(source: ForestGame) -> void:
 	game=source
@@ -120,6 +121,7 @@ func setup(source: ForestGame) -> void:
 	_bridge()
 	_landmarks()
 	_build_forest()
+	resource_fx=ResourceEffects.new();add_child(resource_fx);resource_fx.setup(self)
 	_settlement_labels()
 	for body in [game.player]+game.world.npcs.values():
 		var card:=_card(body.sprite)
@@ -431,6 +433,9 @@ func _follow(snap:bool,delta:float=0.016)->void:
 	var target:=_point(game.player.position)
 	target.y=game.player.surface_height()/UNIT
 	var desired:=target+Vector3(0,12,14)
+	if resource_fx!=null and resource_fx.shake>0:
+		var phase:=Time.get_ticks_msec()*0.08
+		desired+=Vector3(sin(phase),cos(phase*1.3),0)*resource_fx.shake
 	camera.position=desired if snap else camera.position.lerp(desired,1.0-exp(-9.0*delta))
 	camera.look_at(target+Vector3(0,0.3,0))
 
@@ -581,6 +586,7 @@ func _update_local_lights(delta:float)->void:
 	held_tool.visible=(game.equipped_slot<4 and game.rpg.tools.has(item) or game.equipped_slot==7 and game.lantern_enabled) and not game.player.swimming
 	held_tool.texture=PixelArt.icon(item)
 	held_tool.position=_point(game.player.position)+Vector3(0.27,0.5+_body_height(game.player),0.05)
+	held_tool.offset=Vector2(sin(game.action_delay*12)*5,-cos(game.action_delay*12)*3) if game.action_delay>0 else Vector2.ZERO
 	pixel_light_timer-=delta
 	if pixel_light_timer<=0:
 		pixel_light_timer=0.05

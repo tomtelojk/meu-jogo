@@ -45,7 +45,24 @@ A proposta principal passou a ser criar sua vida entre os reinos. As antigas sem
 
 Comece com 100 moedas e duas provisões. As ferrarias vendem machado (25), picareta (30), martelo (15), espada (35) e provisões (5).
 
-Use **E** perto de árvores ou rochas: o machado entrega cinco unidades de madeira; a picareta entrega quatro de pedra. Cada recurso só pode ser recolhido uma vez, desaparece da cena e libera sua colisão. O estado persiste ao sair e retornar à região.
+Use **E**, ou equipe machado/picareta na hotbar e clique, perto do recurso. Cada golpe gasta energia e reduz sua vida. Há trepidação, poeira, fragmentos, número de dano, pequeno movimento de câmera e som de impacto (ative **Som** na interface).
+
+Árvores tremem, caem e deixam um toco. Madeira, pedra e minérios saltam com física leve e são atraídos ao jogador quando ele se aproxima. O inventário só recebe o que foi recolhido do chão. Vida parcial, drops pendentes, ferramentas e habilidades ficam no save; trocar de região não duplica materiais.
+
+| Recurso | Vida | Ferramenta mínima | Regenera após |
+| --- | ---: | --- | ---: |
+| Árvore | 36 | Machado de madeira | 3 dias |
+| Rocha | 40 | Picareta de madeira | 5 dias |
+| Rocha dura | 70 | Picareta de pedra | 5 dias |
+| Cobre | 64 | Picareta de pedra | 5 dias |
+| Ferro | 80 | Picareta de pedra | 7 dias |
+| Basalto compacto | 100 | Picareta de ferro | 7 dias |
+
+Os depósitos especiais aparecem nas montanhas e também podem ser colocados em **F2 → Natureza**. Árvores entregam 5–7 madeira; rochas comuns, 4–6 pedra. Cada tipo tem sua própria tabela de drops em [ResourceRules](game/resource_rules.gd), incluindo chances de materiais extras.
+
+Melhore machado e picareta na ferraria: **pedra** custa 40 moedas, 5 madeira e 10 pedra; **ferro** custa 90 moedas e 6 ferro. Tiers maiores causam mais dano e gastam menos energia. As habilidades de **lenhador** e **mineiro** sobem com o uso e acrescentam bônus de dano e eficiência. O inventário mostra níveis, materiais e energia; a hotbar mostra o tier da ferramenta.
+
+A regeneração acompanha os dias do relógio do jogo. Recursos não reaparecem em cima do jogador ou de uma construção; voltam quando o local está livre. Os tempos podem ser ajustados por tipo na mesma tabela de regras.
 
 Venda materiais ou entregue encomendas de 15 madeira e oito pedra por 80 moedas e 40 XP, uma vez por dia em cada povoado. Explorar, recolher, construir e caçar dão experiência; o nível também aumenta o dano em combate.
 
@@ -123,7 +140,7 @@ O mundo mantém **no máximo 25 regiões próximas de 512 × 512**. Terreno, ár
 
 O modo **leve** usa 65% da resolução por eixo no cenário 3D; a interface fica na resolução integral. Isso reduz o custo da neblina e das luzes e mantém o aspecto pixelizado. Em **Esc → Gráficos**, alterne para **nítido**, com resolução integral e sombras do sol. Em **Esc → Shaders**, ligue ou desligue os efeitos adicionais e a neblina. As preferências são salvas.
 
-O save versão 2 preserva posição, saúde, inventário, ferramentas, dinheiro, XP, exploração, recursos esgotados, casas, contas e equipamentos dos NPCs, produção das fazendas, encomendas e relógio. Saves antigos migram para a entrada de Aurélia e preservam aparência e a atividade antiga. O diretório de usuário `EntreFolhas` foi mantido para localizar esses dados.
+O save versão 2 preserva posição, saúde, inventário, ferramentas, dinheiro, XP, exploração, recursos esgotados, casas, contas e equipamentos dos NPCs, vida dos recursos, drops no chão, energia, habilidades e tiers, produção das fazendas, encomendas e relógio. Saves antigos migram para a entrada de Aurélia e preservam aparência e a atividade antiga. O diretório de usuário `EntreFolhas` foi mantido para localizar esses dados.
 
 Os PNGs originais de `tomate.zip` continuam intactos; os hashes estão em [assets/tomate/sources.json](assets/tomate/sources.json). Animais e etapas de obra usam geometria procedural do projeto.
 
@@ -139,6 +156,8 @@ Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambien
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/editor_tests.gd -- --test --hybrid
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/world_life_tests.gd -- --test
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/world_life_tests.gd -- --test --hybrid
+./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/resources_tests.gd -- --test
+./scripts/godot.sh --audio-driver Dummy --script res://tests/resources_tests.gd -- --test --hybrid
 ```
 
 A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.

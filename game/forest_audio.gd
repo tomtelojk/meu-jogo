@@ -4,6 +4,7 @@ extends Node
 var enabled: bool = false
 var wind: AudioStreamPlayer
 var effect: AudioStreamPlayer
+var impacts:Dictionary={}
 
 func _ready() -> void:
 	wind = AudioStreamPlayer.new()
@@ -42,6 +43,18 @@ func chime(victory: bool = false) -> void:
 		bytes.encode_s16(i * 2, int(clampf(value, -1, 1) * 32767))
 	effect.stream = _wav(bytes, rate)
 	effect.play()
+
+func impact(wood:bool)->void:
+	if not enabled:return
+	if not impacts.has(wood):
+		var rate:=11025;var bytes:=PackedByteArray();bytes.resize(2205*2)
+		var rng:=RandomNumberGenerator.new();rng.seed=349 if wood else 901
+		for i in 2205:
+			var t:=float(i)/rate
+			var tone:=sin(t*(140 if wood else 920)*TAU)*0.45+rng.randf_range(-0.5,0.5)
+			bytes.encode_s16(i*2,int(tone*exp(-t*(24 if wood else 38))*22000))
+		impacts[wood]=_wav(bytes,rate)
+	effect.stream=impacts[wood];effect.play()
 
 func _wind_stream() -> AudioStreamWAV:
 	var rate := 11025

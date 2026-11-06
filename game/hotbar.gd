@@ -29,6 +29,7 @@ func _draw()->void:
 		draw_texture_rect(PixelArt.icon(ITEMS[i]),Rect2(rect.position+Vector2(12,10),Vector2(32,32)),false,Color.WHITE if available(i) else Color(0.36,0.37,0.40))
 		draw_string(font,rect.position+Vector2(4,15),str(i+1),HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("e0cf9f"))
 		if i==4 and rpg!=null:draw_string(font,rect.end-Vector2(18,4),str(rpg.food),HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("f1ddae"))
+		if i in [1,2] and available(i):draw_string(font,rect.end-Vector2(11,4),str(rpg.resources.tier(ITEMS[i],rpg.tools)),HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("f1ddae"))
 		if i==7 and lantern:draw_rect(Rect2(rect.end-Vector2(9,9),Vector2(5,5)),Color("ffe2a3"))
 	var label:String=NAMES[slot]+(" · CLIQUE PARA USAR" if slot<5 else "")
 	if slot==0 and not available(0):label="MÃOS LIVRES · ESPAÇO ATACAR"

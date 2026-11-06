@@ -170,7 +170,7 @@ func _object(obj:Dictionary)->void:
 	elif obj.kind in ["tree","autumn_tree"]:
 		draw_circle(at+Vector2(2,2),maxf(3,33*zoom),Color("44573b"))
 		draw_circle(at,maxf(3,29*zoom),Color("b68b4b") if obj.kind=="autumn_tree" else Color("416f48"))
-	elif obj.kind=="rock":draw_circle(at,maxf(3,18*zoom),Color("a6a79b"))
+	elif obj.kind in ["rock","hard_stone","copper_ore","iron_ore","basalt"]:draw_circle(at,maxf(3,18*zoom),Color({"rock":"a6a79b","hard_stone":"656c78","copper_ore":"b37953","iron_ore":"9caebd","basalt":"454354"}[obj.kind]))
 	else:
 		draw_circle(at,maxf(4,18*zoom),Color("e2d5b2"))
 		if zoom>0.25:draw_string(ThemeDB.fallback_font,at+Vector2(8,0),WorldEditor.LABELS.get(obj.kind,obj.kind),HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color("fff0c2"))

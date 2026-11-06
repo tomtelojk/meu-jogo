@@ -13,6 +13,7 @@ const DIRECTIONS := ["down", "up", "right", "left"]
 
 var active: bool = false
 var stamina: float = 1.0
+var exertion_delay:=0.0
 var touch_vector := Vector2.ZERO
 var facing: String = "down"
 var running: bool = false
@@ -65,6 +66,7 @@ func _physics_process(delta: float) -> void:
 		running = false
 		sprite.play("idle_" + facing)
 		return
+	exertion_delay=maxf(0,exertion_delay-delta)
 	var direction := (Input.get_vector("move_left", "move_right", "move_up", "move_down") + touch_vector).limit_length(1.0)
 	running = direction.length_squared() > 0.01 and Input.is_action_pressed("run") and stamina > 0.02
 	if direction.length_squared() > 0.01:
@@ -80,7 +82,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	update_surface()
 	var moving := get_real_velocity().length_squared() > 1.0
-	stamina = clampf(stamina + delta * (-0.08 if swimming and running else (-0.14 if running and moving else 0.25)), 0.0, 1.0)
+	stamina = clampf(stamina + delta * (-0.08 if swimming and running else (-0.14 if running and moving else (0.0 if exertion_delay>0 else 0.25))), 0.0, 1.0)
 	swim_phase += delta * (3.2 if moving else 1.6) if swimming else 0.0
 	sprite.speed_scale = 0.45 if swimming else 1.0
 	sprite.play(("run_" if running and not swimming else "walk_") + facing if moving and direction.length_squared() > 0.01 else "idle_" + facing)

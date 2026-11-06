@@ -1,7 +1,7 @@
 class_name WorldEditor
 extends CanvasLayer
 
-const LABELS := {"grass":"Grama","dirt":"Estrada de terra","sand":"Areia","stone":"Calçamento","moss":"Pedra com musgo","water":"Rio / lago","cottage":"Casa de campo","timber":"Casa de madeira","stone_house":"Casa de pedra","tavern":"Estalagem","forge":"Ferraria / loja","tower":"Torre","castle":"Castelo","tree":"Árvore verde","autumn_tree":"Árvore de outono","rock":"Rocha","cow":"Vaca","chicken":"Galinha","deer":"Cervo","rabbit":"Coelho","boar":"Javali","bridge":"Ponte sobre o rio","npc":"Morador","select":"Selecionar / mover","erase":"Apagar objeto / pintura","spawn":"Início do jogador"}
+const LABELS := {"grass":"Grama","dirt":"Estrada de terra","sand":"Areia","stone":"Calçamento","moss":"Pedra com musgo","water":"Rio / lago","cottage":"Casa de campo","timber":"Casa de madeira","stone_house":"Casa de pedra","tavern":"Estalagem","forge":"Ferraria / loja","tower":"Torre","castle":"Castelo","tree":"Árvore verde","autumn_tree":"Árvore de outono","rock":"Rocha","hard_stone":"Rocha dura","copper_ore":"Minério de cobre","iron_ore":"Minério de ferro","basalt":"Basalto compacto","cow":"Vaca","chicken":"Galinha","deer":"Cervo","rabbit":"Coelho","boar":"Javali","bridge":"Ponte sobre o rio","npc":"Morador","select":"Selecionar / mover","erase":"Apagar objeto / pintura","spawn":"Início do jogador"}
 var game: ForestGame
 var draft: Dictionary = {}
 var base_npcs: Dictionary = {}

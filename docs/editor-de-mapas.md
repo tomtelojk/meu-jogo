@@ -37,6 +37,8 @@ Os horários e as velocidades variam entre os moradores. A navegação evita cas
 
 O continente padrão usa ruas curvas, bairros irregulares e biomas com transições suaves. Mapas editados em versões anteriores conservam a base antiga para preservar suas construções e pontos de rotina. Um novo mapa feito a partir dos reinos usa a base atual; mapas vazios continuam inteiramente sob seu controle.
 
+Em **Natureza**, também é possível colocar rochas duras, cobre, ferro e basalto. Esses objetos usam o sistema de vida, ferramenta mínima, drops e regeneração do jogo. Rochas duras e minérios exigem picareta de pedra; basalto exige ferro. Árvores regeneram em três dias, rochas em cinco e ferro/basalto em sete, quando o local está livre.
+
 ## Salvar e compartilhar
 
 **Salvar** ou **Ctrl+S** guarda o rascunho neste computador. **Fechar / F2** também guarda alterações pendentes, sem aplicá-las à aventura em andamento. Use **Recuperar rascunho** para continuar depois de reabrir o jogo.
