@@ -247,12 +247,8 @@ func load_original_sprite(path: String) -> bool:
 	return true
 
 func load_default_sprite() -> bool:
-	var sheet := TomateCharacterSheet.read()
-	if sheet.is_empty():
+	if not NPCAppearance.apply(sprite,definition):
 		return false
-	sprite.sprite_frames = sheet.frames
-	sprite.material = TomateCharacterSheet.make_material(definition.color)
-	sprite.modulate = Color.WHITE
 	custom_sprite = true
 	sprite.play("idle_" + facing)
 	_sync_character_geometry()
@@ -260,7 +256,7 @@ func load_default_sprite() -> bool:
 	return true
 
 func _sync_character_geometry() -> void:
-	TomateCharacterSheet.apply_geometry(sprite)
+	NPCAppearance.geometry(sprite)
 
 func _draw() -> void:
 	draw_set_transform(Vector2(0, 2), 0, Vector2(1, 0.4))

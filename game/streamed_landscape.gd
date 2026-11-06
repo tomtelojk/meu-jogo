@@ -9,7 +9,6 @@ var ground_shadows:Dictionary={}
 var materials:Dictionary={}
 var house_models:Dictionary={}
 var house_front_material:ShaderMaterial
-var house_roof_material:StandardMaterial3D
 
 func setup(renderer:HybridWorld)->void:
 	hybrid=renderer
@@ -28,6 +27,7 @@ func load_region(coord:Vector2i,content:Dictionary)->void:
 	add_child(parent)
 	regions[coord]=parent
 	_ground(parent,content)
+	_painted_water(parent,content)
 	_trees(parent,content)
 	_rocks(parent,content)
 	for animal in content.animal_entries:
@@ -166,6 +166,12 @@ func update_house(id:String)->void:
 	node.name=id
 	add_child(node)
 	house_models[id]=node
+	if house.stage>=3:
+		var model:=BuildingVisual.new()
+		model.setup({"id":id,"name":id,"kind":"timber" if house.owner=="player" else "cottage","realm":KingdomData.realm_at(Vector2(house.x,house.y)),"tile":Vector2(house.x,house.y)/64,"size":Vector2(192,128)})
+		node.add_child(model)
+		_house_label(node,house)
+		return
 	var parts:Array[Dictionary]=[]
 	var x:float=house.x/64
 	var z:float=house.y/64-1
@@ -199,26 +205,7 @@ func update_house(id:String)->void:
 		model.material_override=mat
 		model.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		node.add_child(model)
-	if house.stage>=3:
-		var roof:=MeshInstance3D.new()
-		var prism:=PrismMesh.new()
-		prism.size=Vector3(3.4,1.15,2.4)
-		roof.mesh=prism
-		roof.position=Vector3(x,2.2,z)
-		var material:=StandardMaterial3D.new()
-		if house_roof_material==null:
-			var texture:Texture2D=load("res://assets/tomate/villages.png")
-			var region:Rect2=load("res://game/settlements.gd").REGIONS[2]
-			var atlas:=AtlasTexture.new()
-			atlas.atlas=texture
-			atlas.region=Rect2(region.position+region.size*Vector2(0.3,0.2),region.size*Vector2(0.4,0.12))
-			house_roof_material=StandardMaterial3D.new()
-			house_roof_material.albedo_texture=hybrid._bake(atlas)
-			house_roof_material.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
-			house_roof_material.uv1_scale=Vector3(4,4,1)
-			house_roof_material.roughness=1
-		roof.material_override=house_roof_material
-		node.add_child(roof)
+
 	if house.stage>=2:
 		var texture:Texture2D=load("res://assets/tomate/villages.png")
 		var region:Rect2=load("res://game/settlements.gd").REGIONS[2]
@@ -239,6 +226,11 @@ func update_house(id:String)->void:
 			hybrid.facade_materials.append(house_front_material)
 		face.material_override=house_front_material
 		node.add_child(face)
+	_house_label(node,house)
+
+func _house_label(node:Node3D,house:Dictionary)->void:
+	var x:float=house.x/64
+	var z:float=house.y/64-1
 	var label:=Label3D.new()
 	label.text=("Seu lar" if house.stage==3 else "Sua obra") if house.owner=="player" else "Casa de "+KingdomData.person(house.owner).get("name","morador")
 	label.position=Vector3(x,3.25 if house.stage>=2 else 0.7,z)
@@ -246,3 +238,25 @@ func update_house(id:String)->void:
 	label.pixel_size=0.005
 	label.font_size=28
 	node.add_child(label)
+
+func _painted_water(parent:Node3D,content:Dictionary)->void:
+	var surface:=SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var count:=0
+	for y in 8:
+		for x in 8:
+			var at:Vector2=content.rect.position+Vector2(x,y)*64
+			if MapDocument.terrain_at(at+Vector2.ONE)!="water":continue
+			var a:=Vector3(at.x/64,-0.005,at.y/64)
+			for offset in [Vector3.ZERO,Vector3(0,0,1),Vector3(1,0,0),Vector3(1,0,0),Vector3(0,0,1),Vector3(1,0,1)]:
+				var p:Vector3=a+offset
+				surface.set_uv(Vector2(p.x,p.z));surface.set_uv2(Vector2.ZERO)
+				surface.set_normal(Vector3.UP);surface.add_vertex(p)
+			count+=1
+	if count==0:return
+	var water:=MeshInstance3D.new()
+	water.name="PaintedWater"
+	water.mesh=surface.commit()
+	water.material_override=hybrid.river_material
+	water.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(water)

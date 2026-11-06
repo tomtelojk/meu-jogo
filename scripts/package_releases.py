@@ -18,10 +18,26 @@ I: inventário, ferramentas e provisões
 J: objetivos e registros
 B: escolher terreno; clique confirma, botão direito/Esc cancela
 M: mapa do continente
+F2: Ateliê de Mundos — crie ou edite seu mapa
 Esc: pausa e gráficos (leve / nítido)
 
 O modo leve é o padrão. Som ambiente é opcional.
 Seu progresso é salvo automaticamente neste computador.
+
+CRIE SEU PRÓPRIO MAPA
+F2 abre o ateliê. Comece com Novo mapa vazio ou edite a base dos reinos.
+Pinte terrenos e água; coloque casas, pontes, árvores, animais e moradores.
+Selecione um NPC para marcar casa, trabalho e passeio.
+Roda do mouse: zoom. Botão direito/meio: arrastar a visão. WASD: navegar.
+Ctrl+Z: desfazer. Ctrl+Y: refazer. Delete: apagar seleção. Ctrl+S: salvar.
+Salvar guarda o rascunho. Exportar cria um JSON na pasta que você escolher.
+Importar abre esse JSON em outro computador. Testar mapa entra no seu mundo.
+Fechar/F2 guarda alterações pendentes sem trocar o mundo da aventura atual.
+Voltar à aventura original recupera o continente e o progresso anteriores.
+MAPA-EXEMPLO.json pode ser importado pelo ateliê.
+GUIA-DO-EDITOR.md contém o guia completo.
+
+O menu Esc permite desligar os novos efeitos em Shaders.
 """
 VILLAGERS = """
 DOIS REINOS, QUATRO VILAREJOS
@@ -94,12 +110,21 @@ def package(system: str, output: Path) -> Path:
     for license_file in (ROOT / "licenses").glob("*.txt"):
         shutil.copy2(license_file, stage / license_file.name)
     shutil.copy2(ROOT / "assets" / "tomate" / "sources.json", stage / "FONTES-SPRITES.json")
+    shutil.copy2(ROOT / "assets" / "npcs" / "sources.json", stage / "FONTES-NPCS.json")
+    shutil.copy2(ROOT / "docs" / "mapa-exemplo.json", stage / "MAPA-EXEMPLO.json")
+    guide = (ROOT / "docs" / "editor-de-mapas.md").read_text(encoding="utf-8")
+    (stage / "GUIA-DO-EDITOR.md").write_text(
+        guide.replace("(mapa-exemplo.json)", "(MAPA-EXEMPLO.json)"), encoding="utf-8"
+    )
+    shutil.copy2(ROOT / "docs" / "editor-mapa.png", stage / "editor-mapa.png")
     (stage / "FONTES-ARVORES.json").unlink(missing_ok=True)
     (stage / "CREDITOS.txt").write_text(
         "Entre Reinos\nMotor: Godot 4.6.3, licença MIT.\n"
         "Os avisos do Godot e de suas dependências acompanham este pacote.\n"
         "Sprites: dez PNGs originais de tomate.zip, fornecidos pelo autor do projeto.\n"
         "Inclui personagens, árvores, terrenos, transições, água e casas.\n"
+        "NPCs: oito pranchas originais de abc.zip, fornecidas pelo autor, além do agricultor de tomate.zip.\n"
+        "FONTES-NPCS.json registra a origem e os hashes das pranchas de NPCs.\n"
         "Modelos 3D dos animais e das construções por etapas: geometria procedural do projeto.\n"
         "Os PNGs foram copiados e renomeados, preservando seus bytes originais.\n"
         "O fundo magenta é removido pelo renderizador do jogo.\n"

@@ -38,8 +38,17 @@ func _draw()->void:
 	for i in 90:
 		var y:=region.position.y+i/89.0*region.size.y
 		stream.append((Vector2(WorldData.river_x(y),y)-region.position)*factor)
-	draw_polyline(stream,Color("5d9dac"),maxf(2,WorldData.river_width(player_position.y)*2*factor.x))
-	for town in KingdomData.SETTLEMENTS:
+	if MapDocument.base_enabled():draw_polyline(stream,Color("5d9dac"),maxf(2,WorldData.river_width(player_position.y)*2*factor.x))
+	for key in MapDocument.current.terrain:
+		var at:=Vector2(MapDocument.parse_cell(key))*64
+		if not region.grow(64).has_point(at):continue
+		var color:Color=MapCanvas.COLORS[MapDocument.current.terrain[key]]
+		draw_rect(Rect2((at-region.position)*factor,Vector2.ONE*64*factor+Vector2.ONE*0.25),color)
+	for building in KingdomData.buildings():
+		var rect:=KingdomData.building_rect(building)
+		if not region.intersects(rect):continue
+		draw_rect(Rect2((rect.position-region.position)*factor,(rect.size*factor).max(Vector2.ONE)),Color("645740"))
+	for town in KingdomData.towns():
 		var at:Vector2=(town.position-region.position)*factor
 		if not Rect2(Vector2.ZERO,size).grow(20).has_point(at):continue
 		draw_rect(Rect2(at-Vector2(3,3),Vector2(6,6)),KingdomData.REALMS[town.realm].color)

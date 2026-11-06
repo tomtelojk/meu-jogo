@@ -5,6 +5,7 @@ signal play_requested
 signal pause_requested
 signal help_requested
 signal map_requested
+signal editor_requested
 signal sound_requested
 signal character_requested
 signal dialog_closed
@@ -221,6 +222,9 @@ func _build_intro() -> void:
 	var character_button := _button("Escolher personagem  +", character_requested.emit)
 	character_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	intro_body.add_child(character_button)
+	var editor_button:=_button("Criar meu mapa · F2",editor_requested.emit)
+	editor_button.size_flags_horizontal=Control.SIZE_SHRINK_BEGIN
+	intro_body.add_child(editor_button)
 	intro_body.add_child(_text("W A S D  ou setas   caminhar      E   interagir", 10, MUTED))
 	caption = _text("—   Explore. Negocie. Construa seu lugar.", 11, Color("e2e2c9"))
 	root.add_child(caption)

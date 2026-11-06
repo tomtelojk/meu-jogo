@@ -19,6 +19,8 @@ const BRIDGE_RAMP := 64.0
 static var BRIDGE_RECT:Rect2 = _bridge_at_height(1280.0)
 static var _segments: Array[PackedVector2Array] = []
 static var _bridges: Array[Rect2] = []
+static var _bridge_revision := -1
+static var _effective_bridges: Array[Rect2] = []
 const SEEDS: Array[Dictionary] = [
 	{"id": "flores", "name": "Semente da alegria", "place": "Clareira das flores", "position": Vector2(1152, 1664)},
 	{"id": "outono", "name": "Semente da memória", "place": "Bosque dourado", "position": Vector2(800, 960)},
@@ -34,9 +36,12 @@ const LANDMARKS: Array[Dictionary] = [
 
 
 static func paths()->Array[PackedVector2Array]:
-	return KingdomData.paths()
+	if MapDocument.base_enabled():return KingdomData.paths()
+	return []
 
 static func path_distance(point:Vector2)->float:
+	var painted:=MapDocument.terrain_at(point)
+	if not painted.is_empty():return 0.0 if painted in ["dirt","stone","moss"] else INF
 	var best:=INF
 	for path in paths():
 		for i in range(1,path.size()):
@@ -59,11 +64,18 @@ static func _bridge_at_height(y:float)->Rect2:
 	return Rect2(river_x(y)-span,y-32,span*2,64)
 
 static func bridges()->Array[Rect2]:
+	if _bridge_revision==MapDocument.revision:return _effective_bridges
 	if _bridges.is_empty():
 		_bridges.append(BRIDGE_RECT)
 		for y in [4800.0,8192.0,11008.0]:
 			_bridges.append(_bridge_at_height(y))
-	return _bridges
+	var result:Array[Rect2]=[]
+	if MapDocument.base_enabled():result.append_array(_bridges)
+	for obj in MapDocument.current.objects:
+		if obj.kind=="bridge":result.append(MapDocument.bridge_rect(obj))
+	_effective_bridges=result
+	_bridge_revision=MapDocument.revision
+	return _effective_bridges
 
 static func bridge_at(point:Vector2)->Rect2:
 	for rect in bridges():
@@ -71,7 +83,9 @@ static func bridge_at(point:Vector2)->Rect2:
 	return Rect2()
 
 static func in_river(point:Vector2)->bool:
-	return absf(point.x-river_x(point.y))<river_width(point.y)
+	var painted:=MapDocument.terrain_at(point)
+	if not painted.is_empty():return painted=="water"
+	return MapDocument.base_enabled() and absf(point.x-river_x(point.y))<river_width(point.y)
 
 static func is_water(point:Vector2)->bool:
 	return in_river(point) and bridge_at(point).size==Vector2.ZERO
@@ -94,7 +108,7 @@ static func circle_hits_rect(point:Vector2,radius:float,rect:Rect2)->bool:
 
 static func generate()->Dictionary:
 	var result:={"trees":[],"decor":[],"colliders":[],"collision_grid":{},"solid_rects":[],"solid_grid":{},"npc_markers":[]}
-	for building in KingdomData.BUILDINGS:result.solid_rects.append(KingdomData.building_rect(building))
+	for building in KingdomData.buildings():result.solid_rects.append(KingdomData.building_rect(building))
 	reindex_solids(result)
 	return result
 
@@ -136,6 +150,7 @@ static func can_stand(point:Vector2,data:Dictionary,radius:float=10.0,allow_swim
 	return true
 
 static func biome(point:Vector2)->String:
+	if not MapDocument.base_enabled():return "meadow"
 	if point.y<2304 and point.x>3000:return "mountains"
 	if point.y>11264:return "coast"
 	if (point-Vector2(2400,10240)).length()<1900 or (point-Vector2(13000,10500)).length()<1500 or point.x<2700 and point.y<2600:return "woodland"
@@ -151,6 +166,7 @@ static func biome_color(point:Vector2)->Color:
 static func generate_chunk(coord:Vector2i,data:Dictionary)->Dictionary:
 	var rect:=Rect2(Vector2(coord)*CHUNK,Vector2.ONE*CHUNK)
 	var result:={"coord":coord,"rect":rect,"trees":[],"rocks":[],"animals":[]}
+	if not MapDocument.base_enabled():return MapDocument.filter_chunk(result)
 	var rng:=RandomNumberGenerator.new()
 	var terrain_data:={"solid_grid":data.solid_grid,"collision_grid":{}}
 	rng.seed=(coord.x*73856093)^(coord.y*19349663)^88277
@@ -193,9 +209,10 @@ static func generate_chunk(coord:Vector2i,data:Dictionary)->Dictionary:
 		for i in 6:
 			var point:Vector2=town.position+Vector2(1536+(i%3)*64,768+(i/3)*96)
 			if rect.has_point(point) and can_stand(point,terrain_data,24):result.animals.append({"id":"farm_"+town.id+"_"+str(i),"position":point,"species":"cow" if i<3 else "chicken"})
-	return result
+	return MapDocument.filter_chunk(result)
 
 static func location_name(point:Vector2)->String:
+	if not MapDocument.base_enabled():return MapDocument.current.name
 	var town:=KingdomData.nearest_town(point)
 	if point.distance_to(town.position)<1500:return town.name
 	match biome(point):

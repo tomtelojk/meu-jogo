@@ -38,6 +38,7 @@ func _ready()->void:
 	data=WorldData.generate()
 	entities=$Entities
 	player=$Entities/Player
+	player.position=MapDocument.spawn_point()
 	for row in TreeAtlas.ROWS:
 		libraries["tree"+str(row)]=TreeAtlas.read()[row]
 		tree_materials.append(TreeAtlas.make_wind_material(row))
@@ -45,12 +46,17 @@ func _ready()->void:
 	ground.name="GrassTiles"
 	add_child(ground)
 	mother_entry=_add_tree({"id":"mother","position":WorldData.MOTHER,"size":255.0,"radius":26.0,"kind":"wood","active":true},entities,true)
+	mother_entry.resource.active=MapDocument.base_enabled()
+	mother_entry.body.visible=MapDocument.base_enabled()
+	if not MapDocument.base_enabled():mother_entry.body.collision_layer=0
 	for seed_data in WorldData.SEEDS:
 		var seed:=ForestSeed.new()
 		seed.setup(seed_data)
 		entities.add_child(seed)
 		seeds[seed_data.id]=seed
+		if not MapDocument.base_enabled():seed.hide();seed.set_deferred("monitorable",false)
 	for feature in WorldData.LANDMARKS:
+		if not MapDocument.base_enabled():continue
 		var area:=_interaction_area(feature.position,feature.range)
 		area.set_meta("interaction",feature.merged({"kind":"landmark"}))
 		add_child(area)
@@ -61,6 +67,14 @@ func _ready()->void:
 	rpg.resource_depleted.connect(_deplete_resource)
 	rpg.house_changed.connect(sync_house)
 	ensure_region(player.position,true)
+
+func safe_position(point:Vector2)->Vector2:
+	if WorldData.can_stand(point,data,10,true):return point
+	for radius in range(1,40):
+		for i in 16:
+			var test:=point+Vector2.from_angle(i*TAU/16)*radius*32
+			if WorldData.can_stand(test,data,10,true):return test
+	return MapDocument.spawn_point()
 
 func _build_settlements()->void:
 	var walls:=StaticBody2D.new()
@@ -75,13 +89,20 @@ func _build_settlements()->void:
 		shape.position=rect.get_center()
 		walls.add_child(shape)
 	add_child(walls)
-	for town in KingdomData.SETTLEMENTS:
+	for town in KingdomData.towns():
 		for kind in ["shop","inn"]:
+			if not KingdomData.service_exists(town,kind):continue
 			var at:=KingdomData.point(town.id+"_"+kind)
 			var area:=_interaction_area(at,95)
 			area.name=kind+"_"+town.id
 			area.set_meta("interaction",{"kind":kind,"id":town.id,"name":("Comércio" if kind=="shop" else "Estalagem")+" de "+town.name,"range":95.0})
 			add_child(area)
+	for building in KingdomData.buildings():
+		if not building.get("editor",false) or not building.kind in ["forge","tavern"]:continue
+		var rect:=KingdomData.building_rect(building)
+		var area:=_interaction_area(Vector2(rect.get_center().x,rect.end.y+40),95)
+		area.set_meta("interaction",{"kind":"shop" if building.kind=="forge" else "inn","id":building.id,"name":building.name,"range":95.0})
+		add_child(area)
 	daylight=CanvasModulate.new()
 	add_child(daylight)
 
@@ -91,12 +112,13 @@ func _build_population()->void:
 	navigator.cell_size=Vector2.ONE*64
 	navigator.diagonal_mode=AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	navigator.update()
+	var clearance_samples:Array[Vector2]=[Vector2.ZERO,Vector2(11,0),Vector2(-11,0),Vector2(0,11),Vector2(0,-11)]
 	for y in WorldData.ROWS:
-		var river_x:=WorldData.river_x(y*64.0)
-		var width:=WorldData.river_width(y*64.0)
 		for x in WorldData.COLS:
 			var point:=Vector2(x,y)*64
-			var water:bool=absf(point.x-river_x)<width+11 and WorldData.bridge_at(point).size==Vector2.ZERO
+			var water:=false
+			for offset in clearance_samples:
+				if WorldData.is_water(point+offset):water=true;break
 			navigator.set_point_solid(Vector2i(x,y),water or not WorldData.can_stand(point,data,11,true))
 	# Keep travel on roads without scanning every road for every grid point.
 	for path in WorldData.paths():
@@ -107,7 +129,7 @@ func _build_population()->void:
 				if navigator.is_in_boundsv(cell):navigator.set_point_weight_scale(cell,0.65)
 	clock=WorldClock.new()
 	add_child(clock)
-	for profile in KingdomData.PEOPLE:
+	for profile in KingdomData.people():
 		var npc:=ForestNPC.new()
 		npc.setup(profile,player.default_frames,navigator,clock.minute)
 		entities.add_child(npc)
@@ -237,6 +259,7 @@ func _add_tree(resource:Dictionary,parent:Node2D,mother:bool=false)->Dictionary:
 	body.position=resource.position
 	var sprite:=AnimatedSprite2D.new()
 	var row:=TreeAtlas.variant(resource.position)
+	if resource.get("variant")=="autumn_tree":row=1
 	if mother:row=TreeAtlas.DRY_ROW
 	elif row==TreeAtlas.DRY_ROW:row=TreeAtlas.CALM_ROW
 	sprite.sprite_frames=libraries["tree"+str(row)]
@@ -337,7 +360,7 @@ func sync_house(id:String)->void:
 		add_child(area)
 		house_areas[id]=area
 	data.solid_rects.clear()
-	for building in KingdomData.BUILDINGS:data.solid_rects.append(KingdomData.building_rect(building))
+	for building in KingdomData.buildings():data.solid_rects.append(KingdomData.building_rect(building))
 	for built in rpg.houses.values():
 		if built.stage>0:data.solid_rects.append(rpg.home_rect(built))
 	WorldData.reindex_solids(data)
@@ -358,17 +381,33 @@ func _build_water_collisions()->void:
 	water.name="StreamCollision"
 	water.collision_layer=WorldData.WATER_LAYER
 	water.collision_mask=0
-	var cuts:Array[float]=[]
-	for y in range(0,int(WorldData.SIZE.y)+1,64):cuts.append(float(y))
-	for bridge in WorldData.bridges():cuts.append(bridge.position.y);cuts.append(bridge.end.y)
-	cuts.sort()
-	for i in range(1,cuts.size()):
-		var a:=cuts[i-1]
-		var b:=cuts[i]
-		if b<=a or WorldData.bridge_at(Vector2(WorldData.river_x((a+b)/2),(a+b)/2)).size!=Vector2.ZERO:continue
-		var polygon:=CollisionPolygon2D.new()
-		polygon.polygon=PackedVector2Array([Vector2(WorldData.river_x(a)-WorldData.river_width(a),a),Vector2(WorldData.river_x(a)+WorldData.river_width(a),a),Vector2(WorldData.river_x(b)+WorldData.river_width(b),b),Vector2(WorldData.river_x(b)-WorldData.river_width(b),b)])
-		water.add_child(polygon)
+	if MapDocument.base_enabled():
+		var cuts:Array[float]=[]
+		for y in range(0,int(WorldData.SIZE.y)+1,64):cuts.append(float(y))
+		for bridge in WorldData.bridges():cuts.append(bridge.position.y);cuts.append(bridge.end.y)
+		cuts.sort()
+		for i in range(1,cuts.size()):
+			var a:=cuts[i-1]
+			var b:=cuts[i]
+			if b<=a:continue
+			var polygon:=PackedVector2Array([Vector2(WorldData.river_x(a)-WorldData.river_width(a),a),Vector2(WorldData.river_x(a)+WorldData.river_width(a),a),Vector2(WorldData.river_x(b)+WorldData.river_width(b),b),Vector2(WorldData.river_x(b)-WorldData.river_width(b),b)])
+			var pieces:Array[PackedVector2Array]=[polygon]
+			var min_x:=floori((minf(WorldData.river_x(a),WorldData.river_x(b))-WorldData.RIVER_HALF_WIDTH)/64)
+			var max_x:=floori((maxf(WorldData.river_x(a),WorldData.river_x(b))+WorldData.RIVER_HALF_WIDTH)/64)
+			for x in range(min_x,max_x+1):
+				var cell:=Vector2i(x,floori((a+b)/2/64))
+				var painted:String=MapDocument.current.terrain.get(MapDocument.cell_key(cell),"")
+				if not painted.is_empty() and painted!="water":pieces=_clip_water(pieces,Rect2(Vector2(cell)*64,Vector2.ONE*64))
+			for bridge in WorldData.bridges():
+				if bridge.position.y<=a and bridge.end.y>=b:pieces=_clip_water(pieces,bridge)
+			_add_water_polygons(water,pieces)
+	for rect in MapDocument.water_rects():
+		var pieces:Array[Rect2]=[rect]
+		for bridge in WorldData.bridges():
+			var remaining:Array[Rect2]=[]
+			for part in pieces:remaining.append_array(_subtract_water_rect(part,bridge))
+			pieces=remaining
+		for part in pieces:_add_water_polygons(water,[_rect_polygon(part)])
 	add_child(water)
 	var rails:=StaticBody2D.new()
 	rails.name="BridgeRails"
@@ -382,6 +421,31 @@ func _build_water_collisions()->void:
 		shape.position=rect.get_center()
 		rails.add_child(shape)
 	add_child(rails)
+
+func _rect_polygon(rect:Rect2)->PackedVector2Array:
+	return PackedVector2Array([rect.position,Vector2(rect.end.x,rect.position.y),rect.end,Vector2(rect.position.x,rect.end.y)])
+
+func _subtract_water_rect(rect:Rect2,cut:Rect2)->Array[Rect2]:
+	# Rectangle subtraction avoids polygon holes becoming solid colliders when
+	# the bridge sits completely inside a large lake.
+	if not rect.intersects(cut):return [rect]
+	var hole:=rect.intersection(cut)
+	var result:Array[Rect2]=[]
+	for part in [Rect2(rect.position,Vector2(rect.size.x,hole.position.y-rect.position.y)),Rect2(Vector2(rect.position.x,hole.end.y),Vector2(rect.size.x,rect.end.y-hole.end.y)),Rect2(Vector2(rect.position.x,hole.position.y),Vector2(hole.position.x-rect.position.x,hole.size.y)),Rect2(Vector2(hole.end.x,hole.position.y),Vector2(rect.end.x-hole.end.x,hole.size.y))]:
+		if part.size.x>0 and part.size.y>0:result.append(part)
+	return result
+
+func _clip_water(pieces:Array[PackedVector2Array],rect:Rect2)->Array[PackedVector2Array]:
+	var output:Array[PackedVector2Array]=[]
+	for polygon in pieces:output.append_array(Geometry2D.clip_polygons(polygon,_rect_polygon(rect)))
+	return output
+
+func _add_water_polygons(body:StaticBody2D,pieces:Array[PackedVector2Array])->void:
+	for points in pieces:
+		if points.size()<3:continue
+		var polygon:=CollisionPolygon2D.new()
+		polygon.polygon=points
+		body.add_child(polygon)
 
 func _build_boundaries()->void:
 	var body:=StaticBody2D.new()

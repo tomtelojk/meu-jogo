@@ -120,7 +120,7 @@ func build_region(region:Rect2)->void:
 		for outline in Geometry2D.offset_polyline(path,ROAD_HALF_WIDTH,Geometry2D.JOIN_ROUND,Geometry2D.END_ROUND):
 			_add_edge(borders,outline)
 			_add_polygon(surface,outline,dirt)
-	for town in KingdomData.SETTLEMENTS:
+	for town in KingdomData.towns():
 		var center:Vector2=town.position
 		if region.grow(140).has_point(center):
 			var points:=PackedVector2Array()
@@ -137,3 +137,17 @@ func build_region(region:Rect2)->void:
 				line.width=7
 				line.default_color=Color("a1ae50") if i%2==0 else Color("7d9c44")
 				surface.add_child(line)
+	# Manual tiles are drawn last, so painting grass can remove a template road.
+	# World-space UVs and the same repeat shader keep adjacent road cells joined.
+	var overlay:=Node2D.new()
+	overlay.material=material
+	add_child(overlay)
+	for y in 8:
+		for x in 8:
+			var at:=region.position+Vector2(x,y)*64
+			var kind:=MapDocument.terrain_at(at+Vector2.ONE)
+			if kind.is_empty():continue
+			var row:int={"grass":0,"dirt":1,"sand":2,"stone":3,"moss":4,"water":2}[kind]
+			var rect:=Rect2(at,Vector2.ONE*64)
+			var points:=PackedVector2Array([rect.position,Vector2(rect.end.x,rect.position.y),rect.end,Vector2(rect.position.x,rect.end.y)])
+			_add_polygon(overlay,points,GroundAtlas.tile(row,0))

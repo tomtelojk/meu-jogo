@@ -9,6 +9,12 @@ Extraia o ZIP inteiro. No Windows, abra **EntreReinos.exe**. No Linux, abra **Jo
 
 O mapa tem **25 vezes a área anterior**, dois reinos maiores, quatro vilarejos, 135 construções, 44 NPCs e animais. Compre ferramentas, recolha materiais, negocie, suba de nível e construa sua casa. Quatro moradores também compram equipamento e constroem casas com recursos próprios.
 
+**F2 abre o Ateliê de Mundos**, incluído no jogo. Comece com um mapa vazio ou edite os reinos: pinte terreno e água, coloque casas, pontes, árvores, animais e NPCs e marque suas rotinas. Salve, exporte ou importe mapas em JSON e use **Testar mapa** para jogar. O ZIP inclui um mapa de exemplo e o guia do editor.
+
+Os moradores agora usam nove bases visuais, com os sprites originais de NPCs enviados pelo autor. Casas têm seis estilos de materiais e cores, com detalhes próprios. Shaders melhoram água, materiais e cor; podem ser desligados no menu de pausa.
+
+[Guia do editor](../docs/editor-de-mapas.md) · [Ver o ateliê](../docs/editor-mapa.png) · [Mapa de exemplo](../docs/mapa-exemplo.json)
+
 **E** interage e negocia, **I** abre inventário, **B** escolhe terreno, **J** mostra objetivos, **M** abre mapa e **Espaço** ataca. Nas estalagens, use caravanas para visitar outros povoados. O modo gráfico leve é o padrão.
 
 [Ver Aurélia](../docs/rpg-aurelia.png) · [Ver animais](../docs/rpg-animais.png) · [Ver construção](../docs/rpg-casa.png) · [Ver mapa](../docs/rpg-mapa.png) · [Ver casa de um NPC](../docs/rpg-casa-npc.png)

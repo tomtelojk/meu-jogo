@@ -6,6 +6,20 @@ Um **RPG de mundo aberto 2.5D para Windows e Linux**. Personagens em pixel art v
 
 ![Aurélia](docs/rpg-aurelia.png)
 
+## Crie seu próprio mapa
+
+Pressione **F2** para abrir o **Ateliê de Mundos**, incluído no jogo pronto. Comece com um mapa vazio ou edite a base dos reinos. Pinte terreno e rios; coloque casas, pontes, árvores, animais e moradores; defina os pontos de casa, trabalho e passeio dos NPCs. Use zoom, arraste a visão, desfaça/refaça e clique em **Testar mapa** para jogar.
+
+**Salvar** guarda o rascunho. **Exportar / Importar** permite compartilhar mapas em JSON. Cada mundo mantém sua aventura separada; você pode voltar ao continente original e recuperar seu progresso.
+
+[Guia do editor](docs/editor-de-mapas.md) · [Mapa de exemplo para importar](docs/mapa-exemplo.json)
+
+![Editor de mapas](docs/editor-mapa.png)
+
+![Aparências dos NPCs](docs/editor-npcs.png)
+
+Os NPCs agora misturam **nove bases visuais diferentes**, incluindo os oito personagens de `abc.zip`. As construções usam **seis paletas**, telhados e detalhes variados. Novos shaders trabalham a água, os materiais das casas e as cores do cenário; os efeitos podem ser desligados no menu de pausa.
+
 ## O novo mundo
 
 - **16.000 × 12.800 unidades**, 250 × 200 tiles: cinco vezes maior em cada eixo e **25 vezes a área** do mapa anterior.
@@ -82,6 +96,7 @@ Vacas e galinhas vivem nas fazendas e fornecem provisões ao ajudar com **E**. A
 | J | Objetivos e registros |
 | B | Escolher terreno / consultar sua obra |
 | M | Mapa do continente |
+| F2 | Criar / editar seu mapa |
 | Esc | Cancelar prévia, fechar menu ou pausar |
 
 Nas estalagens, caravanas de cinco moedas ligam os seis povoados. O mapa mostra cidades, posição do jogador e seu lar.
@@ -92,7 +107,7 @@ O mundo mantém **no máximo 25 regiões próximas de 512 × 512**. Terreno, ár
 
 Árvores e rochas usam `MultiMesh`; animais usam uma instância de partes geométricas por modelo. O vento atua nos vértices, sombras de árvores ficam no terreno e personagens distantes deixam de executar física a cada quadro. A navegação considera cidades, rio, pontes e recursos das regiões ativas.
 
-O modo **leve** usa 80% da resolução por eixo no cenário 3D; a interface fica na resolução integral. Em **Esc → Gráficos**, alterne para **nítido**. A preferência é salva.
+O modo **leve** usa 80% da resolução por eixo no cenário 3D; a interface fica na resolução integral. Em **Esc → Gráficos**, alterne para **nítido**. Em **Esc → Shaders**, ligue ou desligue os efeitos adicionais. As preferências são salvas.
 
 O save versão 2 preserva posição, saúde, inventário, ferramentas, dinheiro, XP, exploração, recursos esgotados, casas, contas e equipamentos dos NPCs, produção das fazendas, encomendas e relógio. Saves antigos migram para a entrada de Aurélia e preservam aparência e a atividade antiga. O diretório de usuário `EntreFolhas` foi mantido para localizar esses dados.
 
@@ -106,11 +121,13 @@ Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambien
 ./scripts/godot.sh --editor
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/run.gd -- --test
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/hybrid_tests.gd -- --test --hybrid
+./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/editor_tests.gd -- --test
+./scripts/godot.sh --audio-driver Dummy --script res://tests/editor_tests.gd -- --test --hybrid
 ```
 
 A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.
 
-Os resultados desta versão estão em [docs/rpg-desempenho.md](docs/rpg-desempenho.md). Foram aprovadas 238 verificações nativas e 24 gráficas.
+Os resultados e a cobertura dos testes estão em [docs/rpg-desempenho.md](docs/rpg-desempenho.md). A suíte do editor também valida entradas por mouse e atalhos, histórico, importação/exportação, rotinas, água, pontes, lojas e retorno ao save anterior.
 
 Para medir uma versão já aquecida, sem outros processos Godot concorrentes:
 

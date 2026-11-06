@@ -1,0 +1,138 @@
+{
+  "base": "vazio",
+  "id": "mapa_exemplo_vila",
+  "name": "Vila de São Bento",
+  "npcs": {},
+  "objects": [
+    {
+      "appearance": "bento",
+      "id": "obj_exemplo_0",
+      "kind": "cottage",
+      "name": "Casa de campo",
+      "realm": "aurelia",
+      "size": 130.0,
+      "style": 0,
+      "x": 7872.0,
+      "y": 6144.0
+    },
+    {
+      "appearance": "bento",
+      "id": "obj_exemplo_1",
+      "kind": "forge",
+      "name": "Ferraria / loja",
+      "realm": "aurelia",
+      "size": 130.0,
+      "style": 2,
+      "x": 7520.0,
+      "y": 6208.0
+    },
+    {
+      "appearance": "bento",
+      "id": "obj_exemplo_2",
+      "kind": "tower",
+      "name": "Torre",
+      "realm": "valverde",
+      "size": 130.0,
+      "style": 4,
+      "x": 8320.0,
+      "y": 6112.0
+    },
+    {
+      "appearance": "bento",
+      "id": "obj_exemplo_3",
+      "kind": "tavern",
+      "name": "Estalagem",
+      "realm": "valverde",
+      "size": 130.0,
+      "style": 1,
+      "x": 8640.0,
+      "y": 6208.0
+    },
+    {
+      "appearance": "bento",
+      "id": "obj_exemplo_4",
+      "kind": "tree",
+      "name": "Árvore verde",
+      "realm": "aurelia",
+      "size": 130.0,
+      "style": 0,
+      "x": 7744.0,
+      "y": 6720.0
+    },
+    {
+      "appearance": "bento",
+      "id": "obj_exemplo_5",
+      "kind": "cow",
+      "name": "Vaca",
+      "realm": "valverde",
+      "size": 130.0,
+      "style": 0,
+      "x": 8448.0,
+      "y": 6720.0
+    },
+    {
+      "appearance": "iris",
+      "home_x": 7712.0,
+      "home_y": 6592.0,
+      "id": "obj_exemplo_6",
+      "kind": "npc",
+      "name": "Herbalista",
+      "realm": "aurelia",
+      "size": 130.0,
+      "social_x": 8000.0,
+      "social_y": 6656.0,
+      "style": 0,
+      "work_x": 7808.0,
+      "work_y": 6464.0,
+      "x": 7712.0,
+      "y": 6464.0
+    },
+    {
+      "appearance": "tomas",
+      "home_x": 8576.0,
+      "home_y": 6720.0,
+      "id": "obj_exemplo_7",
+      "kind": "npc",
+      "name": "Guarda",
+      "realm": "valverde",
+      "size": 130.0,
+      "social_x": 8768.0,
+      "social_y": 6592.0,
+      "style": 0,
+      "work_x": 8576.0,
+      "work_y": 6592.0,
+      "x": 8576.0,
+      "y": 6592.0
+    },
+    {
+      "appearance": "tomas",
+      "id": "obj_exemplo_8",
+      "kind": "bridge",
+      "name": "Ponte sobre o rio",
+      "realm": "valverde",
+      "size": 130.0,
+      "style": 0,
+      "x": 8224.0,
+      "y": 6432.0
+    }
+  ],
+  "removed": {},
+  "spawn": [
+    8000,
+    6400
+  ],
+  "terrain": {
+    "122,100": "dirt",
+    "123,100": "dirt",
+    "127,100": "water",
+    "127,101": "water",
+    "127,99": "water",
+    "128,100": "water",
+    "128,101": "water",
+    "128,99": "water",
+    "129,100": "water",
+    "129,101": "water",
+    "129,99": "water"
+  },
+  "version": 1
+}

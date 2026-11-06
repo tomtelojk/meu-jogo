@@ -82,7 +82,7 @@ var baked: Dictionary = {}
 var pickups: Array[Dictionary] = []
 var shader: Shader
 var foliage_shader: Shader
-var river_material: StandardMaterial3D
+var river_material: ShaderMaterial
 var facade_materials: Array[ShaderMaterial] = []
 var foliage_materials: Array[ShaderMaterial] = []
 var tree_batches: Array[MultiMeshInstance3D] = []
@@ -91,6 +91,10 @@ var swim_ripple: MeshInstance3D
 var last_daylight := Color(-1,-1,-1)
 var landscape:StreamedLandscape
 var build_ghost:MeshInstance3D
+var grade:CanvasLayer
+var grade_rect:ColorRect
+var shaders_enabled:=true
+var architecture:Node3D
 
 func setup(source: ForestGame) -> void:
 	game=source
@@ -98,11 +102,11 @@ func setup(source: ForestGame) -> void:
 	shader.code=BILLBOARD_SHADER
 	foliage_shader=Shader.new()
 	foliage_shader.code=FOLIAGE_SHADER
+	_water()
 	_ground()
 	_lighting()
 	_buildings()
 	_bridge()
-	_water()
 	_landmarks()
 	_build_forest()
 	_settlement_labels()
@@ -132,10 +136,13 @@ func setup(source: ForestGame) -> void:
 	game.world.hybrid_rendering=true
 	get_viewport().canvas_transform=Transform2D.IDENTITY
 	set_light_graphics(game.light_graphics)
+	_color_grade()
+	set_shaders(game.shaders_enabled)
 
 func set_light_graphics(enabled:bool)->void:
 	# Scale only the 3D buffer. HUD, text, menus and input keep native resolution.
 	get_viewport().scaling_3d_scale=0.8 if enabled else 1.0
+	if grade_rect!=null:grade_rect.visible=shaders_enabled and not enabled
 
 func _point(p:Vector2)->Vector3:
 	return Vector3(p.x/UNIT,0,p.y/UNIT)
@@ -177,52 +184,13 @@ func _box(at:Vector3,size:Vector3,color:Color)->MeshInstance3D:
 	return node
 
 func _buildings()->void:
-	var texture:Texture2D=load("res://assets/tomate/villages.png")
-	var regions: Array=load("res://game/settlements.gd").REGIONS
-	for index in KingdomData.BUILDINGS.size():
-		var data:Dictionary=KingdomData.BUILDINGS[index]
-		var rect:=KingdomData.building_rect(data)
-		var center:=_point(rect.get_center())
-		var width:=rect.size.x/UNIT
-		var depth:=rect.size.y/UNIT
-		var height:=width*0.6
-		var color:=Color("bba88c") if data.realm=="aurelia" else Color("9ba9a5")
-		var style:=0 if data.realm=="aurelia" else 1
-		if data.kind in ["home","market"] and index%2==0: style=2
-		_box(center+Vector3(0,height/2,0),Vector3(width,height,depth),color)
-		var roof:=MeshInstance3D.new()
-		var prism:=PrismMesh.new()
-		prism.size=Vector3(width*1.14,height*0.55,depth*1.15)
-		roof.mesh=prism
-		roof.position=center+Vector3(0,height+height*0.275,0)
-		var mat:=StandardMaterial3D.new()
-		var roof_art:=AtlasTexture.new()
-		roof_art.atlas=texture
-		var roof_region:Rect2=regions[style]
-		roof_art.region=Rect2(roof_region.position+roof_region.size*Vector2(0.3,0.2),roof_region.size*Vector2(0.4,0.12))
-		mat.albedo_texture=_bake(roof_art)
-		mat.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
-		mat.uv1_scale=Vector3(4,4,1)
-		mat.roughness=1.0
-		roof.material_override=mat
-		add_child(roof)
-		var atlas:=AtlasTexture.new()
-		atlas.atlas=texture
-		# Use the supplied house's wall/door artwork on a solid 3D facade.
-		# The roof is geometry, so perspective never reveals a second painted roof.
-		var region:Rect2=regions[style]
-		atlas.region=Rect2(region.position+region.size*Vector2(0.12,0.55),region.size*Vector2(0.76,0.45))
-		var face:=Sprite3D.new()
-		face.texture=_bake(atlas)
-		face.centered=false
-		face.offset=Vector2(-face.texture.get_width()/2.0,0)
-		face.pixel_size=width/face.texture.get_width()
-		face.position=_point(Vector2(rect.get_center().x,rect.end.y))+Vector3(0,0.02,0.025)
-		var facade_material:=_material(face.texture)
-		facade_material.set_shader_parameter("face_camera",false)
-		facade_materials.append(facade_material)
-		face.material_override=facade_material
-		add_child(face)
+	architecture=Node3D.new()
+	architecture.name="Architecture"
+	add_child(architecture)
+	for data in KingdomData.buildings():
+		var model:=BuildingVisual.new()
+		model.setup(data)
+		architecture.add_child(model)
 
 func _bridge()->void:
 	for rect in WorldData.bridges():_bridge_mesh(rect)
@@ -271,6 +239,11 @@ func _bridge_mesh(rect:Rect2)->void:
 	add_child(node)
 
 func _water()->void:
+	river_material=ShaderMaterial.new()
+	river_material.shader=load("res://game/shaders/water.gdshader")
+	river_material.set_shader_parameter("art",GroundAtlas.water_frames()[0])
+	river_material.set_shader_parameter("edits",MapDocument.water_mask())
+	if not MapDocument.base_enabled():return
 	var surface:=SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for i in 400:
@@ -280,22 +253,17 @@ func _water()->void:
 		var b:=_point(Vector2(WorldData.river_x(y0)+WorldData.river_width(y0),y0))
 		var c:=_point(Vector2(WorldData.river_x(y1)-WorldData.river_width(y1),y1))
 		var d:=_point(Vector2(WorldData.river_x(y1)+WorldData.river_width(y1),y1))
-		for v in [a,c,b,b,c,d]:
+		var vertices:Array[Vector3]=[a,c,b,b,c,d]
+		for index in 6:
+			var v:Vector3=vertices[index]
 			surface.set_uv(Vector2(v.x,v.z))
+			surface.set_uv2(Vector2(-1 if index in [0,1,4] else 1,0))
 			surface.add_vertex(v+Vector3(0,-0.005,0))
 	surface.generate_normals()
 	var node:=MeshInstance3D.new()
 	node.mesh=surface.commit()
-	var mat:=StandardMaterial3D.new()
-	mat.albedo_texture=GroundAtlas.water_frames()[0]
-	mat.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	mat.cull_mode=BaseMaterial3D.CULL_DISABLED
-	mat.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.roughness=0.35
-	mat.uv1_scale=Vector3.ONE
-	node.material_override=mat
+	node.material_override=river_material
 	node.name="River3D"
-	river_material=mat
 	add_child(node)
 
 func _material(texture:Texture2D)->ShaderMaterial:
@@ -353,8 +321,9 @@ func _sync(card:Sprite3D,source:AnimatedSprite2D)->void:
 	card.flip_h=source.flip_h
 	var mat:=card.material_override as ShaderMaterial
 	mat.set_shader_parameter("tint",source.modulate)
-	if source.material is ShaderMaterial and TomateCharacterSheet.is_sheet(source.sprite_frames):
+	if source.material is ShaderMaterial:
 		mat.set_shader_parameter("clothing_tint",source.material.get_shader_parameter("clothing_tint"))
+	else:mat.set_shader_parameter("clothing_tint",Color.WHITE)
 
 func _shadow(body:Node2D)->void:
 	var shadow:=MeshInstance3D.new()
@@ -390,6 +359,7 @@ func _process(delta:float)->void:
 			actor.card.visible=actor.body.visible
 			if actor.body==game.player:
 				actor.card.material_override.set_shader_parameter("swim_amount",1.0 if game.player.swimming else 0.0)
+	mother_card.visible=MapDocument.base_enabled()
 	_sync(mother_card,game.world.mother_sprite)
 	mother_card.material_override.set_shader_parameter("vitality",game.world.mother_material.get_shader_parameter("vitality"))
 	var hero:=Vector2(game.player.position.x,game.player.position.y)/UNIT
@@ -403,7 +373,7 @@ func _process(delta:float)->void:
 		item.node.position.y=0.25+sin(Time.get_ticks_msec()*0.002+item.phase)*0.07
 	if game.world.daylight.color!=last_daylight:
 		_update_light()
-	river_material.uv1_offset.y+=delta*0.018
+
 	_follow(false,delta)
 
 func _body_height(body:Node2D)->float:
@@ -418,6 +388,8 @@ func _update_light()->void:
 	var color:=Vector3(last_daylight.r,last_daylight.g,last_daylight.b)
 	for material in foliage_materials+facade_materials:
 		material.set_shader_parameter("day_color",color)
+	river_material.set_shader_parameter("day_color",color)
+	if BuildingVisual.shared_material!=null:BuildingVisual.shared_material.set_shader_parameter("day_color",color)
 	for actor in actors:
 		if actor.has("card"):
 			actor.card.material_override.set_shader_parameter("day_color",color)
@@ -465,6 +437,7 @@ func _landmarks()->void:
 	swim_ripple.material_override=foam
 	add_child(swim_ripple)
 	for data in WorldData.SEEDS:
+		if not MapDocument.base_enabled():continue
 		var node:=MeshInstance3D.new()
 		var mesh:=SphereMesh.new()
 		mesh.radius=0.1
@@ -478,6 +451,7 @@ func _landmarks()->void:
 		node.position=_point(data.position)+Vector3(0,0.25,0)
 		add_child(node)
 		pickups.append({"node":node,"id":data.id,"phase":pickups.size()})
+	if not MapDocument.base_enabled():return
 	var camp:=_point(WorldData.CAMP)
 	var tent:=MeshInstance3D.new()
 	var prism:=PrismMesh.new()
@@ -526,7 +500,7 @@ func cancel_preview()->void:
 	if build_ghost!=null:build_ghost.visible=false
 
 func _settlement_labels()->void:
-	for town in KingdomData.SETTLEMENTS:
+	for town in KingdomData.towns():
 		var title:=Label3D.new()
 		title.text=town.name
 		title.position=_point(town.position)+Vector3(0,1.8,0)
@@ -535,6 +509,7 @@ func _settlement_labels()->void:
 		title.pixel_size=0.01
 		add_child(title)
 		for kind in ["shop","inn"]:
+			if not KingdomData.service_exists(town,kind):continue
 			var label:=Label3D.new()
 			label.text="Ferraria • Comércio" if kind=="shop" else "Estalagem • Caravanas"
 			label.position=_point(KingdomData.point(town.id+"_"+kind))+Vector3(0,1.6,0)
@@ -542,9 +517,25 @@ func _settlement_labels()->void:
 			label.font_size=32
 			label.pixel_size=0.008
 			add_child(label)
-		if town.capital:
-			var at:=_point(town.position+Vector2(0,-512))
-			for side in [-1,1]:
-				_box(at+Vector3(side*3.7,2.5,-1.5),Vector3(1.3,5.0,1.5),Color("a1a09a"))
-				_box(at+Vector3(side*2.5,1.4,0.05),Vector3(0.06,2.8,0.06),Color("66513c"))
-				_box(at+Vector3(side*2.5+0.35,2.4,0.05),Vector3(0.7,0.6,0.035),KingdomData.REALMS[town.realm].color)
+
+
+func _color_grade()->void:
+	grade=CanvasLayer.new()
+	grade.layer=2
+	add_child(grade)
+	grade_rect=ColorRect.new()
+	grade_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	grade_rect.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	var material:=ShaderMaterial.new()
+	material.shader=load("res://game/shaders/grade.gdshader")
+	grade_rect.material=material
+	grade.add_child(grade_rect)
+
+func set_shaders(enabled:bool)->void:
+	shaders_enabled=enabled
+	if grade_rect!=null:grade_rect.visible=enabled and not game.light_graphics
+	if river_material!=null:river_material.set_shader_parameter("effects",1.0 if enabled else 0.0)
+	if BuildingVisual.shared_material!=null:BuildingVisual.shared_material.set_shader_parameter("effects",1.0 if enabled else 0.0)
+
+func _exit_tree()->void:
+	get_viewport().scaling_3d_scale=1.0

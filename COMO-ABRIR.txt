@@ -3,10 +3,17 @@ ENTRE REINOS — GODOT 4.6
 Para jogar sem instalar o motor, baixe o ZIP do seu sistema em downloads/README.md.
 Extraia todos os arquivos. Abra EntreReinos.exe no Windows ou Jogar.sh no Linux.
 
-Para editar: abra project.godot no Godot 4.6.3 ou superior e pressione F5.
+Para criar seu mapa: pressione F2 dentro do jogo. Não precisa instalar o Godot.
+Pinte terreno e água; coloque casas, pontes, árvores, animais e moradores.
+Salvar guarda o rascunho; Testar mapa entra no mundo criado.
+Importar/Exportar permite compartilhar mapas em JSON.
+Leia docs/editor-de-mapas.md ou GUIA-DO-EDITOR.md dentro do ZIP.
+
+Para editar o código: abra project.godot no Godot 4.6.3 ou superior e pressione F5.
 
 WASD/setas: mover e nadar | E: interagir | I: inventário | J: objetivos
 B: escolher terreno | M: mapa | Espaço/clique: atacar | Esc: pausar
+F2: criar / editar o mapa | Esc > Shaders: ligar ou desligar efeitos
 
 Compre ferramentas na ferraria; recolha madeira e pedra; negocie ou construa.
 O mapa é 25 vezes maior, com duas capitais, quatro vilarejos e moradores com rotinas.

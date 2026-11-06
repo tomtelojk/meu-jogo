@@ -17,6 +17,54 @@ static var PLACES: Dictionary = _make_places()
 static var BUILDINGS: Array[Dictionary] = _make_buildings()
 static var PEOPLE: Array[Dictionary] = _make_people()
 static var _roads: Array[PackedVector2Array] = []
+static var _map_revision := -1
+static var _map_buildings: Array[Dictionary] = []
+static var _map_people: Array[Dictionary] = []
+
+static func towns() -> Array[Dictionary]:
+	if MapDocument.base_enabled():return SETTLEMENTS
+	return []
+
+static func buildings() -> Array[Dictionary]:
+	_refresh_map()
+	return _map_buildings
+
+static func people() -> Array[Dictionary]:
+	_refresh_map()
+	return _map_people
+
+static func service_exists(town:Dictionary,kind:String)->bool:
+	var at:=point(town.id+"_"+kind)-Vector2(0,96)
+	for building in buildings():
+		if building.kind==("forge" if kind=="shop" else "tavern") and building_rect(building).has_point(at):return true
+	return false
+
+static func _refresh_map() -> void:
+	if _map_revision==MapDocument.revision:return
+	_map_revision=MapDocument.revision
+	_map_buildings=[];_map_people=[]
+	if MapDocument.base_enabled():
+		for i in BUILDINGS.size():
+			var entry: Dictionary=BUILDINGS[i].duplicate(true)
+			entry.id="base_building_"+str(i)
+			if not MapDocument.removed(entry.id):_map_buildings.append(entry)
+		for profile in PEOPLE:
+			if MapDocument.removed(profile.id):continue
+			if MapDocument.current.npcs.has(profile.id):_map_people.append(_editor_person(MapDocument.current.npcs[profile.id],profile))
+			else:_map_people.append(profile)
+	_map_buildings.append_array(MapDocument.custom_buildings())
+	for obj in MapDocument.current.objects:
+		if obj.kind=="npc":_map_people.append(_editor_person(obj,{}))
+
+static func _editor_person(obj: Dictionary, original: Dictionary) -> Dictionary:
+	var profile: Dictionary=original.duplicate(true) if not original.is_empty() else PEOPLE[0].duplicate(true)
+	if original.is_empty():
+		for candidate in PEOPLE:
+			if candidate.id==obj.appearance:profile=candidate.duplicate(true);break
+	profile.merge({"id":obj.id,"name":obj.name,"realm":obj.realm,"appearance":obj.appearance,"builder":false,"editor":true,"town":"","role":profile.get("role","Morador"),"speed":68.0+posmod(String(obj.id).hash(),20)},true)
+	var wake: int=6+posmod(String(obj.id).hash(),3)
+	profile.routine=[{"hour":0,"activity":"Descansando em casa","points":["map_"+obj.id+"_home"],"rest":true},{"hour":wake,"activity":"Indo trabalhar","points":["map_"+obj.id+"_work"]},{"hour":12,"activity":"Passeando","points":["map_"+obj.id+"_social"]},{"hour":14,"activity":"Trabalhando","points":["map_"+obj.id+"_work"]},{"hour":19,"activity":"Encontrando os vizinhos","points":["map_"+obj.id+"_social"]},{"hour":22,"activity":"Voltando para casa","points":["map_"+obj.id+"_home"],"rest":true}]
+	return profile
 
 static func _make_places() -> Dictionary:
 	var p := {
@@ -90,10 +138,11 @@ static func _make_people() -> Array[Dictionary]:
 	return people
 
 static func point(id:String)->Vector2:
+	if MapDocument.points.has(id):return MapDocument.points[id]
 	return PLACES.get(id,REALMS.aurelia.capital)
 
 static func person(id:String)->Dictionary:
-	for entry in PEOPLE:
+	for entry in people():
 		if entry.id==id:return entry
 	return {}
 

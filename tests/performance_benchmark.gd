@@ -8,6 +8,7 @@ func run():
 	game.start_journey()
 	game.world.set_population_active(false)
 	game.economy.set_process(false)
+	if "--no-grade" in OS.get_cmdline_user_args():game.hybrid.grade_rect.hide()
 	var rows=[]
 	for spot in [{"name":"capital","point":WorldData.SPAWN},{"name":"ferraria","point":KingdomData.point("forge")+Vector2(0,90)},{"name":"ponte","point":Vector2(WorldData.river_x(4800),4800)}]:
 		game.player.position=spot.point

@@ -22,6 +22,9 @@ var elapsed_hud: float = 0.0
 var victory_delay: float = 0.0
 var hybrid: HybridWorld
 var light_graphics := true
+var shaders_enabled := true
+var map_editor: WorldEditor
+var map_snapshots: Dictionary = {}
 var audio: ForestAudio
 var character_dialog: FileDialog
 var npc_sprite_dialog: FileDialog
@@ -34,6 +37,16 @@ var building_preview:=false
 var building_point:=Vector2.ZERO
 var action_delay:=0.0
 var damage_flash:=0.0
+
+func _enter_tree() -> void:
+	persistence=not ("--test" in OS.get_cmdline_user_args() or "--capture" in OS.get_cmdline_user_args())
+	if persistence:
+		var result:=MapDocument.read_file(MapDocument.ACTIVE_PATH)
+		MapDocument.activate(result.document if result.ok else MapDocument.original())
+	save_path=_map_save_path()
+
+func _map_save_path() -> String:
+	return SAVE_PATH if MapDocument.current.id=="reinos" else "user://maps/"+MapDocument.current.id+".journey.json"
 
 func _ready() -> void:
 	persistence = not ("--test" in OS.get_cmdline_user_args() or "--capture" in OS.get_cmdline_user_args())
@@ -48,6 +61,7 @@ func _ready() -> void:
 	hud.map_requested.connect(show_map)
 	hud.sound_requested.connect(func(): hud.set_sound(audio.toggle()))
 	hud.character_requested.connect(show_characters)
+	hud.editor_requested.connect(show_map_editor)
 	hud.dialog_closed.connect(close_dialog)
 	hud.interact_requested.connect(interact)
 	hud.touch_moved.connect(func(value: Vector2): player.touch_vector = value)
@@ -74,13 +88,17 @@ func _ready() -> void:
 		add_child(hybrid)
 		hybrid.setup(self)
 	print("Entre Reinos · Godot %s · cenário e controles carregados." % Engine.get_version_info().string)
+	if MapDocument.current.id!="reinos" and not FileAccess.file_exists(save_path):
+		player.position=MapDocument.spawn_point()
+		world.ensure_region(player.position,true)
+		if hybrid!=null:hybrid.snap_camera()
 
 func _setup_input() -> void:
 	var bindings := {
 		"move_up": [KEY_W, KEY_UP], "move_down": [KEY_S, KEY_DOWN],
 		"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
 		"run": [KEY_SHIFT], "interact": [KEY_E], "map": [KEY_M], "pause": [KEY_ESCAPE],
-		"inventory":[KEY_I],"journal":[KEY_J],"build":[KEY_B],"attack":[KEY_SPACE],
+		"inventory":[KEY_I],"journal":[KEY_J],"build":[KEY_B],"attack":[KEY_SPACE],"editor":[KEY_F2],
 	}
 	for action in bindings:
 		if not InputMap.has_action(action):
@@ -111,7 +129,7 @@ func _process(delta: float) -> void:
 		elapsed_hud = 0.0
 		hud.update_status(player, world.data, world.clock)
 		hud.update_rpg(rpg)
-		for town in KingdomData.SETTLEMENTS:
+		for town in KingdomData.towns():
 			if player.position.distance_to(town.position)<1400 and rpg.discover(town.id):hud.toast("Você descobriu "+town.name+" · +25 XP")
 		var item := current_interaction()
 		var label := ""
@@ -327,13 +345,15 @@ func close_dialog() -> void:
 	world.set_population_active(mode == "playing")
 
 func show_pause() -> void:
-	if mode != "playing":
+	if mode != "playing" and not (mode=="dialog" and hud.modal_kind=="pause"):
 		return
 	save_journey()
 	_open_dialog("UMA PEQUENA PAUSA", "A aventura espera por você.", "Não é preciso ter pressa. Sua jornada é salva automaticamente neste dispositivo.", [
 		{"label": "Continuar a jornada", "callback": close_dialog},
 		{"label": "Escolher personagem", "callback": show_characters},
+		{"label": "Criar / editar mapa · F2", "callback": show_map_editor},
 		{"label": "Gráficos: " + ("leve" if light_graphics else "nítido"), "callback": toggle_graphics},
+		{"label": "Shaders: " + ("ligados" if shaders_enabled else "desligados"), "callback": toggle_shaders},
 		{"label": "Como jogar", "callback": show_help},
 		{"label": "Começar de novo", "callback": confirm_reset},
 	], "pause")
@@ -344,8 +364,59 @@ func toggle_graphics() -> void:
 		hybrid.set_light_graphics(light_graphics)
 	show_pause()
 
+func toggle_shaders() -> void:
+	shaders_enabled=not shaders_enabled
+	if hybrid!=null:hybrid.set_shaders(shaders_enabled)
+	save_journey()
+	show_pause()
+
+func show_map_editor() -> void:
+	if map_editor==null:
+		map_editor=WorldEditor.new()
+		add_child(map_editor)
+		map_editor.setup(self)
+	if map_editor.visible:map_editor.close()
+	else:map_editor.open()
+
+func apply_map(document:Dictionary) -> bool:
+	var checked:=MapDocument.validate(document)
+	if not checked.ok:return false
+	map_snapshots[MapDocument.current.id]=journey_data().duplicate(true)
+	save_journey()
+	if hybrid!=null:hybrid.free();hybrid=null
+	world.free()
+	MapDocument.activate(checked.document)
+	save_path=_map_save_path()
+	rpg=RPGState.new()
+	collected.clear();met_npcs.clear();royal_seals.clear();complete=false
+	var template:Node=load("res://scenes/main.tscn").instantiate()
+	world=template.get_node("World")
+	template.remove_child(world);template.free()
+	world.name="World"
+	add_child(world)
+	player=world.player
+	camera=player.get_node("Camera2D")
+	player.position=MapDocument.spawn_point()
+	player.interact_requested.connect(interact)
+	rpg.changed.connect(_refresh_quest)
+	if map_snapshots.has(MapDocument.current.id):apply_journey(map_snapshots[MapDocument.current.id])
+	elif persistence:_load_journey()
+	world.refresh_rpg();world.ensure_region(player.position,true)
+	player.position=world.safe_position(player.position)
+	player.restore_surface()
+	if not "--test" in OS.get_cmdline_user_args() or "--hybrid" in OS.get_cmdline_user_args():
+		hybrid=HybridWorld.new();add_child(hybrid);hybrid.setup(self)
+	mode="playing";return_mode="playing"
+	player.active=true;world.set_population_active(true)
+	hud.root.show();hud.show_game();hud.close_dialog()
+	_refresh_quest()
+	if map_editor!=null:map_editor.visible=false
+	save_journey()
+	hud.toast("Seu mapa está pronto para explorar. F2 volta ao ateliê.")
+	return true
+
 func show_help()->void:
-	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e colher\nEspaço ou clique esquerdo · Atacar\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Escolher terreno para sua casa\nM · Mapa do continente\nEsc · Pausar\n\nCompre machado, picareta e martelo no comércio. Madeira e pedra servem para construir ou podem ser vendidas. A casa cresce em três etapas. Vilarejos têm estalagens, caravanas e encomendas. Alguns moradores também compram ferramentas e constroem casas. Javalis podem atacar; provisões e descanso recuperam vida.",[{"label":"Continuar","callback":close_dialog}],"help")
+	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e colher\nEspaço ou clique esquerdo · Atacar\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Escolher terreno para sua casa\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nEsc · Pausar\n\nCompre machado, picareta e martelo no comércio. Madeira e pedra servem para construir ou podem ser vendidas. A casa cresce em três etapas. Vilarejos têm estalagens, caravanas e encomendas. Alguns moradores também compram ferramentas e constroem casas. Javalis podem atacar; provisões e descanso recuperam vida.",[{"label":"Continuar","callback":close_dialog}],"help")
 
 func show_map() -> void:
 	if mode == "dialog" and hud.modal_kind == "map":
@@ -384,7 +455,7 @@ func reset_journey() -> void:
 	world.reset_population()
 	complete = false
 	victory_delay = 0.0
-	player.position = WorldData.SPAWN
+	player.position = MapDocument.spawn_point()
 	player.restore_surface()
 	world.data=WorldData.generate()
 	world.ensure_region(player.position,true)
@@ -447,7 +518,7 @@ func _use_default_character() -> void:
 	close_dialog()
 
 func journey_data() -> Dictionary:
-	return {"version": 2,"rpg":rpg.save_data(), "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
+	return {"version": 2,"rpg":rpg.save_data(), "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
 
 func apply_journey(data: Dictionary) -> bool:
 	if (data.get("version")!=1 and data.get("version")!=2) or not data.get("seeds",[]) is Array:
@@ -458,7 +529,7 @@ func apply_journey(data: Dictionary) -> bool:
 			if id == seed_data.id:
 				collected[id] = true
 	complete = data.get("complete") == true and collected.size() == 5
-	player.position = WorldData.SPAWN
+	player.position = MapDocument.spawn_point()
 	var x = data.get("x")
 	var y = data.get("y")
 	if data.get("version")==2 and (x is float or x is int) and (y is float or y is int):
@@ -470,12 +541,14 @@ func apply_journey(data: Dictionary) -> bool:
 	world.refresh_rpg()
 	world.ensure_region(player.position,true)
 	if not WorldData.can_stand(player.position,world.data,10,true):
-		player.position=WorldData.SPAWN
+		player.position=MapDocument.spawn_point()
 		world.ensure_region(player.position,true)
 	player.restore_surface(data.get("swimming", false) == true)
+	shaders_enabled=data.get("shaders",true)!=false
 	light_graphics = data.get("light_graphics", true) != false
 	if hybrid != null:
 		hybrid.set_light_graphics(light_graphics)
+		hybrid.set_shaders(shaders_enabled)
 	custom_character = data.get("custom_character") == true
 	met_npcs.clear()
 	royal_seals.clear()
@@ -510,6 +583,7 @@ func _load_journey() -> void:
 func save_journey() -> void:
 	if not persistence:
 		return
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(save_path).get_base_dir())
 	var file := FileAccess.open(save_path, FileAccess.WRITE)
 	if file == null:
 		if not save_warning_shown:
@@ -520,6 +594,8 @@ func save_journey() -> void:
 
 func _unhandled_input(event:InputEvent)->void:
 	if event.is_echo():return
+	if mode=="editor":return
+	if event.is_action_pressed("editor"):show_map_editor();get_viewport().set_input_as_handled();return
 	if building_preview:
 		if event.is_action_pressed("pause") or event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_RIGHT:cancel_building()
 		elif event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:place_house(building_point)
@@ -546,6 +622,7 @@ func _notification(what: int) -> void:
 		if mode == "playing":
 			show_pause()
 	elif what == NOTIFICATION_WM_CLOSE_REQUEST:
+		if map_editor!=null and map_editor.visible and map_editor.dirty:map_editor.save_draft(false)
 		if mode != "intro":
 			save_journey()
 
@@ -593,14 +670,14 @@ func rest_inn(town:String)->void:
 
 func show_caravans(origin:String)->void:
 	var actions:Array[Dictionary]=[]
-	for town in KingdomData.SETTLEMENTS:
+	for town in KingdomData.towns():
 		if town.id!=origin:actions.append({"label":town.name+" · 5 moedas","callback":travel_to.bind(town.id)})
 	actions.append({"label":"Voltar à estalagem","callback":open_inn.bind(origin)})
 	_open_dialog("CARAVANAS","Rotas do continente","Viaje com os mercadores ou faça o caminho a pé. Novos lugares também dão experiência.",actions,"travel")
 
 func travel_to(id:String)->bool:
 	var target:Dictionary={}
-	for town in KingdomData.SETTLEMENTS:
+	for town in KingdomData.towns():
 		if town.id==id:target=town
 	if target.is_empty() or rpg.gold<5:hud.toast("São necessárias 5 moedas para a viagem.");return false
 	rpg.gold-=5
@@ -639,7 +716,7 @@ func can_build_at(point:Vector2)->Dictionary:
 		if rect.grow(24).intersects(wall):return {"ok":false,"message":"Há uma construção muito perto."}
 	for entry in world.resources.values():
 		if entry.resource.get("active",true) and WorldData.circle_hits_rect(entry.resource.position,entry.resource.radius+16,rect):return {"ok":false,"message":"Retire árvores e pedras antes de reservar este terreno."}
-	for town in KingdomData.SETTLEMENTS:
+	for town in KingdomData.towns():
 		if town.capital:continue
 		var reserved:=Rect2(KingdomData.point(town.id+"_plot")-Vector2(96,128),Vector2(192,128))
 		if rect.grow(24).intersects(reserved):return {"ok":false,"message":"Este terreno está reservado para um morador."}
@@ -745,7 +822,7 @@ func take_damage(amount:int)->void:
 		rpg.health=60
 		rpg.gold=maxi(0,rpg.gold-5)
 		var home:Dictionary=rpg.houses.get("home_player",{})
-		player.position=Vector2(home.x,home.y+64) if not home.is_empty() and home.stage==3 else WorldData.SPAWN
+		player.position=Vector2(home.x,home.y+64) if not home.is_empty() and home.stage==3 else MapDocument.spawn_point()
 		player.restore_surface()
 		world.ensure_region(player.position,true)
 		if hybrid!=null:hybrid.snap_camera()
