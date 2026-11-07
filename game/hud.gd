@@ -325,8 +325,9 @@ func update_rpg(state:RPGState)->void:
 	quest_description.text="VIDA %d/100  XP %d\nMADEIRA %d  PEDRA %d"%[state.health,state.xp,state.wood,state.stone]
 	hotbar.rpg=state;hotbar.queue_redraw()
 	var home:Dictionary=state.houses.get("home_player",{})
-	quest_note.text="I · Inventário   J · Objetivos\n"+("B · Escolher terreno para sua casa" if home.is_empty() else "Sua casa: "+RPGState.STAGES[home.stage])
+	quest_note.text="I · Inventário   B · Construir\n"+("E · Usar estruturas" if state.construction.queues.is_empty() else "Produção: %d estações ativas"%state.construction.queues.size())
 	minimap.home_position=Vector2(home.x,home.y) if not home.is_empty() else Vector2(-1,-1)
+	if state.construction.pieces.has(state.construction.player_bed):minimap.home_position=ConstructionCatalog.footprint(state.construction.pieces[state.construction.player_bed]).get_center()
 
 func update_status(player: ForestPlayer, data: Dictionary, clock: WorldClock = null) -> void:
 	var realm: Dictionary = KingdomData.REALMS[KingdomData.realm_at(player.position)]

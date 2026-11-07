@@ -23,6 +23,7 @@ func _process(delta:float)->void:
 		if minute-int(account.last_wage)>=20:
 			account.gold+=2
 			account.last_wage=minute
+		if game.construction!=null and game.construction.advance_worker(npc):continue
 		if npc.definition.get("builder",false) and not npc.current_schedule.get("social",false):advance_builder(npc,dt)
 		else:advance_worker(npc,dt)
 

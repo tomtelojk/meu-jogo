@@ -74,6 +74,8 @@ func _physics_process(delta:float)->void:
 		change_target=rng.randf_range(2.0,5.0)
 	var direction:=position.direction_to(target) if position.distance_to(target)>8 else Vector2.ZERO
 	if not WorldData.can_stand(position+direction*30,game.world.data,8):
+		if definition.hostile and distance<190 and attack_delay<=0 and game.construction!=null:
+			game.construction.call_deferred("damage_obstacle",position+direction*30,12);attack_delay=1.3
 		change_target=0
 		direction=Vector2.ZERO
 	velocity=direction*definition.speed

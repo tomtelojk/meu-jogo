@@ -21,7 +21,8 @@ Q/R ou botão do meio + arrastar: girar câmera (limite de 35 graus)
 Ctrl+roda ou PgUp/PgDn: zoom | Home: restaurar câmera
 I: inventário, ferramentas e provisões
 J: objetivos e registros
-B: escolher terreno; clique confirma, botão direito/Esc cancela
+B: catálogo de construção | T: girar peça | Clique: construir
+Botão direito/Esc: sair da prévia | B na prévia: voltar ao catálogo
 M: mapa do continente
 F2: Ateliê de Mundos — crie ou edite seu mapa
 Esc: pausa e gráficos (leve / HD-2D), shaders e clima
@@ -71,10 +72,21 @@ Vacas e galinhas fornecem provisões; cervos, coelhos e javalis vivem nos campos
 Javalis podem atacar. Provisões e descanso recuperam a vida.
 
 CONSTRUA SUA CASA
-Use B perto de um terreno livre de ruas, água, árvores e pedras.
-Reservar o terreno custa 20 moedas. Depois, vá até a obra e use E.
-Um martelo, 50 madeira e 20 pedra completam fundação, paredes e telhado.
-Sua casa permite descansar e serve como retorno se você for socorrido.
+Use B para escolher paredes, chão, móveis e estações, com custos e grade.
+Fantasma verde: local válido; vermelho: explica o impedimento. T gira.
+Você precisa de martelo. Clique constrói; Esc/botão direito encerra a prévia.
+A bancada usa 10 madeira e 4 pedra e transforma 2 madeira em 2 tábuas.
+A forja usa 18 pedra, 4 tábuas e 2 cobre e permite fabricação avançada.
+Use E na estação para receitas, fila, reparos e designar trabalhador.
+Pedidos reservam ingredientes; cancelar devolve unidades não concluídas.
+Produção avança com o tempo do mundo e durante o descanso. Menus pausam.
+Use E na cama livre para descansar, salvar e definir ponto de retorno.
+É possível designar NPCs a camas e estações; eles seguem seus turnos.
+Trabalhador presente acelera a estação em 25%. Javalis danificam obstáculos.
+Estruturas têm vida; martelo e materiais permitem reparar pelo menu E.
+Construções, designações e filas são guardadas no save de cada mapa.
+A casa antiga continua em B > Casa completa por etapas, com seus custos.
+GUIA-DA-CONSTRUCAO.md contém as instruções completas.
 
 MORADORES COM PLANOS PRÓPRIOS
 Os NPCs têm turnos variados, refeições, encontros e descanso em casa.
@@ -115,9 +127,14 @@ def package(system: str, output: Path) -> Path:
     linux = system == "Linux"
     binary = "EntreReinos.x86_64" if linux else "EntreReinos.exe"
     stage = ROOT / "build" / "packages" / f"EntreReinos-{system}"
-    stage.mkdir(parents=True, exist_ok=True)
     player = ROOT / "build" / system.lower() / binary
     verify_player(player, b"\x7fELF" if linux else b"MZ")
+    # The stage is generated here; rebuild it so previous exports and Godot
+    # import sidecars cannot silently become part of the next release.
+    if stage.exists():
+        shutil.rmtree(stage)
+    stage.mkdir(parents=True, exist_ok=True)
+    (ROOT / "build" / ".gdignore").touch()
     shutil.copy2(player, stage / binary)
     if linux:
         (stage / binary).chmod(0o755)
@@ -145,7 +162,8 @@ def package(system: str, output: Path) -> Path:
     shutil.copy2(ROOT / "docs" / "editor-mapa.png", stage / "editor-mapa.png")
     shutil.copy2(ROOT / "docs" / "coleta-e-ferramentas.md", stage / "GUIA-DA-COLETA.md")
     shutil.copy2(ROOT / "docs" / "visual-hd2d.md", stage / "GUIA-DO-VISUAL.md")
-    for image_name in ["coleta-queda.png", "coleta-toco.png", "hd2d-aurelia.png", "hd2d-noite.png", "hd2d-ponte.png", "hd2d-chuva.png"]:
+    shutil.copy2(ROOT / "docs" / "construcao-e-fabricacao.md", stage / "GUIA-DA-CONSTRUCAO.md")
+    for image_name in ["coleta-queda.png", "coleta-toco.png", "hd2d-aurelia.png", "hd2d-noite.png", "hd2d-ponte.png", "hd2d-chuva.png", "construcao-catalogo.png", "construcao-previa.png", "construcao-fila.png", "construcao-assentamento.png"]:
         shutil.copy2(ROOT / "docs" / image_name, stage / image_name)
     (stage / "FONTES-ARVORES.json").unlink(missing_ok=True)
     (stage / "CREDITOS.txt").write_text(

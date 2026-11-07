@@ -21,7 +21,9 @@ Os NPCs têm turnos de trabalho, comércio, refeições, patrulhas, encontros e 
 
 [Guia do editor](../docs/editor-de-mapas.md) · [Ver o ateliê](../docs/editor-mapa.png) · [Mapa de exemplo](../docs/mapa-exemplo.json)
 
-**E** interage, **I** abre inventário e **B** escolhe terreno. A hotbar usa **1–4** para ferramentas, **5** para comer, **6** para mapa, **7** para diário e **8** para lanterna. A roda do mouse seleciona e o clique esquerdo usa o item. **Espaço** ataca. Nas estalagens, use caravanas para visitar outros povoados. O modo gráfico leve é o padrão.
+**Construção modular:** B abre paredes, chão, móveis e estações, com custos, grade e fantasma verde/vermelho. T gira a peça. E em bancadas e forjas abre receitas, fila, reparos e designação de trabalhadores. Camas permitem morar, descansar e salvar um ponto de retorno. NPCs seguem seus turnos e aceleram a estação; vida, portas, designações e filas são salvas por mapa. [Guia da construção](../docs/construcao-e-fabricacao.md).
+
+**E** interage, **I** abre inventário e **B** abre o catálogo. A hotbar usa **1–4** para ferramentas, **5** para comer, **6** para mapa, **7** para diário e **8** para lanterna. A roda do mouse seleciona e o clique esquerdo usa o item. **Espaço** ataca. Nas estalagens, use caravanas para visitar outros povoados. O modo gráfico leve é o padrão.
 
 [Ver o início](../docs/rpg-inicio.png) · [Ver a interface](../docs/rpg-hud.png) · [Ver iluminação e neblina](../docs/rpg-noite.png)
 

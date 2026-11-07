@@ -12,7 +12,10 @@ Leia docs/editor-de-mapas.md ou GUIA-DO-EDITOR.md dentro do ZIP.
 Para editar o código: abra project.godot no Godot 4.6.3 ou superior e pressione F5.
 
 WASD/setas: mover e nadar | E: interagir | I: inventário | J: objetivos
-B: escolher terreno | M: mapa | Espaço: atacar | Esc: pausar
+B: catálogo de construção | T: girar peça na prévia | M: mapa | Espaço: atacar | Esc: pausar
+
+E em camas e bancadas: descansar, produzir, reparar e designar NPCs.
+Construções, filas e moradores são salvos automaticamente por mapa.
 Hotbar 1-4: ferramentas | 5: comer | 6: mapa | 7: diário | 8: lanterna
 Roda do mouse: selecionar | Clique esquerdo: usar o item selecionado
 F2: criar / editar o mapa | Esc > Shaders: ligar ou desligar efeitos

@@ -105,6 +105,8 @@ var last_daylight := Color(-1,-1,-1)
 var lighting_color:=Color.WHITE
 var landscape:StreamedLandscape
 var build_ghost:MeshInstance3D
+var piece_ghost:ConstructionVisual
+var build_grid:MeshInstance3D
 var grade:CanvasLayer
 var grade_rect:ColorRect
 var shaders_enabled:=true
@@ -416,7 +418,7 @@ func _process(delta:float)->void:
 			actor.shadow.material_override.set_shader_parameter("light_direction",-sunlight.global_basis.z)
 			actor.shadow.material_override.set_shader_parameter("opacity",0.26 if game.world.clock.minute>6*60 and game.world.clock.minute<19*60 else 0.10)
 			actor.shadow.position=_point(actor.body.position)+Vector3(0,_body_height(actor.body)+0.005,0)
-			actor.shadow.visible=actor.body.visible and not sunlight.shadow_enabled and not (actor.body==game.player and game.player.swimming)
+			actor.shadow.visible=actor.body.visible and (not sunlight.shadow_enabled or game.world.floor_height(actor.body.position)>0.0) and not (actor.body==game.player and game.player.swimming)
 		else:
 			_sync(actor.card,actor.body.sprite)
 			actor.card.position=_point(actor.body.position)+Vector3(0,_body_height(actor.body),0)
@@ -445,8 +447,8 @@ func _process(delta:float)->void:
 
 func _body_height(body:Node2D)->float:
 	if body==game.player:
-		return (-0.28+sin(game.player.swim_phase)*0.015) if game.player.swimming else game.player.surface_height()/UNIT
-	return WorldData.bridge_height(body.position)/UNIT
+		return (-0.28+sin(game.player.swim_phase)*0.015) if game.player.swimming else maxf(game.player.surface_height()/UNIT,game.world.floor_height(body.position))
+	return maxf(WorldData.bridge_height(body.position)/UNIT,game.world.floor_height(body.position))
 
 func _update_light()->void:
 	last_daylight=game.world.daylight.color
@@ -529,6 +531,8 @@ func _update_occlusion()->void:
 	for parent in landscape.house_models.values():
 		for model in parent.get_children():
 			if model is BuildingVisual:model.update_occlusion(camera,hero,screen,extent)
+	for model in landscape.piece_models.values():
+		if model.get_meta("height",0.0)>1.0:model.update_occlusion(camera,hero,screen,extent)
 	_architecture_parameter("hero_screen",Vector4(screen.x/size.x,screen.y/size.y,extent.x/size.x,extent.y/size.y))
 	_architecture_parameter("hero_depth",-camera.to_local(hero).z)
 	_architecture_parameter("main_camera",camera.global_position)
@@ -639,6 +643,28 @@ func preview_house(point:Vector2,valid:bool)->void:
 
 func cancel_preview()->void:
 	if build_ghost!=null:build_ghost.visible=false
+	if piece_ghost!=null:piece_ghost.visible=false
+	if build_grid!=null:build_grid.visible=false
+
+func preview_piece(entry:Dictionary,valid:bool)->void:
+	if build_ghost!=null:build_ghost.hide()
+	var signature:String=entry.kind+str(entry.turn)
+	if piece_ghost==null or piece_ghost.get_meta("signature","")!=signature:
+		if piece_ghost!=null:piece_ghost.queue_free()
+		piece_ghost=ConstructionVisual.new();piece_ghost.setup_piece(entry);piece_ghost.set_meta("signature",signature);add_child(piece_ghost)
+		var material:=StandardMaterial3D.new();material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;material.no_depth_test=false
+		piece_ghost.visual_mesh.material_override=material;piece_ghost.visual_mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;piece_ghost.visual_mesh.layers=16
+		var footprint:=MeshInstance3D.new();var box:=BoxMesh.new();var definition:=ConstructionCatalog.piece(entry.kind);box.size=Vector3(definition.size[0],0.025,definition.size[1]);footprint.mesh=box;footprint.position.y=0.11;footprint.material_override=material;footprint.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;footprint.layers=16;piece_ghost.add_child(footprint)
+	var rect:=ConstructionCatalog.footprint(entry)
+	piece_ghost.position=_point(rect.get_center());piece_ghost.show()
+	piece_ghost.visual_mesh.material_override.albedo_color=Color(0.3,0.95,0.48,0.48) if valid else Color(1.0,0.18,0.15,0.48)
+	if build_grid==null:
+		build_grid=MeshInstance3D.new();var lines:=SurfaceTool.new();lines.begin(Mesh.PRIMITIVE_LINES)
+		for i in range(-6,8):
+			var edge:=i-0.5
+			lines.add_vertex(Vector3(edge,0.09,-6.5));lines.add_vertex(Vector3(edge,0.09,6.5));lines.add_vertex(Vector3(-6.5,0.09,edge));lines.add_vertex(Vector3(6.5,0.09,edge))
+		build_grid.mesh=lines.commit();var material:=StandardMaterial3D.new();material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;material.albedo_color=Color(0.85,0.93,0.80,0.22);build_grid.material_override=material;build_grid.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;build_grid.layers=16;add_child(build_grid)
+	build_grid.position=_point(Vector2(entry.x,entry.y)*64);build_grid.show()
 
 func _settlement_labels()->void:
 	for town in KingdomData.towns():
@@ -716,22 +742,26 @@ func _update_local_lights(delta:float)->void:
 	light_timer-=delta
 	if light_timer>0:return
 	light_timer=0.5
-	var sites:Array[Vector2]=[]
+	var sites:Array[Dictionary]=[]
 	for building in KingdomData.buildings():
 		if not building.kind in ["tavern","forge","castle","tower"]:continue
 		var rect:=KingdomData.building_rect(building)
 		var at:=Vector2(rect.position.x+24,rect.end.y+16)
-		if at.distance_squared_to(game.player.position)<1300*1300:sites.append(at)
-	sites.sort_custom(func(a:Vector2,b:Vector2):return a.distance_squared_to(game.player.position)<b.distance_squared_to(game.player.position))
+		if at.distance_squared_to(game.player.position)<1300*1300:sites.append({"at":at,"post":true,"always":false})
+	for entry in game.rpg.construction.pieces.values():
+		if not ConstructionCatalog.piece(entry.kind).get("light",false):continue
+		var at:=ConstructionCatalog.footprint(entry).get_center()
+		if at.distance_squared_to(game.player.position)<1300*1300:sites.append({"at":at,"post":false,"always":entry.kind=="forge"})
+	sites.sort_custom(func(a:Dictionary,b:Dictionary):return a.at.distance_squared_to(game.player.position)<b.at.distance_squared_to(game.player.position))
 	var night:bool=game.world.clock.minute<7*60 or game.world.clock.minute>17.5*60
 	for i in 4:
 		var present:=i<sites.size()
-		street_lamps[i].visible=present and night
-		lamp_posts[i].visible=present
+		street_lamps[i].visible=present and (night or sites[i].always)
+		lamp_posts[i].visible=present and sites[i].post
 		lamp_posts[i].texture=PixelArt.icon("torch_"+str(posmod(floori(Time.get_ticks_msec()/160.0)+i,3)) if night else "torch_post")
 		if present:
-			street_lamps[i].position=_point(sites[i])+Vector3(0,1.1,0)
-			lamp_posts[i].position=_point(sites[i])+Vector3(0,0.9,0)
+			street_lamps[i].position=_point(sites[i].at)+Vector3(0,1.1,0)
+			lamp_posts[i].position=_point(sites[i].at)+Vector3(0,0.9,0)
 
 func _exit_tree()->void:
 	get_viewport().scaling_3d_scale=1.0

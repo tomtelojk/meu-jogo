@@ -6,9 +6,9 @@ Mundo com 16.000 × 12.800 unidades, 126 construções e 44 NPCs. No máximo 25 
 
 | Local | FPS mediano | Quadro mediano | P95 | Chamadas visíveis |
 | --- | ---: | ---: | ---: | ---: |
-| Capital | 32.2 | 31.0 ms | 52.3 ms | 79 |
-| Ferraria | 33.1 | 30.2 ms | 34.8 ms | 81 |
-| Ponte | 30.2 | 33.1 ms | 41.8 ms | 86 |
+| Capital | 35.5 | 28.2 ms | 48.0 ms | 79 |
+| Ferraria | 35.1 | 28.5 ms | 35.2 ms | 81 |
+| Ponte | 32.4 | 30.9 ms | 37.4 ms | 86 |
 
 [Dados completos](rpg-desempenho.json). O monitor `cpu_ms` vem de `Performance.TIME_PROCESS` e inclui espera do driver, portanto não deve ser interpretado como custo puro de CPU. As chamadas vêm do viewport principal.
 
@@ -27,10 +27,14 @@ Para reproduzir:
 
 No executável Linux final, teclado e mouse iniciaram a aventura, giraram e aproximaram a câmera, ligaram a lanterna e gravaram as preferências visuais no save. O processo renderizou e encerrou com código 0. Os testes de teclado, mouse, mapas e persistência são executados nas suítes gráficas acima. O Windows é exportado e seu pacote verificado, sem Windows nativo disponível aqui.
 
+A versão com construção também foi executada como Linux nativo: B abriu o catálogo JSON embutido, Enter escolheu uma parede, T girou e um clique construiu. O save gravou a peça com vida completa e descontou exatamente cinco madeiras. Uma segunda execução carregou a mesma peça, orientação, vida e inventário. Ambos os processos encerraram com código 0, sem erros de script ou shader, usando um perfil de teste separado.
+
 A validação de rotinas e interface acrescenta 22 verificações sem renderização e 26 gráficas: geração reproduzível, bairros irregulares, patrulhas com física real, trabalho, descanso, fuga, refeições, comércio, recuperação de rotas, atalhos da hotbar, save, luz e neblina. Os novos registros também incluem capturas de dia, de noite e do menu.
 
 A coleta acrescenta 32 verificações sem renderização e 34 gráficas: vida parcial, tiers e custos, energia, habilidades, minério, drops pendentes no save, clique com a ferramenta equipada, som, queda, partículas, atração, prevenção de duplicação, troca de região e regeneração segura.
 
 O visual HD-2D acrescenta 33 verificações: entradas reais de câmera e hotbar, limites, movimento orientado pela tela, save, projeção de construção, proporções dos billboards, sombra desenhada, grama deformada, oclusão por telhados, clima, luzes noturnas e geometria na reflexão. Testes de pixels independentes medem redução de contraste pelo blur e halo pelo bloom, preservando a faixa de foco.
 
-A cobertura atual soma **545 verificações**, incluindo as execuções sem renderização e gráficas do editor, das rotinas e da coleta. As medições de desempenho usam somente um processo Godot.
+A construção modular acrescenta **76 verificações sem renderização e 83 gráficas**: custos, camadas e rotação, sobreposição e bloqueios, fantasma verde/vermelho, cliques no catálogo e nas receitas, fila paralela e sequencial, cancelamento e prevenção de duplicação, ferramentas de ferro, reparos, destruição por javali, portas com física e navegação, trabalho e descanso dos moradores, refeições, retorno pela cama, gravação em disco, migração e isolamento dos mapas. Pisos apoiam personagens e sombras também no modo HD-2D. Modelos são liberados e recriados ao mudar de região.
+
+A cobertura atual soma **704 verificações**, incluindo as execuções sem renderização e gráficas. Todas passaram. As medições acima foram repetidas depois da construção, com somente um processo Godot e sem exportação ou empacotamento concorrentes. Os números medem as três posições do mundo original; o custo de um assentamento depende da quantidade e da disposição das peças.

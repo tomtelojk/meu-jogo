@@ -24,6 +24,7 @@ var stalled: float = 0.0
 var custom_sprite: bool = false
 var gait_phase: float = 0.75
 var home_override:=Vector2(INF,INF)
+var work_override:=Vector2(INF,INF)
 var economic_target := Vector2(INF,INF)
 var economic_activity := ""
 var task_target:=Vector2(INF,INF)
@@ -364,4 +365,6 @@ func _draw() -> void:
 				draw_rect(Rect2(x, -63, 4, 6), Color("e7d18d"))
 
 func _scheduled_point(index:int=0)->Vector2:
-	return home_override if wants_rest and home_override.is_finite() else KingdomData.point(current_schedule.points[index])
+	if wants_rest and home_override.is_finite():return home_override
+	if current_schedule.get("work",false) and work_override.is_finite():return work_override
+	return KingdomData.point(current_schedule.points[index])

@@ -76,7 +76,17 @@ Venda materiais ou entregue encomendas de 15 madeira e oito pedra por 80 moedas 
 
 ## Sua casa
 
-Pressione **B** para mostrar a prévia do terreno. A cor indica se o local está livre. Clique para reservar por 20 moedas; botão direito ou Esc cancela. A obra deve ficar perto do jogador e fora de ruas, rios, pedras, árvores, outras casas e terrenos reservados aos moradores.
+**B** abre a construção modular: **12 peças** em paredes/cobertura, chão, móveis e estações. Cada peça mostra seu custo e encaixa em uma grade com fantasma verde/vermelho. **T** gira; clique constrói; **B** volta ao catálogo; **Esc/botão direito** sai da prévia. Pisos e coberturas podem compartilhar espaço com objetos, e as portas têm passagem física ao abrir.
+
+A **bancada** fabrica tábuas, blocos e ferramentas de pedra; a **forja** funde minérios e fabrica ferramentas de ferro. Dez receitas em JSON alimentam filas pagas na entrada, com progresso e cancelamento. Use **E** para produzir, reparar, designar moradores/trabalhadores ou desmontar. Camas livres permitem descansar, salvar e definir um ponto de retorno; trabalhadores presentes aceleram sua estação em 25% durante o próprio turno.
+
+Vida, peças, orientação, portas, inventário processado, designações e filas são salvos por mapa. Javalis podem danificar estruturas que bloqueiam a perseguição; estações muito danificadas precisam de reparo. Modelos acompanham as regiões carregadas, e a grama deixa livre o espaço das construções.
+
+[Guia de construção, fabricação e moradores](docs/construcao-e-fabricacao.md)
+
+![Construção modular](docs/construcao-catalogo.png)
+
+Para usar a casa anterior, escolha **B → Casa completa por etapas**. Clique para reservar por 20 moedas; botão direito ou Esc cancela. A obra deve ficar perto do jogador e fora de ruas, rios, pedras, árvores, outras casas e terrenos reservados aos moradores. Casas de saves antigos são preservadas e também recebem vida e reparo.
 
 Vá até a obra e use **E**, levando um martelo:
 
@@ -131,7 +141,8 @@ Vacas e galinhas vivem nas fazendas e fornecem provisões ao ajudar com **E**. A
 | Clique esquerdo | Usar o item selecionado; clicar na hotbar seleciona/ativa o espaço |
 | I | Inventário e provisões |
 | J | Objetivos e registros |
-| B | Escolher terreno / consultar sua obra |
+| B | Catálogo de construção e custos |
+| T durante a prévia | Girar a peça 90° |
 | M | Mapa do continente |
 | F2 | Criar / editar seu mapa |
 | Q / R ou arrastar com botão do meio | Girar a câmera com limite |
@@ -168,6 +179,8 @@ Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambien
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/resources_tests.gd -- --test
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/resources_tests.gd -- --test --hybrid
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/hd2d_tests.gd -- --test --hybrid
+./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/construction_tests.gd -- --test
+./scripts/godot.sh --audio-driver Dummy --script res://tests/construction_tests.gd -- --test --hybrid
 ```
 
 A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.

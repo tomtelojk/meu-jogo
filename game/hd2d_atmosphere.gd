@@ -47,6 +47,8 @@ func _shelters()->void:
 	for parent in hybrid.landscape.house_models.values():
 		for child in parent.get_children():
 			if child is BuildingVisual and child.global_position.distance_squared_to(hybrid._point(hybrid.game.player.position))<20*20:rows.append(child)
+	for piece in hybrid.landscape.piece_models.values():
+		if piece.kind=="roof" and piece.global_position.distance_squared_to(hybrid._point(hybrid.game.player.position))<20*20:rows.append(piece)
 	rows.sort_custom(func(a:Node3D,b:Node3D):return a.global_position.distance_squared_to(hybrid.camera.position)<b.global_position.distance_squared_to(hybrid.camera.position))
 	var rectangles:=PackedVector4Array();var heights:=PackedFloat32Array()
 	for i in 16:

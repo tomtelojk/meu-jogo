@@ -38,6 +38,8 @@ var royal_seals: Dictionary = {}
 var rpg := RPGState.new()
 var economy:OpenEconomy
 var gathering:ResourceGathering
+var construction:ConstructionSystem
+var loading_journey:=false
 var building_preview:=false
 var building_point:=Vector2.ZERO
 var action_delay:=0.0
@@ -89,6 +91,7 @@ func _ready() -> void:
 	add_child(economy)
 	economy.setup(self)
 	gathering=ResourceGathering.new();add_child(gathering);gathering.setup(self)
+	construction=ConstructionSystem.new();add_child(construction);construction.setup(self)
 	camera.reset_smoothing()
 	if not "--test" in OS.get_cmdline_user_args() or "--hybrid" in OS.get_cmdline_user_args():
 		hybrid = HybridWorld.new()
@@ -140,6 +143,7 @@ func _process(delta: float) -> void:
 		hud.update_rpg(rpg)
 		for town in KingdomData.towns():
 			if player.position.distance_to(town.position)<1400 and rpg.discover(town.id):hud.toast("Você descobriu "+town.name+" · +25 XP")
+		if building_preview:_update_build_preview();return
 		var item := current_interaction()
 		var label := ""
 		if not item.is_empty():
@@ -171,7 +175,9 @@ func current_interaction() -> Dictionary:
 		var range_limit: float = item.get("range", 65.0 if item.kind == "npc" else 63.0)
 		if distance > range_limit + 1.0:
 			continue
-		if item.kind in ["shop","inn","house"]:distance-=40.0
+		if item.kind in ["shop","inn","house","piece"]:distance-=40.0
+		if item.kind=="piece" and rpg.construction.pieces.has(item.id):
+			if ConstructionCatalog.piece(rpg.construction.pieces[item.id].kind).layer in ["floor","roof"]:distance+=150
 		elif item.kind == "seed":distance-=24.0
 		elif item.kind=="resource":distance+=12.0
 		if distance < nearest_distance:
@@ -183,6 +189,7 @@ func _interaction_label(item: Dictionary) -> String:
 	if item.kind=="shop":return "Negociar na ferraria"
 	if item.kind=="inn":return "Estalagem e caravanas"
 	if item.kind=="house":return item.name
+	if item.kind=="piece":return item.name+" · usar ou reparar"
 	if item.kind=="resource":
 		var entry:Dictionary=world.resources.get(item.id,{})
 		if entry.is_empty():return item.name
@@ -207,6 +214,7 @@ func interact() -> void:
 	if item.kind=="shop":open_shop(item.id);return
 	if item.kind=="inn":open_inn(item.id);return
 	if item.kind=="house":open_house(item.id);return
+	if item.kind=="piece":construction.show_piece(item.id);return
 	if item.kind=="resource":
 		gathering.strike(item.id)
 		return
@@ -266,6 +274,9 @@ func open_npc(id: String, topic: String = "greeting") -> void:
 		body = profile.realm_text + "\n\n" + profile.other_text
 	elif topic == "routine":
 		body = "Agora: %s.\n\n%s" % [npc.activity(), KingdomData.routine_text(profile)]
+		var bed:=rpg.construction.assigned(id,"resident");var station:=rpg.construction.assigned(id,"worker")
+		if not bed.is_empty():body+="\n\nMoro na cama que você me designou. Volto para lá no meu horário de descanso."
+		if not station.is_empty():body+="\nTrabalho na sua "+ConstructionCatalog.piece(rpg.construction.pieces[station].kind).name.to_lower()+" durante meu turno."
 	elif topic == "hint":
 		body = "Você conseguiu! O bosque voltou a respirar. Agora podemos pensar no futuro dos dois reinos." if complete else String(profile.hint)
 	elif topic=="economy":
@@ -409,6 +420,7 @@ func apply_map(document:Dictionary) -> bool:
 	template.remove_child(world);template.free()
 	world.name="World"
 	add_child(world)
+	if construction!=null:construction.bind_world()
 	player=world.player
 	camera=player.get_node("Camera2D")
 	player.position=MapDocument.spawn_point()
@@ -431,7 +443,7 @@ func apply_map(document:Dictionary) -> bool:
 	return true
 
 func show_help()->void:
-	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e colher\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Escolher terreno para sua casa\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nQ/R · Girar câmera / Home · Centralizar\nCtrl+roda / PgUp / PgDn · Zoom\nEsc · Pausar, clima e modo HD-2D\n\nCompre machado, picareta e martelo no comércio. Dê vários golpes nos recursos; materiais caem no chão e são atraídos ao chegar perto. Golpes gastam energia e treinam lenhador/mineiro. Melhore ferramentas para pedra e ferro na ferraria. Madeira e pedra servem para construir ou podem ser vendidas. A casa cresce em três etapas. Vilarejos têm estalagens, caravanas e encomendas. Alguns moradores também compram ferramentas e constroem casas. Javalis podem atacar; provisões e descanso recuperam vida.",[{"label":"Continuar","callback":close_dialog}],"help")
+	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e usar estruturas\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Catálogo de construção\nT · Girar peça durante a prévia\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nQ/R · Girar câmera / Home · Centralizar\nCtrl+roda / PgUp / PgDn · Zoom\nEsc · Pausar, clima e modo HD-2D\n\nCompre ferramentas na ferraria e reúna madeira e pedra. B abre paredes, chão, móveis e estações, com custos e prévia verde/vermelha. A bancada transforma materiais; a forja permite ferramentas de ferro. Use E em camas e estações para designar moradores. Camas livres permitem descansar, salvar e definir um ponto de retorno. Javalis danificam estruturas que bloqueiam sua perseguição; use E para reparar com martelo. Produção avança no tempo do mundo e também durante o descanso; menus pausam o relógio. O inventário, as peças, as filas e as designações são salvos automaticamente.",[{"label":"Continuar","callback":close_dialog}],"help")
 
 func show_map() -> void:
 	if mode == "dialog" and hud.modal_kind == "map":
@@ -444,6 +456,7 @@ func show_map() -> void:
 	map_view.restored = complete
 	var home:Dictionary=rpg.houses.get("home_player",{})
 	if not home.is_empty():map_view.home_position=Vector2(home.x,home.y)
+	if rpg.construction.pieces.has(rpg.construction.player_bed):map_view.home_position=ConstructionCatalog.footprint(rpg.construction.pieces[rpg.construction.player_bed]).get_center()
 	_open_dialog("CADA CAMINHO, UMA DESCOBERTA", "Entre os dois reinos", "Mapa do continente · 25 vezes a área original\nQuadrados · cidades e vilarejos\nPonto claro · você\nCírculo dourado · sua casa", [{"label": "Voltar ao caminho", "callback": close_dialog}], "map", map_view)
 
 func confirm_reset() -> void:
@@ -462,6 +475,7 @@ func reset_journey() -> void:
 		hybrid.landscape.house_models.clear()
 	var fresh:=RPGState.new()
 	rpg.restore(fresh.save_data())
+	world.refresh_rpg()
 	for coord in world.chunks.keys():world._unload_chunk(coord)
 	collected.clear()
 	met_npcs.clear()
@@ -533,11 +547,13 @@ func _use_default_character() -> void:
 	close_dialog()
 
 func journey_data() -> Dictionary:
+	if construction!=null and not loading_journey:construction._time_changed()
 	return {"version": 2,"rpg":rpg.save_data(), "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled,"stamina":player.stamina,"visual":{"zoom":camera_settings.zoom,"yaw":camera_settings.yaw,"weather":weather_mode}, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
 
 func apply_journey(data: Dictionary) -> bool:
 	if (data.get("version")!=1 and data.get("version")!=2) or not data.get("seeds",[]) is Array:
 		return false
+	loading_journey=true
 	collected.clear()
 	for id in data.get("seeds",[]):
 		for seed_data in WorldData.SEEDS:
@@ -595,6 +611,8 @@ func apply_journey(data: Dictionary) -> bool:
 		world.restore_population(saved_population)
 	if custom_character and persistence:
 		custom_character = player.load_character_file(CHARACTER_PATH)
+	loading_journey=false
+	if construction!=null:construction.bind_world()
 	return true
 
 func _load_journey() -> void:
@@ -608,18 +626,25 @@ func save_journey() -> void:
 	if not persistence:
 		return
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(save_path).get_base_dir())
-	var file := FileAccess.open(save_path, FileAccess.WRITE)
+	var temporary:=save_path+".tmp"
+	var file := FileAccess.open(temporary, FileAccess.WRITE)
 	if file == null:
 		if not save_warning_shown:
 			save_warning_shown = true
 			hud.toast("Não foi possível salvar neste dispositivo. A jornada continua nesta sessão.", 6.0)
 		return
 	file.store_string(JSON.stringify(journey_data()))
+	file.flush()
+	var write_error:=file.get_error();file.close()
+	if write_error!=OK or DirAccess.rename_absolute(ProjectSettings.globalize_path(temporary),ProjectSettings.globalize_path(save_path))!=OK:
+		if not save_warning_shown:save_warning_shown=true;hud.toast("Não foi possível atualizar o save. O salvamento anterior foi preservado.",6)
 
 func _input(event:InputEvent)->void:
 	# Camera keys remain usable when a HUD button still owns keyboard focus.
 	if mode=="playing" and hybrid!=null and event is InputEventKey and event.pressed and not event.is_echo():
 		if hybrid.camera_input(event):get_viewport().set_input_as_handled()
+	if building_preview and construction!=null and not construction.selected.is_empty() and event is InputEventKey and event.pressed and not event.is_echo() and event.physical_keycode==KEY_T:
+		construction.turn=posmod(construction.turn+1,4);construction.update_preview();get_viewport().set_input_as_handled()
 
 func _unhandled_input(event:InputEvent)->void:
 	if event.is_echo():return
@@ -632,7 +657,10 @@ func _unhandled_input(event:InputEvent)->void:
 		select_hotbar(posmod(equipped_slot+(1 if event.button_index==MOUSE_BUTTON_WHEEL_DOWN else -1),8),false);return
 	if building_preview:
 		if event.is_action_pressed("pause") or event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_RIGHT:cancel_building()
-		elif event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:place_house(building_point)
+		elif event.is_action_pressed("build") and construction!=null:construction.show_catalog(construction.category)
+		elif event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:
+			if construction!=null and not construction.selected.is_empty():construction.place(building_point)
+			else:place_house(building_point)
 		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("pause"):
@@ -645,7 +673,7 @@ func _unhandled_input(event:InputEvent)->void:
 	elif mode=="playing":
 		if event.is_action_pressed("inventory"):show_inventory()
 		elif event.is_action_pressed("journal"):show_journal()
-		elif event.is_action_pressed("build"):start_building()
+		elif event.is_action_pressed("build"):construction.show_catalog()
 		elif event.is_action_pressed("attack"):attack()
 		elif event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:use_equipped()
 
@@ -740,7 +768,9 @@ func show_inventory()->void:
 	for tool in rpg.tools:names.append(RPGState.ITEMS[tool].name+(" de "+ResourceRules.TIERS[rpg.resources.tier(tool,rpg.tools)] if tool in ["axe","pickaxe"] else ""))
 	var body:="Nível %d · %d XP\nVida %d / 100 · Moedas %d\nMadeira %d · Pedra %d\nProvisões %d · Carne %d\n\nFerramentas: %s"%[rpg.level(),rpg.xp,rpg.health,rpg.gold,rpg.wood,rpg.stone,rpg.food,rpg.meat,", ".join(names) if not names.is_empty() else "nenhuma — visite uma ferraria"]
 	body+="\nCobre %d · Ferro %d\nEnergia %d / 100\nLenhador nível %d · Mineiro nível %d\n\nUse E ou a ferramenta da hotbar para golpear. Materiais caem no chão: aproxime-se para recolher. Árvores voltam em 3 dias; rochas e minérios em 5–7 dias."%[rpg.copper,rpg.iron,roundi(player.stamina*100),rpg.resources.level("woodcutting"),rpg.resources.level("mining")]
-	_open_dialog("SEU EQUIPAMENTO","Inventário",body,[{"label":"Comer provisão · recuperar 30 vida","callback":eat_food},{"label":"Ver objetivos e registros","callback":show_journal},{"label":"Construir minha casa","callback":start_building},{"label":"Voltar à aventura","callback":close_dialog}],"inventory")
+	if construction!=null:
+		for item in ConstructionCatalog.PROCESSED:body+="\n%s: %d"%[ConstructionCatalog.MATERIALS[item].capitalize(),rpg.construction.amount(rpg,item)]
+	_open_dialog("SEU EQUIPAMENTO","Inventário",body,[{"label":"Comer provisão · recuperar 30 vida","callback":eat_food},{"label":"Ver objetivos e registros","callback":show_journal},{"label":"Construção e fabricação","callback":construction.show_catalog.bind("stations")},{"label":"Voltar à aventura","callback":close_dialog}],"inventory")
 
 func eat_food()->void:
 	var result:=rpg.eat()
@@ -756,6 +786,8 @@ func show_journal()->void:
 func can_build_at(point:Vector2)->Dictionary:
 	if not point.is_finite() or point.distance_to(player.position)>500:return {"ok":false,"message":"Escolha um terreno perto de você."}
 	var rect:=Rect2(point-Vector2(96,128),Vector2(192,128))
+	for entry in rpg.construction.pieces.values():
+		if rect.intersects(ConstructionCatalog.footprint(entry)):return {"ok":false,"message":"Há uma peça construída neste terreno."}
 	for wall in world.data.solid_rects:
 		if rect.grow(24).intersects(wall):return {"ok":false,"message":"Há uma construção muito perto."}
 	for entry in world.resources.values():
@@ -772,6 +804,7 @@ func can_build_at(point:Vector2)->Dictionary:
 	return {"ok":true,"message":"Terreno livre · 20 moedas"}
 
 func start_building()->void:
+	if construction!=null:construction.selected=""
 	if mode=="dialog":close_dialog()
 	if mode!="playing":return
 	if rpg.houses.has("home_player"):open_house("home_player");return
@@ -781,6 +814,7 @@ func start_building()->void:
 	hud.toast("Escolha um terreno livre. Clique para reservar (20 moedas); botão direito ou Esc cancela.",8)
 
 func _update_build_preview()->void:
+	if construction!=null and not construction.selected.is_empty():construction.update_preview();return
 	building_point=hybrid.world_position(get_viewport().get_mouse_position()).snapped(Vector2.ONE*16) if hybrid!=null else player.position+Vector2(192,192)
 	var result:=can_build_at(building_point)
 	if hybrid!=null:hybrid.preview_house(building_point,result.ok and rpg.gold>=20)
@@ -789,9 +823,10 @@ func _update_build_preview()->void:
 	hud.controls.text="Clique para reservar   •   Botão direito ou Esc para cancelar"
 
 func cancel_building()->void:
+	if hybrid!=null:hybrid.cancel_preview()
+	if construction!=null:construction.selected=""
 	if not building_preview:return
 	building_preview=false
-	if hybrid!=null:hybrid.cancel_preview()
 	player.active=mode=="playing"
 	world.set_population_active(mode=="playing")
 
@@ -811,6 +846,7 @@ func open_house(id:String)->void:
 	var house:Dictionary=rpg.houses[id]
 	var actions:Array[Dictionary]=[]
 	var body:String="Etapa: "+RPGState.STAGES[house.stage]
+	body+="\nVida: %d/%d"%[house.get("hp",RPGState.HOUSE_HP[house.stage]),RPGState.HOUSE_HP[house.stage]]
 	if house.owner=="player":
 		var nearby:bool=player.position.distance_to(Vector2(house.x,house.y+36))<140
 		if not nearby:
@@ -823,6 +859,8 @@ func open_house(id:String)->void:
 		else:
 			body+="\nEste é seu lar. Descansar recupera a vida, e você retorna aqui se for socorrido."
 			actions.append({"label":"Descansar em casa","callback":rest_until_morning})
+		if nearby and not rpg.house_repair_cost(id).is_empty():actions.append({"label":"Reparar · "+ConstructionCatalog.cost_text(rpg.house_repair_cost(id)),"callback":repair_house.bind(id)})
+		actions.append({"label":"Abrir catálogo de construção","callback":construction.show_catalog.bind("walls")})
 	else:body+="\nMorador: "+KingdomData.person(house.owner).get("name","Viajante")
 	actions.append({"label":"Continuar explorando","callback":close_dialog})
 	_open_dialog("CONSTRUÇÃO","Meu lar" if house.owner=="player" else "Casa de um morador",body,actions,"house")
@@ -842,6 +880,12 @@ func build_house(id:String)->void:
 	open_house(id)
 	hud.toast(result.message)
 	save_journey()
+
+func repair_house(id:String)->void:
+	if not rpg.houses.has(id):return
+	var at:Dictionary=rpg.houses[id]
+	if player.position.distance_to(Vector2(at.x,at.y+36))>140:hud.toast("Vá até sua casa para reparar.");return
+	var result:=rpg.repair_house(id);open_house(id);hud.toast(result.message);save_journey()
 
 func attack()->void:
 	if mode!="playing" or building_preview or action_delay>0:return
@@ -866,7 +910,8 @@ func take_damage(amount:int)->void:
 		rpg.health=60
 		rpg.gold=maxi(0,rpg.gold-5)
 		var home:Dictionary=rpg.houses.get("home_player",{})
-		player.position=Vector2(home.x,home.y+64) if not home.is_empty() and home.stage==3 else MapDocument.spawn_point()
+		var bed_spawn:=construction.respawn() if construction!=null else Vector2(INF,INF)
+		player.position=bed_spawn if bed_spawn.is_finite() else (Vector2(home.x,home.y+64) if not home.is_empty() and home.stage==3 else MapDocument.spawn_point())
 		player.restore_surface()
 		world.ensure_region(player.position,true)
 		if hybrid!=null:hybrid.snap_camera()
@@ -899,9 +944,7 @@ func use_equipped()->void:
 			else:hud.toast("Aproxime-se de uma árvore." if equipped_slot==1 else "Aproxime-se de uma rocha.")
 		3:
 			if not rpg.tools.has("hammer"):hud.toast("Compre um martelo na ferraria.");return
-			var home:Dictionary=rpg.houses.get("home_player",{})
-			if not home.is_empty():open_house("home_player")
-			else:start_building()
+			construction.show_catalog()
 		4:
 			var result:=rpg.eat();hud.toast(result.message);_refresh_quest();save_journey()
 		5:show_map()

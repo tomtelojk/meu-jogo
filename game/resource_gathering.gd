@@ -54,6 +54,10 @@ func regenerate()->void:
 		if state.regrow==game.world.clock.day and game.world.clock.minute<float(state.get("minute",0)):continue
 		var at:=Vector2(state.x,state.y)
 		if at.distance_to(game.player.position)<64:continue
+		var occupied:=false
+		for piece in game.rpg.construction.pieces.values():
+			if ConstructionCatalog.footprint(piece).grow(24).has_point(at):occupied=true;break
+		if occupied:continue
 		if at!=Vector2.ZERO and not WorldData.can_stand(at,game.world.data,16,true):continue
 		game.rpg.depleted.erase(id);game.rpg.resources.states.erase(id)
 		game.world.regrow_resource(id,at);changed=true

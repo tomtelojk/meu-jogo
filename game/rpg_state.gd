@@ -14,12 +14,15 @@ const ITEMS := {
 }
 const STAGES := ["Terreno","Fundação","Paredes","Casa concluída"]
 const BUILD_COSTS := [{"wood":15,"stone":10},{"wood":20,"stone":5},{"wood":15,"stone":5}]
+const HOUSE_HP:=[40,120,240,400]
+const HOUSE_MATERIALS:=[{"wood":0,"stone":0},{"wood":15,"stone":10},{"wood":35,"stone":15},{"wood":50,"stone":20}]
 var gold := 100
 var wood := 0
 var stone := 0
 var copper:=0
 var iron:=0
 var resources:=ResourceProgress.new()
+var construction:=ConstructionState.new()
 var food := 2
 var meat := 0
 var xp := 0
@@ -134,7 +137,7 @@ func claim(position:Vector2,owner:String="player")->Dictionary:
 		var account:=npc_account(owner)
 		if account.gold<20:return result(false,"Economizando para o terreno.")
 		account.gold-=20
-	houses[id]={"owner":owner,"x":position.x,"y":position.y,"stage":0}
+	houses[id]={"owner":owner,"x":position.x,"y":position.y,"stage":0,"hp":HOUSE_HP[0]}
 	house_changed.emit(id)
 	changed.emit()
 	return result(true,"Terreno reservado. Use um martelo para construir em três etapas.")
@@ -155,9 +158,37 @@ func build(id:String,owner:String="player")->Dictionary:
 		account.wood-=cost.wood
 		account.stone-=cost.stone
 	house.stage+=1
+	house.hp=HOUSE_HP[house.stage]
 	house_changed.emit(id)
 	changed.emit()
 	return result(true,STAGES[house.stage]+"!"+(" Agora você tem seu próprio lar." if house.stage==3 else " Prepare material para a próxima etapa."))
+
+func house_repair_cost(id:String)->Dictionary:
+	if not houses.has(id):return {}
+	var house:Dictionary=houses[id];var cost:Dictionary={}
+	var missing:=1.0-float(house.get("hp",HOUSE_HP[house.stage]))/float(HOUSE_HP[house.stage])
+	if missing<=0 or house.stage==0:return cost
+	for item in HOUSE_MATERIALS[house.stage]:cost[item]=maxi(1,ceili(HOUSE_MATERIALS[house.stage][item]*missing*0.5))
+	return cost
+
+func repair_house(id:String)->Dictionary:
+	if not houses.has(id) or houses[id].owner!="player":return result(false,"Esta casa pertence a outro morador.")
+	if not tools.has("hammer"):return result(false,"Reparar exige um martelo.")
+	var cost:=house_repair_cost(id)
+	if cost.is_empty():return result(false,"Casa em perfeito estado.")
+	if not construction.afford(self,cost):return result(false,"Reparo: "+ConstructionCatalog.cost_text(cost))
+	construction.transfer(self,cost,-1);houses[id].hp=HOUSE_HP[houses[id].stage]
+	house_changed.emit(id);changed.emit()
+	return result(true,"Casa reparada.")
+
+func damage_house(id:String,damage:int)->Dictionary:
+	if not houses.has(id) or damage<=0:return {"ok":false,"destroyed":false}
+	var house:Dictionary=houses[id]
+	house.hp=maxi(0,int(house.get("hp",HOUSE_HP[house.stage]))-damage)
+	var destroyed:bool=house.hp==0
+	if destroyed:houses.erase(id)
+	house_changed.emit(id);changed.emit()
+	return {"ok":true,"destroyed":destroyed}
 
 func npc_account(id:String)->Dictionary:
 	if not npc_accounts.has(id):npc_accounts[id]={"gold":100,"wood":0,"stone":0,"tools":{},"job":"Começando a jornada","clock":0.0,"task":"","last_wage":0,"food":0}
@@ -178,7 +209,7 @@ func home_rect(house:Dictionary)->Rect2:
 	return Rect2(Vector2(house.x-96,house.y-128),Vector2(192,128))
 
 func save_data()->Dictionary:
-	return {"gold":gold,"wood":wood,"stone":stone,"copper":copper,"iron":iron,"resources":resources.save_data(),"food":food,"meat":meat,"xp":xp,"health":health,"tools":tools.keys(),"discovered":discovered.keys(),"depleted":depleted.keys(),"houses":houses.duplicate(true),"npc_accounts":npc_accounts.duplicate(true),"contracts":contracts.duplicate(),"produce_times":produce_times.duplicate()}
+	return {"gold":gold,"wood":wood,"stone":stone,"copper":copper,"iron":iron,"resources":resources.save_data(),"construction":construction.save_data(),"food":food,"meat":meat,"xp":xp,"health":health,"tools":tools.keys(),"discovered":discovered.keys(),"depleted":depleted.keys(),"houses":houses.duplicate(true),"npc_accounts":npc_accounts.duplicate(true),"contracts":contracts.duplicate(),"produce_times":produce_times.duplicate()}
 
 func restore(data:Dictionary)->void:
 	for key in ["gold","wood","stone","copper","iron","food","meat","xp","health"]:
@@ -186,12 +217,13 @@ func restore(data:Dictionary)->void:
 		if (value is int or value is float) and is_finite(float(value)):set(key,clampi(int(value),0,999999))
 	health=clampi(health,1,100)
 	resources.restore(data.get("resources",{}))
+	construction.restore(data.get("construction",{}))
 	tools.clear();discovered.clear();depleted.clear();houses.clear();npc_accounts.clear();contracts.clear();produce_times.clear()
 	for key in ["tools","discovered","depleted"]:
 		var values=data.get(key,[])
 		if values is Array:
 			for id in values:
-				if id is String and (key!="tools" or ITEMS.has(id) and ITEMS[id].kind=="tool"):get(key)[id]=true
+				if (id is String or id is StringName) and (key!="tools" or ITEMS.has(id) and ITEMS[id].kind=="tool"):get(key)[String(id)]=true
 	var saved_houses=data.get("houses",{})
 	if saved_houses is Dictionary:
 		for id in saved_houses:
@@ -199,7 +231,9 @@ func restore(data:Dictionary)->void:
 			if h is Dictionary and h.get("owner") is String and (h.get("x") is int or h.get("x") is float) and (h.get("y") is int or h.get("y") is float):
 				var p:=Vector2(h.x,h.y)
 				if p.is_finite() and p.x>192 and p.y>192 and p.x<WorldData.SIZE.x-192 and p.y<WorldData.SIZE.y-192:
-					houses[id]={"owner":h.owner,"x":p.x,"y":p.y,"stage":clampi(int(h.get("stage",0)),0,3)}
+					var stage:=clampi(int(h.get("stage",0)),0,3)
+					var hp:int=clampi(int(h.get("hp",HOUSE_HP[stage])),1,HOUSE_HP[stage]) if ResourceProgress.number(h.get("hp",HOUSE_HP[stage])) else HOUSE_HP[stage]
+					houses[id]={"owner":h.owner,"x":p.x,"y":p.y,"stage":stage,"hp":hp}
 	var accounts=data.get("npc_accounts",{})
 	if accounts is Dictionary:
 		for id in accounts:

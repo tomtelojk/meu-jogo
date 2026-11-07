@@ -5,6 +5,7 @@ signal chunk_loaded(coord:Vector2i,content:Dictionary)
 signal chunk_unloaded(coord:Vector2i)
 signal resource_removed(id:String)
 signal house_updated(id:String)
+signal piece_updated(id:String)
 
 var data:Dictionary
 var entities:Node2D
@@ -26,6 +27,9 @@ var resources:Dictionary={}
 var animals:Dictionary={}
 var houses:Dictionary={}
 var house_areas:Dictionary={}
+var pieces:Dictionary={}
+var piece_areas:Dictionary={}
+var floor_cells:Dictionary={}
 var rpg:RPGState
 var stream_timer:=0.0
 var simulation_timer:=0.0
@@ -33,6 +37,7 @@ var population_active:=false
 var mother_entry:Dictionary
 var nav_resource_cells:Dictionary={}
 var regrowth_regions:Dictionary={}
+var refreshing_construction:=false
 
 func _ready()->void:
 	rpg=get_parent().rpg
@@ -67,6 +72,7 @@ func _ready()->void:
 	_build_population()
 	rpg.resource_depleted.connect(_deplete_resource)
 	rpg.house_changed.connect(sync_house)
+	rpg.construction.piece_changed.connect(sync_piece)
 	ensure_region(player.position,true)
 
 func safe_position(point:Vector2)->Vector2:
@@ -349,6 +355,17 @@ func refresh_rpg()->void:
 		if not rpg.houses.has(id):sync_house(id)
 	for id in rpg.depleted.keys():_deplete_resource(id)
 	for id in rpg.houses:sync_house(id)
+	refreshing_construction=true
+	var updated_rects:Array[Rect2]=[]
+	for node in pieces.values():updated_rects.append(node.get_meta("footprint",Rect2()))
+	for id in pieces.keys():
+		if not rpg.construction.pieces.has(id):sync_piece(id)
+	for id in rpg.construction.pieces:sync_piece(id)
+	refreshing_construction=false
+	_rebuild_solids()
+	for entry in rpg.construction.pieces.values():updated_rects.append(ConstructionCatalog.footprint(entry))
+	for rect in updated_rects:_refresh_navigation_rect(rect)
+	apply_assignments()
 
 func sync_house(id:String)->void:
 	var old_rect:=Rect2()
@@ -382,14 +399,70 @@ func sync_house(id:String)->void:
 		area.set_meta("interaction",{"kind":"house","id":id,"name":"Minha casa" if house.owner=="player" else "Casa de "+KingdomData.person(house.owner).get("name","morador"),"range":90.0})
 		add_child(area)
 		house_areas[id]=area
-	data.solid_rects.clear()
-	for building in KingdomData.buildings():data.solid_rects.append(KingdomData.building_rect(building))
-	for built in rpg.houses.values():
-		if built.stage>0:data.solid_rects.append(rpg.home_rect(built))
-	WorldData.reindex_solids(data)
+	_rebuild_solids()
 	if old_rect.size!=Vector2.ZERO:_refresh_navigation_rect(old_rect)
 	if rpg.houses.has(id):_refresh_navigation_rect(rpg.home_rect(rpg.houses[id]))
 	house_updated.emit(id)
+	apply_assignments()
+
+func _rebuild_solids()->void:
+	data.solid_rects.clear()
+	floor_cells.clear()
+	for building in KingdomData.buildings():data.solid_rects.append(KingdomData.building_rect(building))
+	for built in rpg.houses.values():
+		if built.stage>0:data.solid_rects.append(rpg.home_rect(built))
+	for entry in rpg.construction.pieces.values():
+		var definition:=ConstructionCatalog.piece(entry.kind)
+		if definition.layer=="floor":floor_cells[Vector2i(entry.x,entry.y)]=float(definition.height)
+		var rect:=ConstructionCatalog.collision(entry)
+		if rect.has_area():data.solid_rects.append(rect)
+	WorldData.reindex_solids(data)
+
+func floor_height(point:Vector2)->float:return float(floor_cells.get(ConstructionCatalog.cell(point),0.0))
+
+func sync_piece(id:String)->void:
+	var old_rect:=Rect2()
+	if pieces.has(id):
+		old_rect=pieces[id].get_meta("footprint",Rect2())
+		pieces[id].queue_free();pieces.erase(id)
+	if piece_areas.has(id):piece_areas[id].queue_free();piece_areas.erase(id)
+	if rpg.construction.pieces.has(id):
+		var entry:Dictionary=rpg.construction.pieces[id]
+		var rect:=ConstructionCatalog.collision(entry)
+		var node:=StaticBody2D.new();node.collision_layer=WorldData.SOLID_LAYER;node.collision_mask=0
+		node.set_meta("piece_id",id);node.set_meta("footprint",ConstructionCatalog.footprint(entry))
+		if rect.has_area():
+			var shape:=CollisionShape2D.new();var box:=RectangleShape2D.new();box.size=rect.size;shape.shape=box;shape.position=rect.get_center();node.add_child(shape)
+		add_child(node);pieces[id]=node
+		var area:=_interaction_area(ConstructionCatalog.footprint(entry).get_center(),112)
+		area.set_meta("interaction",{"kind":"piece","id":id,"name":ConstructionCatalog.piece(entry.kind).name,"range":112.0})
+		add_child(area);piece_areas[id]=area
+	if not refreshing_construction:
+		_rebuild_solids()
+		if old_rect.has_area():_refresh_navigation_rect(old_rect)
+		if rpg.construction.pieces.has(id):_refresh_navigation_rect(ConstructionCatalog.footprint(rpg.construction.pieces[id]))
+		apply_assignments()
+	# Replan nearby routes when a wall or door changes the available passage.
+	for npc in ([] if refreshing_construction else npcs.values()):
+		var rect:Rect2=ConstructionCatalog.footprint(rpg.construction.pieces[id]) if rpg.construction.pieces.has(id) else old_rect
+		if rect.grow(256).has_point(npc.position):npc.plan_route()
+	piece_updated.emit(id)
+
+func apply_assignments()->void:
+	for id in npcs:
+		var npc:ForestNPC=npcs[id]
+		var home:=Vector2(INF,INF);var work:=Vector2(INF,INF)
+		var house:Dictionary=rpg.houses.get("home_"+id,{})
+		if house.get("stage",0)==3:home=Vector2(house.x,house.y+64)
+		var bed:=rpg.construction.assigned(id,"resident")
+		var station:=rpg.construction.assigned(id,"worker")
+		if not bed.is_empty():home=npc.nearest_walkable(ConstructionCatalog.approach(rpg.construction.pieces[bed]))
+		if not station.is_empty():work=npc.nearest_walkable(ConstructionCatalog.approach(rpg.construction.pieces[station]))
+		var changed:bool=home!=npc.home_override or work!=npc.work_override
+		npc.home_override=home;npc.work_override=work
+		if changed:
+			npc.economic_target=Vector2(INF,INF);npc.task_target=Vector2(INF,INF)
+			npc.refresh_presence();npc.plan_route()
 
 func _refresh_navigation_rect(rect:Rect2)->void:
 	if navigator==null:return

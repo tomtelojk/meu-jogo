@@ -8,6 +8,7 @@ var resource_instances:Dictionary={}
 var ground_shadows:Dictionary={}
 var materials:Dictionary={}
 var house_models:Dictionary={}
+var piece_models:Dictionary={}
 var house_front_material:ShaderMaterial
 
 func setup(renderer:HybridWorld)->void:
@@ -18,8 +19,10 @@ func setup(renderer:HybridWorld)->void:
 	game.world.chunk_unloaded.connect(unload_region)
 	game.world.resource_removed.connect(remove_resource)
 	game.world.house_updated.connect(update_house)
+	game.world.piece_updated.connect(update_piece)
 	for coord in game.world.chunks:load_region(coord,game.world.chunks[coord])
 	for id in game.rpg.houses:update_house(id)
+	for id in game.rpg.construction.pieces:update_piece(id)
 
 func load_region(coord:Vector2i,content:Dictionary)->void:
 	var parent:=Node3D.new()
@@ -34,12 +37,26 @@ func load_region(coord:Vector2i,content:Dictionary)->void:
 		var model:=AnimalVisual.new()
 		model.setup(animal)
 		parent.add_child(model)
+	for id in game.rpg.construction.pieces:
+		var entry:Dictionary=game.rpg.construction.pieces[id]
+		if Vector2i((ConstructionCatalog.footprint(entry).get_center()/WorldData.CHUNK).floor())==coord:update_piece(id)
 
 func unload_region(coord:Vector2i)->void:
+	for id in piece_models.keys():
+		if piece_models[id].get_meta("coord")==coord:piece_models[id].queue_free();piece_models.erase(id)
 	if regions.has(coord):regions[coord].queue_free();regions.erase(coord)
 	for id in resource_instances.keys():
 		if resource_instances[id].coord==coord:resource_instances.erase(id)
 	ground_shadows.erase(coord)
+
+func update_piece(id:String)->void:
+	if piece_models.has(id):piece_models[id].queue_free();piece_models.erase(id)
+	if not game.rpg.construction.pieces.has(id):return
+	var entry:Dictionary=game.rpg.construction.pieces[id]
+	var coord:=Vector2i((ConstructionCatalog.footprint(entry).get_center()/WorldData.CHUNK).floor())
+	if not regions.has(coord):return
+	var model:=ConstructionVisual.new();model.setup_piece(entry);model.set_meta("coord",coord)
+	add_child(model);piece_models[id]=model
 
 func _ground(parent:Node3D,content:Dictionary)->void:
 	var view:=SubViewport.new()
