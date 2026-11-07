@@ -55,4 +55,4 @@ O limite é de 1.024 peças por mapa. Modelos 3D acompanham as regiões carregad
 
 ## Alterar receitas no projeto Godot
 
-O catálogo e as receitas ficam em `game/data/construction.json`. Cada receita define `id`, `name`, `station`, `minutes`, `cost` e `output`, ou uma ferramenta em `tool`/`tier`. `workbench` e `forge` separam os níveis de fabricação. Os quatro materiais processados são tábuas, blocos de pedra e lingotes de cobre e ferro. Reexporte os executáveis depois de alterar os dados.
+O catálogo e as receitas ficam em `game/data/construction.json`. Cada receita define `id`, `name`, `station`, `minutes`, `cost` e `output`, ou uma ferramenta em `tool`/`tier`. `workbench` e `forge` separam os níveis de fabricação. Além de tábuas, blocos e lingotes, a forja fabrica uma aliança para o sistema de casamento. Reexporte os executáveis depois de alterar os dados.

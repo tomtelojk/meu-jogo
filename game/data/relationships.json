@@ -1,0 +1,581 @@
+{
+  "groups": {
+    "craft": {
+      "loves": [
+        "iron_ingot",
+        "plank"
+      ],
+      "likes": [
+        "stone_block",
+        "copper"
+      ],
+      "hates": [
+        "meat",
+        "food"
+      ],
+      "quest": {
+        "title": "Uma oficina para o futuro",
+        "request": "Preciso repor material para terminar uma encomenda importante.",
+        "cost": {
+          "wood": 8,
+          "stone": 5
+        },
+        "gold": 25,
+        "xp": 25
+      }
+    },
+    "trade": {
+      "loves": [
+        "copper_ingot",
+        "plank"
+      ],
+      "likes": [
+        "food",
+        "iron_ingot"
+      ],
+      "hates": [
+        "stone",
+        "meat"
+      ],
+      "quest": {
+        "title": "Provisões para a estrada",
+        "request": "Quero preparar uma entrega para os viajantes dos dois reinos.",
+        "cost": {
+          "plank": 4,
+          "food": 1
+        },
+        "gold": 30,
+        "xp": 30
+      }
+    },
+    "guard": {
+      "loves": [
+        "food",
+        "iron_ingot"
+      ],
+      "likes": [
+        "iron",
+        "meat"
+      ],
+      "hates": [
+        "wood",
+        "stone"
+      ],
+      "quest": {
+        "title": "Segurança na travessia",
+        "request": "Um javali está assustando os viajantes. Afaste um deles depois de aceitar esta missão.",
+        "cost": {},
+        "boars": 1,
+        "gold": 30,
+        "xp": 35
+      }
+    },
+    "nature": {
+      "loves": [
+        "food",
+        "wood"
+      ],
+      "likes": [
+        "plank",
+        "copper_ingot"
+      ],
+      "hates": [
+        "meat",
+        "iron"
+      ],
+      "quest": {
+        "title": "Cuidar de quem chega",
+        "request": "Estou preparando provisões e abrigos para quem visita o povoado.",
+        "cost": {
+          "food": 2,
+          "wood": 5
+        },
+        "gold": 20,
+        "xp": 30
+      }
+    },
+    "scholar": {
+      "loves": [
+        "plank",
+        "copper_ingot"
+      ],
+      "likes": [
+        "food",
+        "stone_block"
+      ],
+      "hates": [
+        "meat",
+        "iron"
+      ],
+      "quest": {
+        "title": "Um caderno de caminhos",
+        "request": "Traga material para proteger os mapas durante minhas próximas viagens.",
+        "cost": {
+          "plank": 5,
+          "copper": 2
+        },
+        "gold": 30,
+        "xp": 35
+      }
+    },
+    "royal": {
+      "loves": [
+        "iron_ingot",
+        "stone_block"
+      ],
+      "likes": [
+        "copper_ingot",
+        "food"
+      ],
+      "hates": [
+        "meat",
+        "stone"
+      ],
+      "quest": {
+        "title": "Uma ponte entre os povos",
+        "request": "Quero montar uma reserva de material para as obras que ligam nossos povoados.",
+        "cost": {
+          "plank": 5,
+          "stone_block": 4
+        },
+        "gold": 45,
+        "xp": 40
+      }
+    },
+    "miner": {
+      "loves": [
+        "food",
+        "iron_ingot"
+      ],
+      "likes": [
+        "copper",
+        "wood"
+      ],
+      "hates": [
+        "stone_block",
+        "meat"
+      ],
+      "quest": {
+        "title": "Um turno mais seguro",
+        "request": "Preciso reforçar o acesso da pedreira antes do próximo turno.",
+        "cost": {
+          "wood": 8,
+          "stone": 6
+        },
+        "gold": 25,
+        "xp": 25
+      }
+    },
+    "wood": {
+      "loves": [
+        "plank",
+        "food"
+      ],
+      "likes": [
+        "wood",
+        "copper_ingot"
+      ],
+      "hates": [
+        "stone",
+        "iron"
+      ],
+      "quest": {
+        "title": "Madeira para um novo lar",
+        "request": "Quero separar uma reserva de madeira para melhorar minha casa.",
+        "cost": {
+          "wood": 12
+        },
+        "gold": 20,
+        "xp": 25
+      }
+    }
+  },
+  "npcs": {
+    "bento": {
+      "group": "craft",
+      "age": 46,
+      "loves": [
+        "iron_ingot",
+        "copper_ingot"
+      ],
+      "story": "Aprendi a forjar com minha família. Ainda guardo o primeiro martelo que fiz; ele me lembra que ninguém constrói um lugar sozinho.",
+      "quest": {
+        "title": "O martelo da família",
+        "request": "Quero restaurar a bancada onde aprendi meu ofício. Pode ajudar a separar o material?"
+      }
+    },
+    "lia": {
+      "group": "trade",
+      "age": 32,
+      "story": "Minha primeira viagem foi feita com uma carroça emprestada. Tenho medo de perder quem me espera quando as rotas ficam perigosas.",
+      "quest": {
+        "title": "Uma carroça entre dois reinos",
+        "request": "Minha carroça precisa de reparos e provisões antes da próxima rota. Quero voltar de cada viagem com segurança."
+      }
+    },
+    "tomas": {
+      "group": "guard",
+      "age": 29,
+      "story": "Fiquei neste posto porque alguém precisa garantir que todo viajante chegue ao outro lado. Também quero ter um lugar para voltar.",
+      "quest": {
+        "title": "A ronda da travessia",
+        "request": "Um javali está assustando quem usa a ponte. Afaste um deles depois de aceitar o pedido."
+      }
+    },
+    "iris": {
+      "group": "nature",
+      "age": 30,
+      "story": "Passei anos cuidando dos outros e esquecendo meus próprios planos. Quero um jardim que seja também um ponto de encontro.",
+      "quest": {
+        "title": "Um abrigo para viajantes",
+        "request": "Quero preparar provisões e um pequeno abrigo para quem chega cansado ao povoado."
+      }
+    },
+    "eron": {
+      "group": "scholar",
+      "age": 68,
+      "story": "Os mapas mudam quando a gente conhece quem vive neles. Os melhores caminhos que encontrei começaram com uma conversa.",
+      "quest": {
+        "title": "As páginas do próximo mapa",
+        "request": "Preciso proteger meus cadernos da próxima jornada. Seus materiais podem guardar muitas histórias."
+      }
+    },
+    "aurel": {
+      "group": "royal",
+      "age": 38,
+      "story": "A coroa não me livra das dúvidas. Quero ser lembrado pelas pessoas que puderam viver melhor aqui, não pelo tamanho das muralhas.",
+      "quest": {
+        "title": "Oficinas de portas abertas",
+        "request": "Quero que as oficinas de Aurélia recebam novos aprendizes. Vamos preparar uma reserva para as obras."
+      }
+    },
+    "caio": {
+      "group": "royal",
+      "age": 34,
+      "story": "Vejo os campos da janela do castelo e penso em quem os atravessa a pé. Quero poder confiar em alguém que conheça essa vida.",
+      "quest": {
+        "title": "Um teto para quem vem dos campos",
+        "request": "Quero melhorar os abrigos de Valverde para os pastores e viajantes. Pode trazer material para começar?"
+      }
+    },
+    "mila": {
+      "group": "nature",
+      "age": 27,
+      "story": "Minha casa ainda é um plano feito de pequenas economias. Cada manhã na lavoura me aproxima de ter meu próprio canto.",
+      "quest": {
+        "title": "Minha primeira despensa",
+        "request": "Estou guardando recursos para minha casa. Quero começar por uma despensa com provisões para os dias difíceis."
+      }
+    }
+  },
+  "dialogues": {
+    "start": {
+      "text": "{reaction}\n\nHoje estou {activity}. Sobre o que você quer conversar?",
+      "choices": [
+        {
+          "id": "day",
+          "label": "Como foi seu dia?",
+          "next": "day"
+        },
+        {
+          "id": "tastes",
+          "label": "Que coisas você gosta de receber?",
+          "action": "tastes"
+        },
+        {
+          "id": "help",
+          "label": "Posso ajudar em algum plano seu?",
+          "action": "quest",
+          "conditions": {
+            "affinity_min": 15,
+            "no_debt": true
+          }
+        },
+        {
+          "id": "artisan",
+          "label": "Trocar ideias sobre ofícios",
+          "next": "craft_reply",
+          "conditions": {
+            "class": "artisan"
+          }
+        },
+        {
+          "id": "guardian",
+          "label": "Conversar sobre proteger as rotas",
+          "next": "guard_reply",
+          "conditions": {
+            "class": "guardian"
+          }
+        },
+        {
+          "id": "ranger",
+          "label": "Falar sobre campos e animais",
+          "next": "nature_reply",
+          "conditions": {
+            "class": "ranger"
+          }
+        },
+        {
+          "id": "aurelia",
+          "label": "Falar de nossa aliança com Aurélia",
+          "next": "loyal_reply",
+          "conditions": {
+            "faction": "aurelia",
+            "npc_realm": "aurelia"
+          }
+        },
+        {
+          "id": "valverde",
+          "label": "Falar de nossa aliança com Valverde",
+          "next": "loyal_reply",
+          "conditions": {
+            "faction": "valverde",
+            "npc_realm": "valverde"
+          }
+        },
+        {
+          "id": "neutral",
+          "label": "Ouvir os dois lados da fronteira",
+          "next": "neutral_reply",
+          "conditions": {
+            "faction": "free"
+          }
+        },
+        {
+          "id": "trust",
+          "label": "Você confia em mim?",
+          "next": "trust_reply",
+          "conditions": {
+            "affinity_min": 40,
+            "no_debt": true
+          }
+        },
+        {
+          "id": "theft",
+          "label": "Conversar sobre o que roubei",
+          "next": "theft_reply",
+          "conditions": {
+            "memory": "stole"
+          }
+        },
+        {
+          "id": "insult",
+          "label": "Desprezar os planos deste morador",
+          "effects": {
+            "affinity": -8,
+            "memory": "insulted"
+          },
+          "limit": "day",
+          "reply": "Não foi justo falar assim. Vou lembrar desta conversa."
+        }
+      ]
+    },
+    "day": {
+      "text": "Tem dias em que o trabalho pesa. Estou tentando realizar meus planos sem deixar de cuidar de quem vive aqui.",
+      "choices": [
+        {
+          "id": "listen",
+          "label": "Escutar e encorajar",
+          "effects": {
+            "affinity": 3,
+            "memory": "listened"
+          },
+          "limit": "day",
+          "reply": "Obrigado por escutar. É bom ter com quem conversar."
+        },
+        {
+          "id": "dismiss",
+          "label": "Dizer que isso não importa",
+          "effects": {
+            "affinity": -5,
+            "memory": "dismissed"
+          },
+          "limit": "day",
+          "reply": "Para mim importa. Prefiro encerrar por aqui."
+        }
+      ]
+    },
+    "craft_reply": {
+      "text": "Uma boa oficina vive de mãos pacientes e de gente disposta a ensinar.",
+      "choices": [
+        {
+          "id": "share_craft",
+          "label": "Compartilhar uma ideia de artesão",
+          "effects": {
+            "affinity": 4,
+            "xp": 8,
+            "memory": "shared_craft"
+          },
+          "limit": "once",
+          "reply": "Essa ideia vai me ajudar. Gostei de aprender com você."
+        }
+      ],
+      "conditions": {
+        "class": "artisan"
+      }
+    },
+    "guard_reply": {
+      "text": "É preciso conhecer as pessoas que passam pelas estradas antes de dizer que estamos protegendo o reino.",
+      "choices": [
+        {
+          "id": "share_guard",
+          "label": "Oferecer sua experiência de guardião",
+          "effects": {
+            "affinity": 4,
+            "xp": 8,
+            "memory": "shared_guard"
+          },
+          "limit": "once",
+          "reply": "Podemos contar um com o outro nas estradas."
+        }
+      ],
+      "conditions": {
+        "class": "guardian"
+      }
+    },
+    "nature_reply": {
+      "text": "Os campos também são a casa dos animais. Quero que possamos viver aqui sem destruir tudo à nossa volta.",
+      "choices": [
+        {
+          "id": "share_nature",
+          "label": "Compartilhar seu olhar de explorador",
+          "effects": {
+            "affinity": 4,
+            "xp": 8,
+            "memory": "shared_nature"
+          },
+          "limit": "once",
+          "reply": "Você percebe coisas que muita gente deixa passar."
+        }
+      ],
+      "conditions": {
+        "class": "ranger"
+      }
+    },
+    "loyal_reply": {
+      "text": "Compartilhar uma bandeira pode aproximar a gente, desde que isso também signifique cuidar de nossos vizinhos.",
+      "choices": [
+        {
+          "id": "shared_banner",
+          "label": "Assumir esse compromisso",
+          "effects": {
+            "affinity": 3,
+            "reputation": 1,
+            "memory": "shared_banner"
+          },
+          "limit": "once",
+          "reply": "Vou lembrar de suas palavras quando o reino precisar de ajuda."
+        }
+      ],
+      "conditions": {
+        "same_faction": true
+      }
+    },
+    "neutral_reply": {
+      "text": "É bom encontrar alguém disposto a ouvir Aurélia e Valverde sem transformar cada diferença em disputa.",
+      "choices": [
+        {
+          "id": "both_sides",
+          "label": "Valorizar a convivência",
+          "effects": {
+            "affinity": 2,
+            "memory": "respected_difference"
+          },
+          "limit": "once",
+          "reply": "Podemos discordar e ainda assim cuidar uns dos outros."
+        }
+      ],
+      "conditions": {
+        "faction": "free"
+      }
+    },
+    "trust_reply": {
+      "text": "Confiança cresce com o que a gente faz, especialmente quando ninguém está pedindo. Eu reconheço sua presença aqui.",
+      "choices": [
+        {
+          "id": "promise",
+          "label": "Prometer continuar ajudando",
+          "effects": {
+            "affinity": 2,
+            "memory": "made_promise"
+          },
+          "limit": "once",
+          "reply": "Vou guardar essa promessa. Seus atos continuam sendo o que mais importa."
+        }
+      ],
+      "conditions": {
+        "affinity_min": 40,
+        "no_debt": true
+      }
+    },
+    "theft_reply": {
+      "text": "Eu lembro do roubo. Podemos conversar sobre reparar isso, mas fingir que nada aconteceu não vai resolver.",
+      "choices": [
+        {
+          "id": "repay",
+          "label": "Devolver o que foi roubado e pedir desculpas",
+          "action": "repay",
+          "conditions": {
+            "debt_min": 1
+          }
+        },
+        {
+          "id": "apology",
+          "label": "Reconhecer que feriu a confiança",
+          "action": "apology",
+          "conditions": {
+            "no_debt": true
+          }
+        }
+      ],
+      "conditions": {
+        "memory": "stole"
+      }
+    }
+  },
+  "events": {
+    "friend": {
+      "name": "Um lugar na conversa",
+      "affinity_min": 25,
+      "pages": [
+        "{npc} faz uma pausa e convida você a ficar por alguns instantes.",
+        "{story}",
+        "A conversa termina com um convite: continuem se conhecendo, sem pressa. Uma nova amizade começa a ganhar espaço."
+      ],
+      "affinity": 5
+    },
+    "trust": {
+      "name": "Planos compartilhados",
+      "affinity_min": 60,
+      "quest_complete": true,
+      "requires_event": "friend",
+      "pages": [
+        "{npc} reconhece a ajuda que você deu quando um plano parecia distante.",
+        "Não era só o material. Você cumpriu a palavra. Agora sei que posso dividir meus planos com você.",
+        "A confiança abre novos caminhos: amizade próxima, uma viagem em companhia ou uma conversa sobre romance."
+      ],
+      "affinity": 5
+    },
+    "rival": {
+      "name": "Uma conversa difícil",
+      "affinity_max": -25,
+      "pages": [
+        "{npc} pede que você pare antes que a discussão vá mais longe.",
+        "Nós discordamos, e seus atos me afetaram. Se quiser competir comigo, que seja de forma justa. Se quiser fazer as pazes, comece reconhecendo isso.",
+        "A rivalidade continua marcada, mas ainda existe um caminho para reparar a relação."
+      ],
+      "affinity": 0
+    },
+    "wedding": {
+      "name": "Alianças entre caminhos",
+      "affinity_min": 90,
+      "requires_event": "trust",
+      "pages": [
+        "Vocês reservam um momento para falar sobre a vida que querem construir juntos.",
+        "Eu escolho compartilhar esse caminho com você. Quero que nossa casa continue tendo espaço para trabalho, descanso e para as pessoas que amamos.",
+        "Vocês trocam alianças. A cerimônia termina com a promessa de continuar cuidando dessa relação no dia a dia."
+      ],
+      "affinity": 5
+    }
+  }
+}

@@ -25,12 +25,13 @@ func _time_changed()->void:
 		for id in game.rpg.construction.queues:
 			var entry:Dictionary=game.rpg.construction.pieces.get(id,{})
 			var worker:ForestNPC=game.world.npcs.get(entry.get("worker",""))
-			if worker!=null and worker.current_schedule.get("work",false) and not worker.wants_rest and not worker.sleeping and worker.state!="flee" and worker.position.distance_to(ConstructionCatalog.approach(entry))<100:working[id]=true
+			if worker!=null and not worker.companion_mode and worker.current_schedule.get("work",false) and not worker.wants_rest and not worker.sleeping and worker.state!="flee" and worker.position.distance_to(ConstructionCatalog.approach(entry))<100:working[id]=true
 	var completed:=game.rpg.construction.advance(game.rpg,delta,working)
 	if not completed.is_empty():
 		game.hud.toast("Produção concluída: "+", ".join(completed.slice(0,3)),4)
 
 func advance_worker(npc:ForestNPC)->bool:
+	if npc.companion_mode:return false
 	var id:=game.rpg.construction.assigned(npc.definition.id,"worker")
 	if id.is_empty() or npc.wants_rest:return false
 	var entry:Dictionary=game.rpg.construction.pieces[id]

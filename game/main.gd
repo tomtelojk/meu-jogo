@@ -39,6 +39,7 @@ var rpg := RPGState.new()
 var economy:OpenEconomy
 var gathering:ResourceGathering
 var construction:ConstructionSystem
+var social:RelationshipSystem
 var loading_journey:=false
 var building_preview:=false
 var building_point:=Vector2.ZERO
@@ -92,6 +93,7 @@ func _ready() -> void:
 	economy.setup(self)
 	gathering=ResourceGathering.new();add_child(gathering);gathering.setup(self)
 	construction=ConstructionSystem.new();add_child(construction);construction.setup(self)
+	social=RelationshipSystem.new();add_child(social);social.setup(self)
 	camera.reset_smoothing()
 	if not "--test" in OS.get_cmdline_user_args() or "--hybrid" in OS.get_cmdline_user_args():
 		hybrid = HybridWorld.new()
@@ -264,6 +266,7 @@ func open_npc(id: String, topic: String = "greeting") -> void:
 		hud.toast("%s está descansando. Volte pela manhã." % npc.definition.name)
 		return
 	var profile: Dictionary = npc.definition
+	if social!=null and social.near(id):rpg.relationships.visit(id,world.clock.day)
 	var known := met_npcs.has(id)
 	met_npcs[id] = true
 	npc.face(player.position)
@@ -296,6 +299,7 @@ func open_npc(id: String, topic: String = "greeting") -> void:
 	_refresh_quest()
 	save_journey()
 	var actions: Array[Dictionary] = []
+	if social!=null:body+="\n\nAfinidade %+d · %s\n%s"%[rpg.relationships.record(id).affinity,rpg.relationships.bond_label(id),rpg.relationships.reaction(id,world.clock.day)]
 	if topic == "greeting":
 		actions = [
 			{"label": "Sobre os dois reinos", "callback": open_npc.bind(id, "realm")},
@@ -308,6 +312,7 @@ func open_npc(id: String, topic: String = "greeting") -> void:
 		]
 		if id in ["bento","lia","iris"] or profile.role=="Mercador":
 			actions.push_front({"label":"Comprar e vender","callback":open_shop.bind(KingdomData.nearest_town(npc.position).id)})
+		if social!=null:actions.push_front({"label":"Conversar e relacionamentos","name":"npc_relationships","callback":social.show_menu.bind(id)})
 	else:
 		actions = [{"label": "Perguntar outra coisa", "callback": open_npc.bind(id, "greeting")}, {"label": "Até logo", "callback": close_dialog}]
 	_open_dialog(String(KingdomData.REALMS[profile.realm].name).to_upper(), "%s · %s" % [profile.name, profile.role], body, actions, "npc")
@@ -317,6 +322,7 @@ func rest_until_morning() -> void:
 	world.clock.set_time(7.0, world.clock.day + 1)
 	for npc in world.npcs.values():
 		npc.apply_schedule(world.clock.minute, true)
+		if npc.companion_mode:npc.hunger=0.1;npc.fatigue=0.0
 	close_dialog()
 	save_journey()
 	hud.toast("Uma nova manhã. Os moradores começam mais um dia.")
@@ -348,6 +354,7 @@ func import_npc_sprite(path: String) -> bool:
 	return true
 
 func _open_dialog(eyebrow: String, title: String, body: String, actions: Array[Dictionary], kind: String = "dialog", map_view: ForestMinimap = null) -> void:
+	if social!=null and kind!="relationship_scene":social.reset_cinematic()
 	if building_preview:cancel_building()
 	if mode != "dialog":
 		return_mode = mode
@@ -360,6 +367,7 @@ func _open_dialog(eyebrow: String, title: String, body: String, actions: Array[D
 func close_dialog() -> void:
 	if mode != "dialog":
 		return
+	if social!=null:social.reset_cinematic()
 	hud.close_dialog()
 	mode = return_mode
 	player.active = mode == "playing"
@@ -429,6 +437,7 @@ func apply_map(document:Dictionary) -> bool:
 	if map_snapshots.has(MapDocument.current.id):apply_journey(map_snapshots[MapDocument.current.id])
 	elif persistence:_load_journey()
 	world.refresh_rpg();world.ensure_region(player.position,true)
+	if social!=null:social.bind_world()
 	player.position=world.safe_position(player.position)
 	player.restore_surface()
 	if not "--test" in OS.get_cmdline_user_args() or "--hybrid" in OS.get_cmdline_user_args():
@@ -443,7 +452,7 @@ func apply_map(document:Dictionary) -> bool:
 	return true
 
 func show_help()->void:
-	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e usar estruturas\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Catálogo de construção\nT · Girar peça durante a prévia\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nQ/R · Girar câmera / Home · Centralizar\nCtrl+roda / PgUp / PgDn · Zoom\nEsc · Pausar, clima e modo HD-2D\n\nCompre ferramentas na ferraria e reúna madeira e pedra. B abre paredes, chão, móveis e estações, com custos e prévia verde/vermelha. A bancada transforma materiais; a forja permite ferramentas de ferro. Use E em camas e estações para designar moradores. Camas livres permitem descansar, salvar e definir um ponto de retorno. Javalis danificam estruturas que bloqueiam sua perseguição; use E para reparar com martelo. Produção avança no tempo do mundo e também durante o descanso; menus pausam o relógio. O inventário, as peças, as filas e as designações são salvos automaticamente.",[{"label":"Continuar","callback":close_dialog}],"help")
+	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e usar estruturas\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Catálogo de construção\nT · Girar peça durante a prévia\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nQ/R · Girar câmera / Home · Centralizar\nCtrl+roda / PgUp / PgDn · Zoom\nEsc · Pausar, clima e modo HD-2D\n\nCompre ferramentas na ferraria e reúna madeira e pedra. B abre paredes, chão, móveis e estações, com custos e prévia verde/vermelha. A bancada transforma materiais; a forja permite ferramentas de ferro. Use E em camas e estações para designar moradores. Camas livres permitem descansar, salvar e definir um ponto de retorno. Javalis danificam estruturas que bloqueiam sua perseguição; use E para reparar com martelo. Produção avança no tempo do mundo e também durante o descanso; menus pausam o relógio. O inventário, as peças, as filas e as designações são salvos automaticamente.\n\nE em um NPC abre conversas, presentes, memórias e vínculos. J > Relações, missões e identidade acompanha afinidade, classe e facção. Amizade e ajuda abrem cenas pessoais, romance, casamento e companhia de viagem.",[{"label":"Continuar","callback":close_dialog}],"help")
 
 func show_map() -> void:
 	if mode == "dialog" and hud.modal_kind == "map":
@@ -476,6 +485,7 @@ func reset_journey() -> void:
 	var fresh:=RPGState.new()
 	rpg.restore(fresh.save_data())
 	world.refresh_rpg()
+	if social!=null:social.bind_world()
 	for coord in world.chunks.keys():world._unload_chunk(coord)
 	collected.clear()
 	met_npcs.clear()
@@ -568,6 +578,7 @@ func apply_journey(data: Dictionary) -> bool:
 		if point.is_finite() and point.x>38.4 and point.y>38.4 and point.x<WorldData.SIZE.x-38.4 and point.y<WorldData.SIZE.y-38.4:
 			player.position = point
 	if data.get("rpg") is Dictionary:rpg.restore(data.rpg)
+	for npc in world.npcs.values():npc.companion_mode=false;npc.follow_target=Vector2(INF,INF)
 	for coord in world.chunks.keys():world._unload_chunk(coord)
 	world.refresh_rpg()
 	world.ensure_region(player.position,true)
@@ -613,6 +624,7 @@ func apply_journey(data: Dictionary) -> bool:
 		custom_character = player.load_character_file(CHARACTER_PATH)
 	loading_journey=false
 	if construction!=null:construction.bind_world()
+	if social!=null:social.bind_world()
 	return true
 
 func _load_journey() -> void:
@@ -755,6 +767,7 @@ func travel_to(id:String)->bool:
 	player.position=target.position+Vector2(0,384)
 	player.restore_surface()
 	world.ensure_region(player.position,true)
+	if social!=null:social.travel_with_player()
 	if hybrid!=null:hybrid.snap_camera()
 	camera.reset_smoothing()
 	rpg.discover(id)
@@ -782,6 +795,8 @@ func show_journal()->void:
 	var house:Dictionary=rpg.houses.get("home_player",{})
 	var body:="SUA VIDA ENTRE OS REINOS\n\nFerramentas: %d / 4\nLugares descobertos: %d / 6\nSua casa: %s\n\nCompre machado e picareta, extraia recursos e escolha entre vender ou construir. Encomendas pagam 80 moedas por 15 madeira e 8 pedra, uma vez por dia em cada povoado.\n\nUma casa precisa de 50 madeira, 20 pedra e um martelo, em três etapas. O terreno custa 20 moedas.\n\nNos vilarejos, construtores também compram ferramentas, recolhem material e erguem suas casas. Fale com eles para acompanhar.\n\nTRADIÇÃO DO VALE (OPCIONAL)\nAs antigas sementes e a árvore ancestral continuam no vale noroeste. Este é apenas um dos caminhos da sua aventura."%[rpg.tools.size(),rpg.discovered.size(),"nenhum terreno" if house.is_empty() else RPGState.STAGES[house.stage]]
 	_open_dialog("REGISTROS DO AVENTUREIRO","Um mundo para descobrir",body,[{"label":"Abrir mapa do continente","callback":show_map},{"label":"Voltar à aventura","callback":close_dialog}],"journal")
+	if social!=null:
+		var button:=hud._button("Relações, missões e identidade",social.show_journal.bind(0),true,true);button.name="journal_relationships";hud.modal_content.add_child(button);hud.modal_content.move_child(button,3);hud.call_deferred("_layout_modal")
 
 func can_build_at(point:Vector2)->Dictionary:
 	if not point.is_finite() or point.distance_to(player.position)>500:return {"ok":false,"message":"Escolha um terreno perto de você."}
@@ -899,6 +914,7 @@ func attack()->void:
 	if target==null:hud.toast("Espaço: ataque um animal próximo. Uma espada aumenta o dano.");return
 	var damage:=(20 if rpg.tools.has("sword") and equipped_slot==0 else 7)+rpg.level()*2
 	var defeated:=target.hurt(damage)
+	if defeated and target.species=="boar":rpg.relationships.boars_killed+=1
 	hud.toast("Caça concluída: carne e experiência." if defeated else "%s · -%d vida"%[target.definition.name,damage])
 	save_journey()
 
@@ -914,6 +930,7 @@ func take_damage(amount:int)->void:
 		player.position=bed_spawn if bed_spawn.is_finite() else (Vector2(home.x,home.y+64) if not home.is_empty() and home.stage==3 else MapDocument.spawn_point())
 		player.restore_surface()
 		world.ensure_region(player.position,true)
+		if social!=null:social.travel_with_player("Seu companheiro acompanhou o resgate.")
 		if hybrid!=null:hybrid.snap_camera()
 		hud.toast("Você foi socorrido. Perdeu 5 moedas e manteve seu equipamento.")
 	rpg.changed.emit()

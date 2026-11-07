@@ -417,8 +417,10 @@ func show_dialog(eyebrow: String, title: String, body: String, actions: Array[Di
 	for action in actions:
 		var action_button := _button(action.label, action.callback, true, true)
 		action_button.name = action.get("name", "Action")
+		action_button.disabled=action.get("disabled",false)==true
+		action_button.tooltip_text=action.get("reason","")
 		box.add_child(action_button)
-		focusable.append(action_button)
+		if not action_button.disabled:focusable.append(action_button)
 	for i in focusable.size():
 		focusable[i].focus_next = focusable[(i + 1) % focusable.size()].get_path()
 		focusable[i].focus_previous = focusable[(i - 1 + focusable.size()) % focusable.size()].get_path()

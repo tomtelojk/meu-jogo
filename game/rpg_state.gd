@@ -23,6 +23,7 @@ var copper:=0
 var iron:=0
 var resources:=ResourceProgress.new()
 var construction:=ConstructionState.new()
+var relationships:=RelationshipState.new()
 var food := 2
 var meat := 0
 var xp := 0
@@ -191,7 +192,7 @@ func damage_house(id:String,damage:int)->Dictionary:
 	return {"ok":true,"destroyed":destroyed}
 
 func npc_account(id:String)->Dictionary:
-	if not npc_accounts.has(id):npc_accounts[id]={"gold":100,"wood":0,"stone":0,"tools":{},"job":"Começando a jornada","clock":0.0,"task":"","last_wage":0,"food":0}
+	if not npc_accounts.has(id):npc_accounts[id]={"gold":100,"wood":0,"stone":0,"tools":{},"goods":{},"job":"Começando a jornada","clock":0.0,"task":"","last_wage":0,"food":0,"meal_stamp":""}
 	return npc_accounts[id]
 
 func deliver(town:String,day:int)->Dictionary:
@@ -209,7 +210,7 @@ func home_rect(house:Dictionary)->Rect2:
 	return Rect2(Vector2(house.x-96,house.y-128),Vector2(192,128))
 
 func save_data()->Dictionary:
-	return {"gold":gold,"wood":wood,"stone":stone,"copper":copper,"iron":iron,"resources":resources.save_data(),"construction":construction.save_data(),"food":food,"meat":meat,"xp":xp,"health":health,"tools":tools.keys(),"discovered":discovered.keys(),"depleted":depleted.keys(),"houses":houses.duplicate(true),"npc_accounts":npc_accounts.duplicate(true),"contracts":contracts.duplicate(),"produce_times":produce_times.duplicate()}
+	return {"gold":gold,"wood":wood,"stone":stone,"copper":copper,"iron":iron,"resources":resources.save_data(),"construction":construction.save_data(),"relationships":relationships.save_data(),"food":food,"meat":meat,"xp":xp,"health":health,"tools":tools.keys(),"discovered":discovered.keys(),"depleted":depleted.keys(),"houses":houses.duplicate(true),"npc_accounts":npc_accounts.duplicate(true),"contracts":contracts.duplicate(),"produce_times":produce_times.duplicate()}
 
 func restore(data:Dictionary)->void:
 	for key in ["gold","wood","stone","copper","iron","food","meat","xp","health"]:
@@ -218,6 +219,7 @@ func restore(data:Dictionary)->void:
 	health=clampi(health,1,100)
 	resources.restore(data.get("resources",{}))
 	construction.restore(data.get("construction",{}))
+	relationships.restore(data.get("relationships",{}))
 	tools.clear();discovered.clear();depleted.clear();houses.clear();npc_accounts.clear();contracts.clear();produce_times.clear()
 	for key in ["tools","discovered","depleted"]:
 		var values=data.get(key,[])
@@ -244,6 +246,10 @@ func restore(data:Dictionary)->void:
 				var timer=source.get(key,0)
 				if (timer is int or timer is float) and is_finite(float(timer)):account[key]=clampf(float(timer),0,1e10)
 			if source.get("job") is String:account.job=source.job.left(160)
+			if source.get("meal_stamp") is String:account.meal_stamp=source.meal_stamp.left(40)
+			if source.get("goods") is Dictionary:
+				for item in RelationshipCatalog.GIFTS:
+					if ResourceProgress.number(source.goods.get(item)):account.goods[item]=clampi(int(source.goods[item]),0,999999)
 			for key in ["gold","wood","stone","food"]:
 				var value=source.get(key,0)
 				if (value is int or value is float) and is_finite(float(value)):account[key]=clampi(int(value),0,999999)

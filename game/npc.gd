@@ -27,6 +27,8 @@ var home_override:=Vector2(INF,INF)
 var work_override:=Vector2(INF,INF)
 var economic_target := Vector2(INF,INF)
 var economic_activity := ""
+var companion_mode:=false
+var follow_target:=Vector2(INF,INF)
 var task_target:=Vector2(INF,INF)
 var state:="travel"
 var hunger:=0.15
@@ -93,14 +95,14 @@ func apply_schedule(minute: float, snap: bool = false) -> void:
 	if entry == current_schedule and not snap:
 		return
 	current_schedule = entry
-	wants_rest = entry.get("rest", false)
+	wants_rest = entry.get("rest", false) and not companion_mode
 	stop_index = 0
 	waiting = 0.0
 	stalled = 0.0
 	task_target=Vector2(INF,INF)
 	state="returning_home" if wants_rest else "travel"
 	retry_delay=0
-	if snap:
+	if snap and not companion_mode:
 		position = nearest_walkable(_scheduled_point())
 	refresh_presence()
 	plan_route()
@@ -108,13 +110,14 @@ func apply_schedule(minute: float, snap: bool = false) -> void:
 
 func activity() -> String:
 	if state=="flee":return "Procurando abrigo"
+	if companion_mode:return "Viajando em sua companhia"
 	if economic_target.is_finite() and not sleeping and not wants_rest:return economic_activity
 	if state=="blocked":return "Esperando o caminho liberar"
 	if state=="social" and not neighbors.is_empty():return "Conversando com os vizinhos"
 	return "Voltando para descansar" if wants_rest and not sleeping else String(current_schedule.activity)
 
 func refresh_presence() -> void:
-	sleeping = wants_rest and position.distance_to(nearest_walkable(_scheduled_point())) < 10.0
+	sleeping = not companion_mode and wants_rest and position.distance_to(nearest_walkable(_scheduled_point())) < 10.0
 	visible = not sleeping
 	interaction_area.set_deferred("monitorable", not sleeping)
 	name_label.text = "%s · %s\n%s" % [definition.name, definition.role, activity()]
@@ -159,6 +162,7 @@ func plan_route() -> void:
 func _target()->Vector2:
 	if wants_rest:return _scheduled_point()
 	if state in ["flee","detour"] and task_target.is_finite():return task_target
+	if companion_mode and follow_target.is_finite():return follow_target
 	if economic_target.is_finite():return economic_target
 	return task_target if task_target.is_finite() else _scheduled_point(stop_index)
 
@@ -197,6 +201,7 @@ func _physics_process(delta:float)->void:
 	if path_index>=route.size():_arrive();_idle();return
 	var direction:=position.direction_to(route[path_index])
 	var speed:float=definition.speed*(1.35 if state=="flee" else 1.0)
+	if companion_mode and state!="flee":speed=maxf(speed,230.0 if position.distance_to(_target())>300 else (180.0 if position.distance_to(_target())>150 else 110.0))
 	var separation:=Vector2.ZERO
 	for other in neighbors:
 		if not is_instance_valid(other) or other==self or other.sleeping:continue
@@ -214,13 +219,14 @@ func _physics_process(delta:float)->void:
 	var previous:=position
 	move_and_slide()
 	var distance:=position.distance_to(previous)
-	_animate_movement(get_real_velocity(),state=="flee",distance)
+	_animate_movement(get_real_velocity(),state=="flee" or companion_mode and speed>140,distance)
 	stalled=stalled+delta if distance<0.15 else 0.0
 	if stalled>1.2:
 		stalled=0;retry_delay=0.5;task_target=nearest_walkable(position+Vector2(96 if personality_seed%2 else -96,64));state="detour";plan_route()
 
 func _arrive()->void:
 	if state=="detour":task_target=Vector2(INF,INF);state="travel";plan_route();return
+	if companion_mode and state!="flee":state="following";waiting=0.5;refresh_presence();return
 	if wants_rest:
 		refresh_presence()
 		if not sleeping:waiting=3
@@ -233,6 +239,8 @@ func _arrive()->void:
 
 func _next_task()->void:
 	choice_serial+=1
+	if companion_mode and state=="flee":waiting=0.5;return
+	if companion_mode:task_target=Vector2(INF,INF);plan_route();return
 	if wants_rest:plan_route();return
 	if economic_target.is_finite():plan_route();return
 	if current_schedule.get("loop",false):
@@ -261,6 +269,7 @@ func advance_offscreen(delta:float)->void:
 		if waiting<=0:_next_task()
 		return
 	var remaining:float=definition.speed*delta
+	if companion_mode:remaining=maxf(float(definition.speed),180.0)*delta
 	while path_index<route.size() and remaining>0:
 		var distance:=position.distance_to(route[path_index])
 		if distance<=remaining:position=route[path_index];remaining-=distance;path_index+=1

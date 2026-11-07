@@ -17,15 +17,30 @@ func _process(delta:float)->void:
 	elapsed=0
 	for id in game.world.npcs:
 		var npc:ForestNPC=game.world.npcs[id]
+		if npc.companion_mode:continue
 		if npc.sleeping or npc.wants_rest:continue
 		var account:=game.rpg.npc_account(id)
 		var minute:=game.world.clock.day*1440+floori(game.world.clock.minute)
 		if minute-int(account.last_wage)>=20:
 			account.gold+=2
 			account.last_wage=minute
+		if npc.current_schedule.get("meal",false):advance_meal(npc);continue
+		if npc.economic_target.is_finite() and npc.economic_activity=="Almoçando com os vizinhos":npc.clear_economic_goal()
 		if game.construction!=null and game.construction.advance_worker(npc):continue
 		if npc.definition.get("builder",false) and not npc.current_schedule.get("social",false):advance_builder(npc,dt)
 		else:advance_worker(npc,dt)
+
+func advance_meal(npc:ForestNPC)->void:
+	var account:=game.rpg.npc_account(npc.definition.id)
+	var stamp:=str(game.world.clock.day)+":"+str(npc.current_schedule.hour)
+	if account.meal_stamp==stamp:return
+	var at:=npc.nearest_walkable(npc._scheduled_point())
+	npc.set_economic_goal(at,"Almoçando com os vizinhos");account.job=npc.activity()
+	if npc.position.distance_to(at)>90:return
+	if account.food>0:account.food-=1
+	elif account.gold>=5:account.gold-=5
+	else:return
+	account.meal_stamp=stamp;npc.hunger=0.1;npc.clear_economic_goal();game.rpg.changed.emit()
 
 func advance_worker(npc:ForestNPC,delta:float)->void:
 	var id:String=npc.definition.id

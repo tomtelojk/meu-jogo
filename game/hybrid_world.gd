@@ -128,6 +128,7 @@ var target_zoom:=13.0
 var target_yaw:=0.0
 var view_yaw:=0.0
 var dragging_camera:=false
+var cinematic_focus:=Vector2(INF,INF)
 
 func setup(source: ForestGame) -> void:
 	game=source
@@ -490,6 +491,7 @@ func _follow(snap:bool,delta:float=0.016)->void:
 	camera.size=lerpf(camera.size,target_zoom,weight)
 	game.player.view_yaw=view_yaw
 	var target:=_point(game.player.position)
+	if cinematic_focus.is_finite():target=_point(cinematic_focus)
 	target.y=game.player.surface_height()/UNIT
 	var desired:=target+Vector3(0,12,14).rotated(Vector3.UP,view_yaw)
 	if resource_fx!=null and resource_fx.shake>0:

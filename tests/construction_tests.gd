@@ -45,7 +45,7 @@ func supplied()->RPGState:
 
 func run()->void:
 	MapDocument.activate(MapDocument.original());ConstructionCatalog.load_data()
-	verify(ConstructionCatalog.pieces.size()==12 and ConstructionCatalog.recipes.size()==10,"catálogo e receitas vêm do JSON incluído no projeto")
+	verify(ConstructionCatalog.pieces.size()==12 and ConstructionCatalog.recipes.size()==11,"catálogo e receitas vêm do JSON incluído no projeto")
 	var categories:Dictionary={}
 	for entry in ConstructionCatalog.pieces.values():categories[entry.category]=true
 	verify(categories.size()==4,"catálogo cobre paredes, chão, móveis e estações")

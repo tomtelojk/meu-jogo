@@ -3,8 +3,8 @@ extends RefCounted
 
 const GRID:=64.0
 const CATEGORIES:={"walls":"Paredes e cobertura","floors":"Chão","furniture":"Móveis","stations":"Estações de trabalho"}
-const MATERIALS:={"wood":"madeira","stone":"pedra","copper":"cobre","iron":"ferro","plank":"tábuas","stone_block":"blocos de pedra","iron_ingot":"lingotes de ferro","copper_ingot":"lingotes de cobre"}
-const PROCESSED:=["plank","stone_block","iron_ingot","copper_ingot"]
+const MATERIALS:={"wood":"madeira","stone":"pedra","copper":"cobre","iron":"ferro","plank":"tábuas","stone_block":"blocos de pedra","iron_ingot":"lingotes de ferro","copper_ingot":"lingotes de cobre","food":"provisões","meat":"carne","wedding_ring":"aliança"}
+const PROCESSED:=["plank","stone_block","iron_ingot","copper_ingot","wedding_ring"]
 static var pieces:Dictionary={}
 static var recipes:Dictionary={}
 

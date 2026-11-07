@@ -68,7 +68,7 @@ static func _editor_person(obj: Dictionary, original: Dictionary) -> Dictionary:
 			if candidate.id==obj.appearance:profile=candidate.duplicate(true);break
 	profile.merge({"id":obj.id,"name":obj.name,"realm":obj.realm,"appearance":obj.appearance,"builder":false,"editor":true,"town":"","role":profile.get("role","Morador"),"speed":68.0+posmod(String(obj.id).hash(),20)},true)
 	var wake: int=6+posmod(String(obj.id).hash(),3)
-	profile.routine=[{"hour":0,"activity":"Descansando em casa","points":["map_"+obj.id+"_home"],"rest":true},{"hour":wake,"activity":"Indo trabalhar","work":true,"points":["map_"+obj.id+"_work"]},{"hour":12,"activity":"Passeando","social":true,"points":["map_"+obj.id+"_social"]},{"hour":14,"activity":"Trabalhando","work":true,"points":["map_"+obj.id+"_work"]},{"hour":19,"activity":"Encontrando os vizinhos","social":true,"points":["map_"+obj.id+"_social"]},{"hour":22,"activity":"Voltando para casa","points":["map_"+obj.id+"_home"],"rest":true}]
+	profile.routine=[{"hour":0,"activity":"Descansando em casa","points":["map_"+obj.id+"_home"],"rest":true},{"hour":wake,"activity":"Indo trabalhar","work":true,"points":["map_"+obj.id+"_work"]},{"hour":12,"activity":"Almoçando e encontrando vizinhos","social":true,"meal":true,"points":["map_"+obj.id+"_social"]},{"hour":14,"activity":"Trabalhando","work":true,"points":["map_"+obj.id+"_work"]},{"hour":19,"activity":"Encontrando os vizinhos","social":true,"points":["map_"+obj.id+"_social"]},{"hour":22,"activity":"Voltando para casa","points":["map_"+obj.id+"_home"],"rest":true}]
 	return profile
 
 static func _make_places() -> Dictionary:

@@ -78,7 +78,7 @@ Venda materiais ou entregue encomendas de 15 madeira e oito pedra por 80 moedas 
 
 **B** abre a construção modular: **12 peças** em paredes/cobertura, chão, móveis e estações. Cada peça mostra seu custo e encaixa em uma grade com fantasma verde/vermelho. **T** gira; clique constrói; **B** volta ao catálogo; **Esc/botão direito** sai da prévia. Pisos e coberturas podem compartilhar espaço com objetos, e as portas têm passagem física ao abrir.
 
-A **bancada** fabrica tábuas, blocos e ferramentas de pedra; a **forja** funde minérios e fabrica ferramentas de ferro. Dez receitas em JSON alimentam filas pagas na entrada, com progresso e cancelamento. Use **E** para produzir, reparar, designar moradores/trabalhadores ou desmontar. Camas livres permitem descansar, salvar e definir um ponto de retorno; trabalhadores presentes aceleram sua estação em 25% durante o próprio turno.
+A **bancada** fabrica tábuas, blocos e ferramentas de pedra; a **forja** funde minérios e fabrica ferramentas de ferro e alianças. Onze receitas em JSON alimentam filas pagas na entrada, com progresso e cancelamento. Use **E** para produzir, reparar, designar moradores/trabalhadores ou desmontar. Camas livres permitem descansar, salvar e definir um ponto de retorno; trabalhadores presentes aceleram sua estação em 25% durante o próprio turno.
 
 Vida, peças, orientação, portas, inventário processado, designações e filas são salvos por mapa. Javalis podem danificar estruturas que bloqueiam a perseguição; estações muito danificadas precisam de reparo. Modelos acompanham as regiões carregadas, e a grama deixa livre o espaço das construções.
 
@@ -102,6 +102,14 @@ Cada etapa muda o modelo 3D e sua colisão. A casa pronta permite descansar e se
 ![Casa construída](docs/rpg-casa.png)
 
 ## Moradores que também compram e constroem
+
+Os NPCs têm **afinidade de -100 a 100**, gostos próprios para presentes e memória de ajuda, promessas, roubo e reparação. **E → Conversar e relacionamentos** abre escolhas condicionadas por afinidade, classe e facção, missões pessoais e cenas de amizade. **J → Relações, missões e identidade** acompanha os vínculos e permite escolher sua classe e bandeira.
+
+Amizade, rivalidade e romance têm consequências próprias. NPCs adultos podem aceitar namoro, casamento e convites para viajar. O cônjuge pode morar nas construções do jogador; um companheiro percorre rotas seguras, acompanha caravanas e espera na margem ao nadar. Rotinas incluem trabalho, almoço e visitas à taverna, com despesas próprias. Todos os vínculos e encontros em andamento ficam salvos por mapa.
+
+[Guia de NPCs, presentes, missões, romance e companhia](docs/npcs-e-relacionamentos.md)
+
+![Encontro de amizade](docs/relacoes-encontro.png)
 
 Cada NPC tem carteira e equipamento próprios. Moradores recebem salário e alguns compram a ferramenta de sua profissão quando visitam o comércio. Quatro construtores dos vilarejos têm um objetivo adicional:
 
@@ -181,6 +189,8 @@ Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambien
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/hd2d_tests.gd -- --test --hybrid
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/construction_tests.gd -- --test
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/construction_tests.gd -- --test --hybrid
+./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/relationship_tests.gd -- --test
+./scripts/godot.sh --audio-driver Dummy --script res://tests/relationship_tests.gd -- --test --hybrid
 ```
 
 A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.

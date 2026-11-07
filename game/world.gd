@@ -454,6 +454,9 @@ func apply_assignments()->void:
 		var home:=Vector2(INF,INF);var work:=Vector2(INF,INF)
 		var house:Dictionary=rpg.houses.get("home_"+id,{})
 		if house.get("stage",0)==3:home=Vector2(house.x,house.y+64)
+		if rpg.relationships.partner==id and rpg.relationships.record(id).bond=="married":
+			var shared:Dictionary=rpg.houses.get("home_player",{})
+			if shared.get("stage",0)==3:home=Vector2(shared.x,shared.y+64)
 		var bed:=rpg.construction.assigned(id,"resident")
 		var station:=rpg.construction.assigned(id,"worker")
 		if not bed.is_empty():home=npc.nearest_walkable(ConstructionCatalog.approach(rpg.construction.pieces[bed]))

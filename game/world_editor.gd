@@ -34,6 +34,7 @@ func setup(source: ForestGame) -> void:
 	visible=false
 
 func open() -> void:
+	if game.social!=null:game.social.reset_cinematic()
 	previous_mode=game.mode if game.mode in ["playing","intro"] else "playing"
 	game.save_journey()
 	game.cancel_building();game.hud.close_dialog()

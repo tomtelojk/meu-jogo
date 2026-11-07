@@ -23,6 +23,8 @@ Os NPCs têm turnos de trabalho, comércio, refeições, patrulhas, encontros e 
 
 **Construção modular:** B abre paredes, chão, móveis e estações, com custos, grade e fantasma verde/vermelho. T gira a peça. E em bancadas e forjas abre receitas, fila, reparos e designação de trabalhadores. Camas permitem morar, descansar e salvar um ponto de retorno. NPCs seguem seus turnos e aceleram a estação; vida, portas, designações e filas são salvas por mapa. [Guia da construção](../docs/construcao-e-fabricacao.md).
 
+**NPCs e relacionamentos:** E abre escolhas, presentes e memórias de cada morador. Afinidade de -100 a 100, classe e facção influenciam diálogos e consequências. Há missões pessoais, cenas de amizade, rivalidade, romance, casamento e um companheiro que segue rotas navegáveis. O cônjuge pode morar nas construções do jogador. J acompanha vínculos e compromissos; tudo fica salvo por mapa. [Guia dos relacionamentos](../docs/npcs-e-relacionamentos.md).
+
 **E** interage, **I** abre inventário e **B** abre o catálogo. A hotbar usa **1–4** para ferramentas, **5** para comer, **6** para mapa, **7** para diário e **8** para lanterna. A roda do mouse seleciona e o clique esquerdo usa o item. **Espaço** ataca. Nas estalagens, use caravanas para visitar outros povoados. O modo gráfico leve é o padrão.
 
 [Ver o início](../docs/rpg-inicio.png) · [Ver a interface](../docs/rpg-hud.png) · [Ver iluminação e neblina](../docs/rpg-noite.png)

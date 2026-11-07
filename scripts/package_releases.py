@@ -32,6 +32,18 @@ HD-2D ativa foco suave, bloom e sombras do sol. A interface fica nítida.
 Clima pode ser automático ou fixado no menu Esc.
 Seu progresso é salvo automaticamente neste computador.
 
+NPCS E RELACIONAMENTOS
+E perto de um NPC > Conversar e relacionamentos.
+J > Relações, missões e identidade mostra vínculos, classe e facção.
+Afinidade vai de -100 a 100. Há preferências próprias e dois presentes por dia.
+Escolhas, ajuda, promessas, roubo e reparação ficam na memória do morador.
+Missões pessoais e níveis de amizade abrem encontros com câmera e retratos.
+NPCs adultos podem aceitar romance, casamento e viagens em companhia.
+A forja fabrica a aliança: 2 lingotes de cobre e 1 de ferro, em 30 minutos.
+O companheiro segue rotas seguras e espera na margem enquanto você nada.
+Classe, facção, memórias, vínculos e cenas pendentes são salvos por mapa.
+GUIA-DOS-RELACIONAMENTOS.md contém os requisitos e as instruções completas.
+
 CRIE SEU PRÓPRIO MAPA
 F2 abre o ateliê. Comece com Novo mapa vazio ou edite a base dos reinos.
 Pinte terrenos e água; coloque casas, pontes, árvores, animais e moradores.
@@ -163,7 +175,8 @@ def package(system: str, output: Path) -> Path:
     shutil.copy2(ROOT / "docs" / "coleta-e-ferramentas.md", stage / "GUIA-DA-COLETA.md")
     shutil.copy2(ROOT / "docs" / "visual-hd2d.md", stage / "GUIA-DO-VISUAL.md")
     shutil.copy2(ROOT / "docs" / "construcao-e-fabricacao.md", stage / "GUIA-DA-CONSTRUCAO.md")
-    for image_name in ["coleta-queda.png", "coleta-toco.png", "hd2d-aurelia.png", "hd2d-noite.png", "hd2d-ponte.png", "hd2d-chuva.png", "construcao-catalogo.png", "construcao-previa.png", "construcao-fila.png", "construcao-assentamento.png"]:
+    shutil.copy2(ROOT / "docs" / "npcs-e-relacionamentos.md", stage / "GUIA-DOS-RELACIONAMENTOS.md")
+    for image_name in ["coleta-queda.png", "coleta-toco.png", "hd2d-aurelia.png", "hd2d-noite.png", "hd2d-ponte.png", "hd2d-chuva.png", "construcao-catalogo.png", "construcao-previa.png", "construcao-fila.png", "construcao-assentamento.png", "relacoes-amizade.png", "relacoes-encontro.png", "relacoes-casamento.png", "relacoes-companhia.png", "relacoes-memoria.png"]:
         shutil.copy2(ROOT / "docs" / image_name, stage / image_name)
     (stage / "FONTES-ARVORES.json").unlink(missing_ok=True)
     (stage / "CREDITOS.txt").write_text(

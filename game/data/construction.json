@@ -23,6 +23,7 @@
     {"id":"copper_ingot","name":"Fundir lingotes de cobre","station":"forge","minutes":15,"cost":{"copper":2,"wood":1},"output":{"copper_ingot":1}},
     {"id":"iron_axe","name":"Machado de ferro","station":"forge","minutes":40,"cost":{"plank":3,"iron_ingot":4},"tool":"axe","tier":3},
     {"id":"iron_pickaxe","name":"Picareta de ferro","station":"forge","minutes":45,"cost":{"plank":3,"iron_ingot":5},"tool":"pickaxe","tier":3},
-    {"id":"sword","name":"Forjar espada","station":"forge","minutes":35,"cost":{"plank":2,"iron_ingot":4},"tool":"sword","tier":1}
+    {"id":"sword","name":"Forjar espada","station":"forge","minutes":35,"cost":{"plank":2,"iron_ingot":4},"tool":"sword","tier":1},
+    {"id":"wedding_ring","name":"Forjar aliança","station":"forge","minutes":30,"cost":{"copper_ingot":2,"iron_ingot":1},"output":{"wedding_ring":1}}
   ]
 }
