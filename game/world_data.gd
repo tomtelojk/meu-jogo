@@ -1,7 +1,7 @@
 class_name WorldData
 extends RefCounted
 
-const TILE := 64.0
+const TILE := WorldGrid.CELL
 const COLS := 250
 const ROWS := 200
 const SIZE := Vector2(16000,12800)

@@ -8,11 +8,15 @@ var category:="walls"
 var last_minute:=0.0
 var preview_result:Dictionary={}
 var preview_key:=""
+var grid_guide:ConstructionGridGuide
 
 func setup(source:ForestGame)->void:
 	game=source;bind_world()
 
 func bind_world()->void:
+	if not is_instance_valid(grid_guide) or grid_guide.get_parent()!=game.world:
+		grid_guide=ConstructionGridGuide.new();game.world.add_child(grid_guide)
+	grid_guide.hide()
 	last_minute=game.world.clock.day*1440.0+game.world.clock.minute
 	if not game.world.clock.minute_changed.is_connected(_time_changed):game.world.clock.minute_changed.connect(_time_changed)
 
@@ -62,9 +66,10 @@ func show_catalog(which:String="walls")->void:
 		if definition.category!=category:continue
 		actions.append({"label":definition.name+"\n"+ConstructionCatalog.cost_text(definition.cost),"name":"piece_"+id,"callback":begin_piece.bind(id)})
 	actions.append({"label":"Casa completa por etapas","name":"house_kit","callback":game.start_building})
+	actions.append({"label":"Validar grid e modelos","name":"construction_audit","callback":show_audit.bind(0)})
 	if not game.rpg.construction.pieces.is_empty():actions.append({"label":"Minhas construções e moradores","callback":show_owned.bind(0)})
 	actions.append({"label":"Voltar à aventura","callback":game.close_dialog})
-	var body:="Encaixe as peças na grade. Pisos e coberturas podem compartilhar espaço com móveis e paredes.\n\n"+inventory_text()
+	var body:="Células de 1 m. Pivô no canto do chão. Paredes e portas encaixam nas bordas; pisos, móveis e estações ocupam células inteiras. T gira 90°. As linhas-guia mostram os encaixes e o ponto dourado marca o pivô.\n\n"+inventory_text()
 	if not game.rpg.tools.has("hammer"):body+="\nVocê precisa de um martelo. Compre na ferraria."
 	game._open_dialog("CONSTRUÇÃO · "+str(game.rpg.construction.pieces.size())+" PEÇAS","Construir",body,actions,"construction")
 	var tabs:=HBoxContainer.new();tabs.add_theme_constant_override("separation",4)
@@ -92,6 +97,8 @@ func begin_piece(kind:String)->void:
 	game.close_dialog();game.cancel_building()
 	if game.mode!="playing":return
 	selected=kind;turn=0;game.building_preview=true;game.player.active=false;game.world.set_population_active(false)
+	if game.hybrid!=null:game.hybrid.snap_camera()
+	else:game.camera.reset_smoothing()
 	preview_key=""
 	var focus:=game.get_viewport().gui_get_focus_owner()
 	if focus!=null:focus.release_focus()
@@ -99,15 +106,14 @@ func begin_piece(kind:String)->void:
 	update_preview()
 
 func candidate(point:Vector2)->Dictionary:
-	var at:=ConstructionCatalog.cell(point)
-	return {"kind":selected,"x":at.x,"y":at.y,"turn":turn,"open":false}
+	return ConstructionCatalog.snap(selected,point,turn)
 
 func can_place(kind:String,point:Vector2,rotation:int=0)->Dictionary:
 	if not point.is_finite() or point.distance_to(game.player.position)>500:return {"ok":false,"message":"Escolha um ponto perto de você."}
-	var at:=ConstructionCatalog.cell(point)
+	var entry:=ConstructionCatalog.snap(kind,point,rotation)
+	var at:=Vector2i(entry.x,entry.y)
 	var valid:=game.rpg.construction.validate(kind,at,rotation)
 	if not valid.ok:return valid
-	var entry:={"kind":kind,"x":at.x,"y":at.y,"turn":rotation,"open":false}
 	var definition:=ConstructionCatalog.piece(kind)
 	var rect:=ConstructionCatalog.footprint(entry)
 	# World solids include modular walls: use the immutable village footprints and
@@ -141,14 +147,48 @@ func can_place(kind:String,point:Vector2,rotation:int=0)->Dictionary:
 
 func invalid(message:String)->Dictionary:return {"ok":false,"message":message}
 
+func audit_report()->Dictionary:
+	var models:Dictionary=game.hybrid.landscape.piece_models if game.hybrid!=null else {}
+	return {"existing":ConstructionAudit.scan(game.rpg.construction.pieces,models,game.world.pieces),"assets":ConstructionAudit.assets(),"import_issues":game.rpg.construction.import_issues.duplicate(true),"map":MapDocument.current.id}
+
+func show_audit(page:int=0)->void:
+	var report:=audit_report();var issues:Array=report.existing.issues
+	var body:="Grid: %.1f m · pivô no canto do chão · giro de 90°\n%d peças verificadas · %d problemas encontrados\n%d modelos modulares fora do padrão\n"%[WorldGrid.CELL_SIZE,report.existing.checked,issues.size(),report.assets.outside_standard.size()]
+	if game.rpg.construction.migrated:body+="\nAs peças deste save vieram do grid antigo. IDs, vida, moradores e filas foram preservados. A leitura do arquivo original gera uma cópia .grid-v1.bak antes do salvamento.\n"
+	for issue in report.import_issues:body+="\nImportação · "+issue.id+" · "+issue.message
+	if issues.is_empty():body+="\nOs dados, os pivôs dos modelos carregados e os corpos físicos estão alinhados."
+	for issue in issues.slice(page*6,page*6+6):body+="\n\n"+issue.id+" · "+issue.message
+	var actions:Array[Dictionary]=[]
+	if page>0:actions.append({"label":"Página anterior","callback":show_audit.bind(page-1)})
+	if (page+1)*6<issues.size():actions.append({"label":"Próxima página","callback":show_audit.bind(page+1)})
+	actions.append({"label":"Medidas e modelos fora do padrão","name":"audit_models","callback":show_asset_audit})
+	actions.append({"label":"Exportar relatório JSON","name":"audit_export","callback":export_audit})
+	actions.append({"label":"Voltar à construção","callback":show_catalog.bind(category)})
+	game._open_dialog("AUDITORIA DA CONSTRUÇÃO","Verificar alinhamento",body,actions,"construction_audit")
+
+func show_asset_audit()->void:
+	var report:=ConstructionAudit.assets();var body:="MÓDULOS DO CATÁLOGO\n"
+	for row in report.modules:body+="%s · %.1f × %.1f m · %s\n"%[row.name,row.allocation_metres[0],row.allocation_metres[1],"conforme" if row.ok else "; ".join(row.errors)]
+	body+="\nPRÉDIOS COMPLETOS DO CENÁRIO\nNão são módulos de encaixe. Têm células fracionárias ou beirais e detalhes que excedem a área. Não devem ser usados como peças do catálogo:\n"
+	for row in report.environment_prefabs:
+		if row.fractional_size or row.oversized_mesh:body+="%s · terreno %.2f × %.2f m · mesh %.2f × %.2f m\n"%[row.id,row.size_metres[0],row.size_metres[1],row.mesh_size_metres[0],row.mesh_size_metres[2]]
+	game._open_dialog("MEDIDAS DOS ASSETS","Padrão de 1 metro",body,[{"label":"Voltar à validação","callback":show_audit.bind(0)}],"construction_assets")
+
+func export_audit()->void:
+	var path:String="user://reports/"+MapDocument.current.id+"-grid.json"
+	var error:=ConstructionAudit.write_report(path,audit_report())
+	game.hud.toast("Relatório salvo: "+ProjectSettings.globalize_path(path) if error==OK else "Não foi possível salvar o relatório.",8)
+
 func update_preview()->void:
 	if selected.is_empty():return
 	var point:=game.hybrid.world_position(game.get_viewport().get_mouse_position()) if game.hybrid!=null else game.get_global_mouse_position()
-	game.building_point=Vector2(ConstructionCatalog.cell(point))*ConstructionCatalog.GRID
-	var key:=selected+str(turn)+str(game.building_point)+str(game.rpg.construction.serial)+str(game.rpg.construction.pieces.size())+inventory_text()
+	var entry:=candidate(point)
+	game.building_point=point
+	var key:=selected+str(turn)+str(Vector2(entry.x,entry.y))+str(game.rpg.construction.serial)+str(game.rpg.construction.pieces.size())+inventory_text()
 	if key!=preview_key:
 		preview_key=key;preview_result=can_place(selected,game.building_point,turn)
-	if game.hybrid!=null:game.hybrid.preview_piece(candidate(game.building_point),preview_result.ok)
+	if game.hybrid!=null:game.hybrid.preview_piece(entry,preview_result.ok)
+	elif is_instance_valid(grid_guide):grid_guide.update_preview(entry,preview_result.ok)
 	game.hud.show_interaction(preview_result.message,game.hybrid.screen_position(game.player.position) if game.hybrid!=null else Vector2(640,400))
 	game.hud.interaction_label.text=preview_result.message
 	game.hud.controls.text="Clique · Construir    T · Girar    B · Catálogo    Esc / botão direito · Sair"
@@ -156,7 +196,7 @@ func update_preview()->void:
 func place(point:Vector2)->Dictionary:
 	var valid:=can_place(selected,point,turn)
 	if not valid.ok:game.hud.toast(valid.message);return valid
-	var result:=game.rpg.construction.place(game.rpg,selected,ConstructionCatalog.cell(point),turn)
+	var result:=game.rpg.construction.place(game.rpg,selected,Vector2i(candidate(point).x,candidate(point).y),turn)
 	if result.ok:
 		game.audio.impact(true);game.save_journey()
 		if game.building_preview:update_preview()

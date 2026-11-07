@@ -55,7 +55,7 @@ func update_piece(id:String)->void:
 	var entry:Dictionary=game.rpg.construction.pieces[id]
 	var coord:=Vector2i((ConstructionCatalog.footprint(entry).get_center()/WorldData.CHUNK).floor())
 	if not regions.has(coord):return
-	var model:=ConstructionVisual.new();model.setup_piece(entry);model.set_meta("coord",coord)
+	var model:=ConstructionVisual.new();model.setup_piece(entry,game.rpg.construction.joints);model.set_meta("coord",coord)
 	add_child(model);piece_models[id]=model
 
 func _ground(parent:Node3D,content:Dictionary)->void:
@@ -218,6 +218,8 @@ func update_house(id:String)->void:
 	var house:Dictionary=game.rpg.houses[id]
 	var node:=Node3D.new()
 	node.name=id
+	node.position=WorldGrid.point3(game.rpg.home_rect(house).position)
+	node.set_meta("grid_pivot","ground_corner")
 	add_child(node)
 	house_models[id]=node
 	if house.stage>=3:
@@ -225,6 +227,7 @@ func update_house(id:String)->void:
 		model.setup({"id":id,"name":id,"kind":"timber" if house.owner=="player" else "cottage","realm":KingdomData.realm_at(Vector2(house.x,house.y)),"tile":Vector2(house.x,house.y)/64,"size":Vector2(192,128)})
 		node.add_child(model)
 		_house_label(node,house)
+		_localize_house(node)
 		return
 	var parts:Array[Dictionary]=[]
 	var x:float=house.x/64
@@ -281,6 +284,11 @@ func update_house(id:String)->void:
 		face.material_override=house_front_material
 		node.add_child(face)
 	_house_label(node,house)
+	_localize_house(node)
+
+func _localize_house(node:Node3D)->void:
+	for child in node.get_children():
+		if child is Node3D:child.position-=node.position
 
 func _house_label(node:Node3D,house:Dictionary)->void:
 	var x:float=house.x/64

@@ -31,7 +31,8 @@ func setup(data: Dictionary) -> void:
 	var roof_color: Color=palette[1]
 	var wood: Color=palette[2]
 	var footprint := KingdomData.building_rect(data)
-	position=Vector3(footprint.get_center().x/64,0,footprint.get_center().y/64)
+	position=WorldGrid.point3(footprint.position)
+	set_meta("grid_pivot","ground_corner")
 	var w:=footprint.size.x/64
 	var d:=footprint.size.y/64
 	var tall: bool=building_kind in ["castle","tower","library"]
@@ -87,6 +88,7 @@ func setup(data: Dictionary) -> void:
 	var mesh:=MeshInstance3D.new()
 	visual_mesh=mesh
 	mesh.name="Architecture"
+	mesh.position=Vector3(w/2,0,d/2)
 	mesh.mesh=surface.commit()
 	mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	if shared_material==null:
@@ -102,10 +104,10 @@ func update_occlusion(camera:Camera3D,hero:Vector3,screen:Vector2,extent:Vector2
 	var wanted:=false
 	if global_position.distance_squared_to(hero)<14*14:
 		var box:=visual_mesh.get_aabb()
-		var rect:=Rect2(camera.unproject_position(global_transform*box.position),Vector2.ZERO)
+		var rect:=Rect2(camera.unproject_position(visual_mesh.global_transform*box.position),Vector2.ZERO)
 		for i in 8:
 			var corner:=box.position+box.size*Vector3(i&1,(i>>1)&1,(i>>2)&1)
-			rect=rect.expand(camera.unproject_position(global_transform*corner))
+			rect=rect.expand(camera.unproject_position(visual_mesh.global_transform*corner))
 		wanted=rect.intersects(Rect2(screen-extent,extent*2))
 	if faded==wanted:return
 	faded=wanted

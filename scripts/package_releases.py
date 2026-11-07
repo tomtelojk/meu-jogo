@@ -23,6 +23,8 @@ I: inventário, ferramentas e provisões
 J: objetivos e registros
 B: catálogo de construção | T: girar peça | Clique: construir
 Botão direito/Esc: sair da prévia | B na prévia: voltar ao catálogo
+Grid de 1 m, pivôs no canto do chão e paredes nas bordas.
+B > Validar grid e modelos: apontar desalinhamentos e exportar JSON.
 M: mapa do continente
 F2: Ateliê de Mundos — crie ou edite seu mapa
 Esc: pausa e gráficos (leve / HD-2D), shaders e clima
@@ -191,6 +193,14 @@ def package(system: str, output: Path) -> Path:
     shutil.copy2(ROOT / "docs" / "coleta-e-ferramentas.md", stage / "GUIA-DA-COLETA.md")
     shutil.copy2(ROOT / "docs" / "visual-hd2d.md", stage / "GUIA-DO-VISUAL.md")
     shutil.copy2(ROOT / "docs" / "construcao-e-fabricacao.md", stage / "GUIA-DA-CONSTRUCAO.md")
+    construction_guide = (stage / "GUIA-DA-CONSTRUCAO.md").read_text(encoding="utf-8")
+    (stage / "GUIA-DA-CONSTRUCAO.md").write_text(construction_guide.replace("(construcao-grid.md)", "(GUIA-DO-GRID.md)"), encoding="utf-8")
+    grid_guide = (ROOT / "docs" / "construcao-grid.md").read_text(encoding="utf-8")
+    (stage / "GUIA-DO-GRID.md").write_text(grid_guide.replace("(modelos-fora-grid.md)", "(MODELOS-FORA-DO-GRID.md)").replace("(../game/world_grid.gd)", "(https://github.com/tomtelojk/meu-jogo/blob/main/game/world_grid.gd)"), encoding="utf-8")
+    model_guide = (ROOT / "docs" / "modelos-fora-grid.md").read_text(encoding="utf-8")
+    (stage / "MODELOS-FORA-DO-GRID.md").write_text(model_guide.replace("(construcao-grid.md)", "(GUIA-DO-GRID.md)"), encoding="utf-8")
+    for name in ["grid-audit-before.json", "grid-audit.json", "grid-guias.png", "grid-cantos.png", "grid-validacao.png"]:
+        shutil.copy2(ROOT / "docs" / name, stage / name)
     shutil.copy2(ROOT / "docs" / "npcs-e-relacionamentos.md", stage / "GUIA-DOS-RELACIONAMENTOS.md")
     shutil.copy2(ROOT / "docs" / "faccoes-e-guildas.md", stage / "GUIA-DAS-FACCOES.md")
     for image_name in ["faccoes-reputacao.png", "faccoes-guilda.png", "faccoes-territorio.png", "faccoes-mapa.png", "faccoes-historia.png"]:

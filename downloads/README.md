@@ -2,6 +2,8 @@
 
 RPG de mundo aberto 2.5D para PC de 64 bits. Não é necessário instalar o Godot.
 
+**Construção com grid de 1 m:** pivôs no canto, paredes nas bordas, junções sem frestas, pisos e coberturas com medidas exatas e linhas-guia na prévia. **B → Validar grid e modelos** aponta desalinhamentos e exporta JSON. O ZIP inclui o guia e a lista dos modelos fora do padrão modular. Saves antigos com peças ganham cópia antes da migração. [Guia do grid](../docs/construcao-grid.md).
+
 Esta versão inclui **facções e três guildas**: reputação com consequências, ranks, contratos, uniformes, lojas e QGs. Os quatro postos mudam de administração com suas ações. Guardas, moradores e preços reagem; as cartas das Coroas têm três caminhos de história. Use **J → Facções, guildas e territórios**, ou **E nas bandeiras**. [Guia completo](../docs/faccoes-e-guildas.md).
 
 - [Windows — baixar ZIP](https://github.com/tomtelojk/meu-jogo/raw/refs/heads/main/downloads/EntreReinos-Windows.zip)

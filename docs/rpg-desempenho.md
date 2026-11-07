@@ -6,9 +6,9 @@ Mundo com 16.000 × 12.800 unidades, 126 construções e 44 NPCs. No máximo 25 
 
 | Local | FPS mediano | Quadro mediano | P95 | Chamadas visíveis |
 | --- | ---: | ---: | ---: | ---: |
-| Capital | 35.5 | 28.2 ms | 48.0 ms | 79 |
-| Ferraria | 35.1 | 28.5 ms | 35.2 ms | 81 |
-| Ponte | 32.4 | 30.9 ms | 37.4 ms | 86 |
+| Capital | 36.0 | 27.8 ms | 34.1 ms | 85 |
+| Ferraria | 34.4 | 29.1 ms | 34.0 ms | 86 |
+| Ponte | 29.0 | 34.5 ms | 44.5 ms | 89 |
 
 [Dados completos](rpg-desempenho.json). O monitor `cpu_ms` vem de `Performance.TIME_PROCESS` e inclui espera do driver, portanto não deve ser interpretado como custo puro de CPU. As chamadas vêm do viewport principal.
 
@@ -45,4 +45,8 @@ As facções acrescentam **103 verificações sem renderização e 105 gráficas
 
 O executável Linux com facções também foi controlado por teclado, em perfil separado. J/Tab/Enter abriu o QG, a filiação consumiu 20 moedas, um contrato retirou quatro tábuas e pagou 18 moedas, 20 méritos e +4 reputação. Bento recebeu as tábuas, e o uniforme foi equipado. Uma segunda execução preservou filiação, méritos, roupa, inventário e reputação, sem repetir recompensa. Ambas encerraram com código 0, sem erros de script ou shader. Os JSONs de facções, relações e receitas estão embutidos nos dois executáveis. Windows foi exportado e seu pacote verificado, sem execução nativa disponível.
 
-A cobertura atual soma **1.231 verificações**, incluindo as execuções sem renderização e gráficas. Todas passaram. As medições de desempenho acima foram registradas na etapa de construção, com somente um processo Godot e sem exportação ou empacotamento concorrentes. Os números medem as três posições do mundo original; o custo de um assentamento depende da quantidade e da disposição das peças.
+O grid acrescenta **119 verificações sem renderização e 121 gráficas**: pivôs e giros dos 12 meshes, limites de móveis girados, tolerância do cursor sem ampliar ocupação física, medidas de pisos/coberturas, bordas opostas duplicadas, junções em L/T/cruz com um único poste, colisores sem interseção de área e raios nos triângulos reais dos cantos. Inclui migração idempotente preservando IDs, vida e filas, relatório JSON, consulta de todos os dados, detecção de modelos e colisores deslocados, quarto fechado/aberto e travessia física do NPC. A visibilidade das guias é medida comparando pixels nas linhas projetadas. O utilitário CLI retorna 0 para dados conformes e 1 para a peça fracionária esperada.
+
+No executável Linux com o novo grid, um perfil separado abriu um save antigo com bancada girada e fila parcial. A cópia `.grid-v1.bak` manteve os bytes originais; a bancada migrou para o canto sem perder ID, vida ou produção. B/Enter e um clique construíram uma parede, descontando exatamente cinco madeiras. B/Tab/Enter abriu a auditoria e exportou um JSON das duas peças sem problemas. Uma nova execução preservou posições, vida e IDs, sem repetir migração ou duplicar materiais da fila. Ambas terminaram com código 0, sem erros de script ou shader. Windows foi exportado e seu pacote é verificado, sem execução nativa disponível.
+
+A cobertura atual soma **1.471 verificações**, incluindo as execuções sem renderização e gráficas. Todas passaram. As medições acima foram refeitas depois da padronização do grid, com somente um processo Godot e sem exportação ou empacotamento concorrentes. A navegação amostra 0,5 m para representar bordas e portas, enquanto a construção mantém células de 1 m. Os números medem as três posições do mundo original; o custo de um assentamento depende da quantidade e da disposição das peças.

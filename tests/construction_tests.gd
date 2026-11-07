@@ -61,7 +61,7 @@ func run()->void:
 	verify(build.place(state,"wood_floor",Vector2i(100,100)).ok and build.place(state,"roof",Vector2i(100,100)).ok,"chão e cobertura compartilham célula com a parede")
 	var bed:=build.place(state,"bed",Vector2i(103,100),1)
 	verify(bed.ok and ConstructionCatalog.footprint(build.pieces[bed.id]).size==Vector2(128,64),"rotação gira a área ocupada por móveis com duas células")
-	verify(not build.place(state,"table",Vector2i(104,100)).ok,"segunda célula de uma cama também impede sobreposição")
+	verify(not build.place(state,"table",Vector2i(102,100)).ok,"segunda célula de uma cama também impede sobreposição")
 	var damage:=build.damage(state,wall.id,60)
 	verify(damage.ok and not damage.destroyed and build.pieces[wall.id].hp==60,"dano preserva a estrutura enquanto há vida")
 	before=state.wood
@@ -141,7 +141,7 @@ func integration()->void:
 	var point:=Vector2(8128,6400)
 	if graphics:
 		game.hybrid.snap_camera()
-		var screen:=game.hybrid.camera.unproject_position(game.hybrid._point(point));Input.warp_mouse(screen);await frames(4)
+		var screen:=game.hybrid.camera.unproject_position(game.hybrid._point(point+Vector2.ONE*WorldGrid.CELL/2));Input.warp_mouse(screen);await frames(4)
 		verify(game.hybrid.piece_ghost.visible and game.hybrid.build_grid.visible and game.hybrid.piece_ghost.visual_mesh.material_override.albedo_color.g>0.8,"fantasma válido e grade são desenhados em verde")
 		await capture("previa-verde");await click(screen)
 	else:game.construction.place(point)
@@ -162,25 +162,25 @@ func integration()->void:
 	verify(bed.ok,"móvel de duas células é construído no mundo")
 	game.cancel_building()
 	game.rpg.construction.place(game.rpg,"wood_floor",Vector2i(127,100))
-	verify(is_equal_approx(game.world.floor_height(Vector2(8128,6400)),0.07),"piso registra sua altura para apoiar personagens e sombras")
+	verify(is_equal_approx(game.world.floor_height(Vector2(8128,6400)),WorldGrid.FLOOR_HEIGHT),"piso registra sua altura para apoiar personagens e sombras")
 	if graphics:
 		game.rpg.construction.place(game.rpg,"wood_floor",Vector2i(125,100));game.player.position=Vector2(8000,6400)
 		game.hybrid.set_light_graphics(false);await frames(3)
 		var shadow:Sprite3D
 		for actor in game.hybrid.actors:
 			if actor.body==game.player and actor.has("shadow"):shadow=actor.shadow
-		verify(shadow!=null and shadow.visible and shadow.position.y>0.07 and game.hybrid._body_height(game.player)>=0.07,"modo HD-2D mantém personagem e sombra acima do piso construído")
+		verify(shadow!=null and shadow.visible and shadow.position.y>WorldGrid.FLOOR_HEIGHT and game.hybrid._body_height(game.player)>=WorldGrid.FLOOR_HEIGHT,"modo HD-2D mantém personagem e sombra acima do piso construído")
 		game.hybrid.set_light_graphics(true)
 	game.rpg.construction.place(game.rpg,"wood_wall",Vector2i(124,98))
 	var door:=game.rpg.construction.place(game.rpg,"door",Vector2i(126,98))
 	await frames(3)
-	var closed_point:=Vector2(126,98)*64
-	verify(not WorldData.can_stand(closed_point,game.world.data,10) and game.world.navigator.is_point_solid(Vector2i(126,98)),"parede da porta atualiza colisão e navegação")
+	var closed_point:=ConstructionCatalog.footprint(game.rpg.construction.pieces[door.id]).get_center()
+	verify(not WorldData.can_stand(closed_point,game.world.data,10) and game.world.navigator.is_point_solid(Vector2i((closed_point/game.world.navigator.cell_size).round())),"parede da porta atualiza colisão e navegação")
 	game.player.position=closed_point+Vector2(0,64)
 	var transform:=game.player.transform
 	verify(game.player.test_move(transform,Vector2(0,-128)),"corpo físico do jogador encontra a porta fechada")
 	game.construction.toggle_door(door.id);game.close_dialog();await frames(3)
-	verify(WorldData.can_stand(closed_point,game.world.data,10) and not game.world.navigator.is_point_solid(Vector2i(126,98)) and not game.player.test_move(transform,Vector2(0,-128)),"abrir porta libera física, terreno e rota")
+	verify(WorldData.can_stand(closed_point,game.world.data,10) and not game.world.navigator.is_point_solid(Vector2i((closed_point/game.world.navigator.cell_size).round())) and not game.player.test_move(transform,Vector2(0,-128)),"abrir porta libera física, terreno e rota")
 	game.player.position=closed_point;game.construction.toggle_door(door.id)
 	verify(game.rpg.construction.pieces[door.id].open,"porta não fecha prendendo o jogador")
 	game.player.position=point+Vector2(0,64);await frames(3)

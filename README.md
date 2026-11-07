@@ -78,6 +78,8 @@ Venda materiais ou entregue encomendas de 15 madeira e oito pedra por 80 moedas 
 
 **B** abre a construção modular: **12 peças** em paredes/cobertura, chão, móveis e estações. Cada peça mostra seu custo e encaixa em uma grade com fantasma verde/vermelho. **T** gira; clique constrói; **B** volta ao catálogo; **Esc/botão direito** sai da prévia. Pisos e coberturas podem compartilhar espaço com objetos, e as portas têm passagem física ao abrir.
 
+O grid tem **1 m**, pivôs no canto do chão e paredes nas bordas. Cantos em L, T e cruz compartilham uma única junção, sem frestas ou sobreposição; pisos e coberturas têm medidas exatas. Linhas-guia mostram os encaixes durante a construção. **B → Validar grid e modelos** identifica IDs desalinhados, mede os assets e exporta JSON. Saves anteriores ganham cópia antes da migração. [Grid e validação](docs/construcao-grid.md) · [Modelos fora do padrão modular](docs/modelos-fora-grid.md).
+
 A **bancada** fabrica tábuas, blocos e ferramentas de pedra; a **forja** funde minérios e fabrica ferramentas de ferro e alianças. Onze receitas em JSON alimentam filas pagas na entrada, com progresso e cancelamento. Use **E** para produzir, reparar, designar moradores/trabalhadores ou desmontar. Camas livres permitem descansar, salvar e definir um ponto de retorno; trabalhadores presentes aceleram sua estação em 25% durante o próprio turno.
 
 Vida, peças, orientação, portas, inventário processado, designações e filas são salvos por mapa. Javalis podem danificar estruturas que bloqueiam a perseguição; estações muito danificadas precisam de reparo. Modelos acompanham as regiões carregadas, e a grama deixa livre o espaço das construções.
@@ -205,6 +207,8 @@ Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambien
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/relationship_tests.gd -- --test --hybrid
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/faction_tests.gd -- --test
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/faction_tests.gd -- --test --hybrid
+./scripts/godot.sh --headless --script res://tests/grid_tests.gd -- --test
+./scripts/godot.sh --audio-driver Dummy --script res://tests/grid_tests.gd -- --test --hybrid
 ```
 
 A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.

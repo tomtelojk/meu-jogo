@@ -47,10 +47,12 @@ func run()->void:
 	guard.apply_schedule(10*60,true);guard.active=true
 	var start:=guard.position
 	var visited:Dictionary={}
+	var patrol_stops:Dictionary={}
 	for i in 320:
 		guard.advance_offscreen(0.25);guard.update_brain(0.25,[],[])
 		visited[Vector2i(guard.position/64)]=true
-	verify(visited.size()>6 and guard.current_schedule.loop and guard.stop_index>0,"guarda percorre uma patrulha real entre ponte e posto")
+		patrol_stops[guard.stop_index]=true
+	verify(visited.size()>6 and guard.current_schedule.loop and patrol_stops.size()>1,"guarda percorre uma patrulha real entre ponte e posto")
 	game.player.position=KingdomData.point("guard_post");game.world.ensure_region(game.player.position,true)
 	game.world.set_population_active(false);guard.active=true
 	guard.apply_schedule(10*60,true);guard.waiting=0;guard._next_task();start=guard.position

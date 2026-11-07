@@ -115,14 +115,14 @@ func _build_settlements()->void:
 
 func _build_population()->void:
 	navigator=AStarGrid2D.new()
-	navigator.region=Rect2i(0,0,WorldData.COLS,WorldData.ROWS)
-	navigator.cell_size=Vector2.ONE*64
+	navigator.region=Rect2i(Vector2i.ZERO,Vector2i(WorldData.SIZE/WorldGrid.NAVIGATION_STEP))
+	navigator.cell_size=Vector2.ONE*WorldGrid.NAVIGATION_STEP
 	navigator.diagonal_mode=AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	navigator.update()
 	var clearance_samples:Array[Vector2]=[Vector2.ZERO,Vector2(11,0),Vector2(-11,0),Vector2(0,11),Vector2(0,-11)]
-	for y in WorldData.ROWS:
-		for x in WorldData.COLS:
-			var point:=Vector2(x,y)*64
+	for y in navigator.region.size.y:
+		for x in navigator.region.size.x:
+			var point:=Vector2(x,y)*WorldGrid.NAVIGATION_STEP
 			var water:=false
 			for offset in clearance_samples:
 				if WorldData.is_water(point+offset):water=true;break
@@ -132,7 +132,7 @@ func _build_population()->void:
 		for i in range(1,path.size()):
 			var steps:=maxi(1,ceili(path[i].distance_to(path[i-1])/32))
 			for step in steps+1:
-				var cell:=Vector2i((path[i-1].lerp(path[i],float(step)/steps)/64).round())
+				var cell:=Vector2i((path[i-1].lerp(path[i],float(step)/steps)/WorldGrid.NAVIGATION_STEP).round())
 				if navigator.is_in_boundsv(cell):navigator.set_point_weight_scale(cell,0.65)
 	clock=WorldClock.new()
 	add_child(clock)
@@ -275,12 +275,20 @@ func _reindex_active()->void:
 	nav_resource_cells={}
 	for obstacle in data.colliders:
 		if not obstacle.get("active",true):continue
-		var cell:=Vector2i((obstacle.position/64).round())
-		if navigator.is_in_boundsv(cell):nav_resource_cells[cell]=true
+		for cell in _resource_navigation_cells(obstacle):nav_resource_cells[cell]=true
 	var static_data:={"solid_grid":data.solid_grid,"collision_grid":{}}
 	for cell in previous:
-		if navigator.is_in_boundsv(cell):navigator.set_point_solid(cell,not WorldData.can_stand(Vector2(cell)*64,static_data,11))
+		if navigator.is_in_boundsv(cell):navigator.set_point_solid(cell,not WorldData.can_stand(Vector2(cell)*WorldGrid.NAVIGATION_STEP,static_data,11))
 	for cell in nav_resource_cells:navigator.set_point_solid(cell,true)
+
+func _resource_navigation_cells(obstacle:Dictionary)->Array[Vector2i]:
+	var result:Array[Vector2i]=[];var reach:float=float(obstacle.radius)+11.0
+	var minimum:=Vector2i(((obstacle.position-Vector2.ONE*reach)/WorldGrid.NAVIGATION_STEP).floor());var maximum:=Vector2i(((obstacle.position+Vector2.ONE*reach)/WorldGrid.NAVIGATION_STEP).ceil())
+	for y in range(minimum.y,maximum.y+1):
+		for x in range(minimum.x,maximum.x+1):
+			var cell:=Vector2i(x,y)
+			if navigator.is_in_boundsv(cell) and (Vector2(cell)*WorldGrid.NAVIGATION_STEP).distance_to(obstacle.position)<reach:result.append(cell)
+	return result
 
 func _add_tree(resource:Dictionary,parent:Node2D,mother:bool=false)->Dictionary:
 	var body:=StaticBody2D.new()
@@ -344,10 +352,13 @@ func _deplete_resource(id:String)->void:
 		if child is Area2D:child.set_deferred("monitorable",false)
 	resource_removed.emit(id)
 	WorldData.index_obstacles(data)
-	var cell:=Vector2i((entry.resource.position/64).round())
-	nav_resource_cells.erase(cell)
-	for obstacle in data.colliders:
-		if obstacle.get("active",true) and Vector2i((obstacle.position/64).round())==cell:nav_resource_cells[cell]=true;break
+	for cell in _resource_navigation_cells(entry.resource):
+		nav_resource_cells.erase(cell)
+		var point:=Vector2(cell)*WorldGrid.NAVIGATION_STEP;var bucket:=Vector2i((point/128).floor())
+		for y in range(-1,2):
+			for x in range(-1,2):
+				for obstacle in data.collision_grid.get(bucket+Vector2i(x,y),[]):
+					if obstacle.get("active",true) and point.distance_to(obstacle.position)<float(obstacle.radius)+11:nav_resource_cells[cell]=true
 	_refresh_navigation_rect(Rect2(entry.resource.position-Vector2(64,64),Vector2(128,128)))
 
 func refresh_rpg()->void:
@@ -413,40 +424,51 @@ func _rebuild_solids()->void:
 		if built.stage>0:data.solid_rects.append(rpg.home_rect(built))
 	for entry in rpg.construction.pieces.values():
 		var definition:=ConstructionCatalog.piece(entry.kind)
-		if definition.layer=="floor":floor_cells[Vector2i(entry.x,entry.y)]=float(definition.height)
-		var rect:=ConstructionCatalog.collision(entry)
-		if rect.has_area():data.solid_rects.append(rect)
+		if definition.layer=="floor":floor_cells[WorldGrid.cell_at(ConstructionCatalog.footprint(entry).get_center())]=float(definition.height)
+		data.solid_rects.append_array(ConstructionCatalog.collision_parts(entry,rpg.construction.joints))
 	WorldData.reindex_solids(data)
 
 func floor_height(point:Vector2)->float:return float(floor_cells.get(ConstructionCatalog.cell(point),0.0))
 
 func sync_piece(id:String)->void:
-	var old_rect:=Rect2()
-	if pieces.has(id):
-		old_rect=pieces[id].get_meta("footprint",Rect2())
-		pieces[id].queue_free();pieces.erase(id)
-	if piece_areas.has(id):piece_areas[id].queue_free();piece_areas.erase(id)
-	if rpg.construction.pieces.has(id):
-		var entry:Dictionary=rpg.construction.pieces[id]
-		var rect:=ConstructionCatalog.collision(entry)
-		var node:=StaticBody2D.new();node.collision_layer=WorldData.SOLID_LAYER;node.collision_mask=0
-		node.set_meta("piece_id",id);node.set_meta("footprint",ConstructionCatalog.footprint(entry))
-		if rect.has_area():
-			var shape:=CollisionShape2D.new();var box:=RectangleShape2D.new();box.size=rect.size;shape.shape=box;shape.position=rect.get_center();node.add_child(shape)
-		add_child(node);pieces[id]=node
-		var area:=_interaction_area(ConstructionCatalog.footprint(entry).get_center(),112)
-		area.set_meta("interaction",{"kind":"piece","id":id,"name":ConstructionCatalog.piece(entry.kind).name,"range":112.0})
-		add_child(area);piece_areas[id]=area
+	var affected:Dictionary={id:true};var nodes:Array=[];var old_rects:Array[Rect2]=[]
+	if pieces.has(id):nodes.append_array(pieces[id].get_meta("grid_nodes",[]))
+	if rpg.construction.pieces.has(id) and ConstructionCatalog.is_edge(rpg.construction.pieces[id].kind):nodes.append_array(WorldGrid.edge_points(rpg.construction.pieces[id]))
+	if not refreshing_construction and not nodes.is_empty():
+		for other in rpg.construction.pieces:
+			var entry:Dictionary=rpg.construction.pieces[other]
+			if not ConstructionCatalog.is_edge(entry.kind):continue
+			for point in WorldGrid.edge_points(entry):
+				if point in nodes:affected[other]=true
+	for key in affected:
+		if pieces.has(key):old_rects.append(pieces[key].get_meta("footprint",Rect2()))
+		_sync_piece_body(key)
 	if not refreshing_construction:
 		_rebuild_solids()
-		if old_rect.has_area():_refresh_navigation_rect(old_rect)
-		if rpg.construction.pieces.has(id):_refresh_navigation_rect(ConstructionCatalog.footprint(rpg.construction.pieces[id]))
+		for rect in old_rects:_refresh_navigation_rect(rect)
+		for key in affected:
+			if rpg.construction.pieces.has(key):_refresh_navigation_rect(ConstructionCatalog.footprint(rpg.construction.pieces[key]))
 		apply_assignments()
-	# Replan nearby routes when a wall or door changes the available passage.
-	for npc in ([] if refreshing_construction else npcs.values()):
-		var rect:Rect2=ConstructionCatalog.footprint(rpg.construction.pieces[id]) if rpg.construction.pieces.has(id) else old_rect
-		if rect.grow(256).has_point(npc.position):npc.plan_route()
-	piece_updated.emit(id)
+		for npc in npcs.values():
+			for key in affected:
+				var rect:Rect2=ConstructionCatalog.footprint(rpg.construction.pieces[key]) if rpg.construction.pieces.has(key) else (old_rects[0] if not old_rects.is_empty() else Rect2())
+				if rect.grow(256).has_point(npc.position):npc.plan_route();break
+	for key in affected:piece_updated.emit(key)
+
+func _sync_piece_body(id:String)->void:
+	if pieces.has(id):pieces[id].queue_free();pieces.erase(id)
+	if piece_areas.has(id):piece_areas[id].queue_free();piece_areas.erase(id)
+	if not rpg.construction.pieces.has(id):return
+	var entry:Dictionary=rpg.construction.pieces[id]
+	var node:=StaticBody2D.new();node.position=ConstructionCatalog.pivot(entry);node.collision_layer=WorldData.SOLID_LAYER;node.collision_mask=0
+	node.set_meta("piece_id",id);node.set_meta("footprint",ConstructionCatalog.footprint(entry))
+	node.set_meta("grid_nodes",WorldGrid.edge_points(entry) if ConstructionCatalog.is_edge(entry.kind) else [])
+	for rect in ConstructionCatalog.collision_parts(entry,rpg.construction.joints):
+		var shape:=CollisionShape2D.new();var box:=RectangleShape2D.new();box.size=rect.size;shape.shape=box;shape.position=rect.get_center()-node.position;node.add_child(shape)
+	add_child(node);pieces[id]=node
+	var area:=_interaction_area(ConstructionCatalog.footprint(entry).get_center(),112)
+	area.set_meta("interaction",{"kind":"piece","id":id,"name":ConstructionCatalog.piece(entry.kind).name,"range":112.0})
+	add_child(area);piece_areas[id]=area
 
 func apply_assignments()->void:
 	for id in npcs:
@@ -470,10 +492,10 @@ func apply_assignments()->void:
 func _refresh_navigation_rect(rect:Rect2)->void:
 	if navigator==null:return
 	var static_data:={"solid_grid":data.solid_grid,"collision_grid":{}}
-	for y in range(floori(rect.position.y/64)-1,ceili(rect.end.y/64)+2):
-		for x in range(floori(rect.position.x/64)-1,ceili(rect.end.x/64)+2):
+	for y in range(floori(rect.position.y/WorldGrid.NAVIGATION_STEP)-1,ceili(rect.end.y/WorldGrid.NAVIGATION_STEP)+2):
+		for x in range(floori(rect.position.x/WorldGrid.NAVIGATION_STEP)-1,ceili(rect.end.x/WorldGrid.NAVIGATION_STEP)+2):
 			var cell:=Vector2i(x,y)
-			if navigator.is_in_boundsv(cell):navigator.set_point_solid(cell,nav_resource_cells.has(cell) or not WorldData.can_stand(Vector2(cell)*64,static_data,11))
+			if navigator.is_in_boundsv(cell):navigator.set_point_solid(cell,nav_resource_cells.has(cell) or not WorldData.can_stand(Vector2(cell)*WorldGrid.NAVIGATION_STEP,static_data,11))
 
 func _build_water_collisions()->void:
 	var water:=StaticBody2D.new()

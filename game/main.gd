@@ -601,6 +601,7 @@ func apply_journey(data: Dictionary) -> bool:
 	for npc in world.npcs.values():npc.companion_mode=false;npc.follow_target=Vector2(INF,INF)
 	for coord in world.chunks.keys():world._unload_chunk(coord)
 	world.refresh_rpg()
+	if rpg.construction.migrated:player.position=world.safe_position(player.position)
 	world.ensure_region(player.position,true)
 	if not WorldData.can_stand(player.position,world.data,10,true):
 		player.position=MapDocument.spawn_point()
@@ -652,6 +653,12 @@ func _load_journey() -> void:
 	if not FileAccess.file_exists(save_path):
 		return
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(save_path))
+	if parsed is Dictionary:
+		var building_data:Variant=ConstructionAudit.unwrap(parsed)
+		if building_data is Dictionary and building_data.get("pieces") is Dictionary and not building_data.pieces.is_empty() and (not ResourceProgress.number(building_data.get("grid_version",1)) or int(building_data.get("grid_version",1))<WorldGrid.VERSION):
+			var backup:=save_path+".grid-v1.bak"
+			if not FileAccess.file_exists(backup) and DirAccess.copy_absolute(ProjectSettings.globalize_path(save_path),ProjectSettings.globalize_path(backup))!=OK:
+				persistence=false;hud.toast("Não foi possível guardar a cópia do grid antigo. A aventura continuará sem sobrescrever seu save.",8)
 	if parsed is Dictionary and apply_journey(parsed):
 		hud.set_started(true)
 
@@ -834,6 +841,7 @@ func show_journal()->void:
 	_open_dialog("REGISTROS DO AVENTUREIRO","Um mundo para descobrir",body,actions,"journal")
 
 func can_build_at(point:Vector2)->Dictionary:
+	point=RPGState.snap_home(point)
 	if not point.is_finite() or point.distance_to(player.position)>500:return {"ok":false,"message":"Escolha um terreno perto de você."}
 	var rect:=Rect2(point-Vector2(96,128),Vector2(192,128))
 	for entry in rpg.construction.pieces.values():
@@ -865,7 +873,7 @@ func start_building()->void:
 
 func _update_build_preview()->void:
 	if construction!=null and not construction.selected.is_empty():construction.update_preview();return
-	building_point=hybrid.world_position(get_viewport().get_mouse_position()).snapped(Vector2.ONE*16) if hybrid!=null else player.position+Vector2(192,192)
+	building_point=RPGState.snap_home(hybrid.world_position(get_viewport().get_mouse_position()) if hybrid!=null else player.position+Vector2(192,192))
 	var result:=can_build_at(building_point)
 	if hybrid!=null:hybrid.preview_house(building_point,result.ok and rpg.gold>=20)
 	hud.show_interaction(result.message,hybrid.screen_position(player.position) if hybrid!=null else Vector2(640,400))
@@ -874,6 +882,7 @@ func _update_build_preview()->void:
 
 func cancel_building()->void:
 	if hybrid!=null:hybrid.cancel_preview()
+	if construction!=null and is_instance_valid(construction.grid_guide):construction.grid_guide.hide()
 	if construction!=null:construction.selected=""
 	if not building_preview:return
 	building_preview=false
@@ -881,6 +890,7 @@ func cancel_building()->void:
 	world.set_population_active(mode=="playing")
 
 func place_house(point:Vector2)->Dictionary:
+	point=RPGState.snap_home(point)
 	var valid:=can_build_at(point)
 	if not valid.ok:hud.toast(valid.message);return valid
 	var result:=rpg.claim(point)

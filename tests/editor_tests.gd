@@ -122,7 +122,7 @@ func run()->void:
 	verify(game.world.resources.size()==1,"mapa vazio usa apenas os recursos colocados pelo autor")
 	verify(not WorldData.can_stand(Vector2(7872,6096),game.world.data),"parede da casa criada impede passagem")
 	verify(WorldData.is_water(Vector2(8224,6496)) and not WorldData.is_water(Vector2(8000,6400)),"lago pintado e terra vizinha têm estados físicos distintos")
-	verify(game.world.navigator.is_point_solid(Vector2i(128,99)),"navegação dos NPCs evita o lago pintado")
+	verify(game.world.navigator.is_point_solid(Vector2i(Vector2(128,99)*WorldGrid.CELL/WorldGrid.NAVIGATION_STEP)),"navegação dos NPCs evita o lago pintado")
 	verify(not WorldData.is_water(Vector2(8224,6432)) and WorldData.bridge_height(Vector2(8224,6432))==52,"ponte criada tem tabuleiro elevado para atravessar o lago")
 	var query:=PhysicsPointQueryParameters2D.new();query.position=Vector2(8224,6432);query.collision_mask=WorldData.WATER_LAYER
 	verify(game.world.get_world_2d().direct_space_state.intersect_point(query).is_empty(),"colisão real da água deixa o tabuleiro da ponte livre")

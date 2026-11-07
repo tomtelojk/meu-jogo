@@ -10,7 +10,9 @@ O fantasma **verde** indica uma posição válida; o **vermelho** explica o impe
 
 Pisos, objetos e coberturas usam camadas diferentes: é possível colocar uma cama ou parede sobre um piso e adicionar cobertura acima. Objetos da mesma camada não se sobrepõem. Portas abrem e fecham pelo menu **E**; uma porta não fecha enquanto alguém ocupa a passagem.
 
-A grade tem células de 64 unidades. As peças precisam estar a até 500 unidades do personagem, em terra firme, fora de ruas, pontes, rios, recursos vivos, edifícios e lotes dos moradores. Personagens e animais também bloqueiam a colocação de peças sólidas. Uma bancada ou cama precisa ter acesso livre na frente; gire com T se necessário.
+A grade tem células de **1 m** (64 unidades da simulação), com pivôs no canto do chão. Paredes e portas encaixam nas bordas; os demais módulos ocupam células inteiras. Linhas-guia e o marcador do pivô aparecem na prévia. As peças precisam estar a até 500 unidades do personagem, em terra firme, fora de ruas, pontes, rios, recursos vivos, edifícios e lotes dos moradores. Personagens e animais também bloqueiam a colocação de peças sólidas. Uma bancada ou cama precisa ter acesso livre na frente; gire com T se necessário.
+
+**B → Validar grid e modelos** percorre seu assentamento, aponta peças desalinhadas e exporta um relatório JSON. [Guia do grid, migração e auditoria dos modelos](construcao-grid.md).
 
 ![Prévia válida na grade](construcao-previa.png)
 

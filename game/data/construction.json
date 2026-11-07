@@ -1,17 +1,18 @@
 {
+  "grid_version": 2,
   "pieces": [
-    {"id":"wood_wall","name":"Parede de madeira","category":"walls","size":[1,1],"collision":[64,12],"height":1.65,"hp":120,"cost":{"wood":5},"layer":"object"},
-    {"id":"stone_wall","name":"Parede de pedra","category":"walls","size":[1,1],"collision":[64,16],"height":1.75,"hp":260,"cost":{"stone":8},"layer":"object"},
-    {"id":"door","name":"Porta de madeira","category":"walls","size":[1,1],"collision":[64,12],"height":1.7,"hp":100,"cost":{"wood":6,"plank":1},"layer":"object"},
-    {"id":"roof","name":"Cobertura de madeira","category":"walls","size":[1,1],"collision":[0,0],"height":2.05,"hp":110,"cost":{"wood":3,"plank":1},"layer":"roof"},
-    {"id":"wood_floor","name":"Piso de tábuas","category":"floors","size":[1,1],"collision":[0,0],"height":0.07,"hp":100,"cost":{"wood":3},"layer":"floor"},
-    {"id":"stone_floor","name":"Piso de pedra","category":"floors","size":[1,1],"collision":[0,0],"height":0.06,"hp":180,"cost":{"stone":4},"layer":"floor"},
-    {"id":"bed","name":"Cama","category":"furniture","size":[1,2],"collision":[46,104],"height":0.65,"hp":90,"cost":{"wood":8,"plank":2},"layer":"object","home":true},
-    {"id":"table","name":"Mesa","category":"furniture","size":[1,1],"collision":[46,46],"height":0.8,"hp":80,"cost":{"wood":4,"plank":1},"layer":"object"},
-    {"id":"bench","name":"Banco","category":"furniture","size":[1,1],"collision":[50,22],"height":0.45,"hp":65,"cost":{"wood":3},"layer":"object"},
-    {"id":"torch","name":"Tocha de jardim","category":"furniture","size":[1,1],"collision":[12,12],"height":1.15,"hp":60,"cost":{"wood":2,"copper":1},"layer":"object","light":true},
-    {"id":"workbench","name":"Bancada de carpintaria","category":"stations","size":[1,1],"collision":[52,36],"height":0.9,"hp":140,"cost":{"wood":10,"stone":4},"layer":"object","station":"workbench"},
-    {"id":"forge","name":"Forja","category":"stations","size":[2,1],"collision":[104,46],"height":1.45,"hp":280,"cost":{"stone":18,"plank":4,"copper":2},"layer":"object","station":"forge","light":true}
+    {"id":"wood_wall","name":"Parede de madeira","category":"walls","size":[1,1],"collision":[64,16],"height":2.0,"hp":120,"cost":{"wood":5},"layer":"edge","pivot":"ground_corner","snap":"edge"},
+    {"id":"stone_wall","name":"Parede de pedra","category":"walls","size":[1,1],"collision":[64,16],"height":2.0,"hp":260,"cost":{"stone":8},"layer":"edge","pivot":"ground_corner","snap":"edge"},
+    {"id":"door","name":"Porta de madeira","category":"walls","size":[1,1],"collision":[64,16],"height":2.0,"hp":100,"cost":{"wood":6,"plank":1},"layer":"edge","pivot":"ground_corner","snap":"edge"},
+    {"id":"roof","name":"Cobertura de madeira","category":"walls","size":[1,1],"collision":[0,0],"height":2.12,"hp":110,"cost":{"wood":3,"plank":1},"layer":"roof","pivot":"ground_corner","snap":"cell"},
+    {"id":"wood_floor","name":"Piso de tábuas","category":"floors","size":[1,1],"collision":[0,0],"height":0.08,"hp":100,"cost":{"wood":3},"layer":"floor","pivot":"ground_corner","snap":"cell"},
+    {"id":"stone_floor","name":"Piso de pedra","category":"floors","size":[1,1],"collision":[0,0],"height":0.08,"hp":180,"cost":{"stone":4},"layer":"floor","pivot":"ground_corner","snap":"cell"},
+    {"id":"bed","name":"Cama","category":"furniture","size":[1,2],"collision":[46,104],"height":0.65,"hp":90,"cost":{"wood":8,"plank":2},"layer":"object","home":true,"pivot":"ground_corner","snap":"cell"},
+    {"id":"table","name":"Mesa","category":"furniture","size":[1,1],"collision":[46,46],"height":0.83,"hp":80,"cost":{"wood":4,"plank":1},"layer":"object","pivot":"ground_corner","snap":"cell"},
+    {"id":"bench","name":"Banco","category":"furniture","size":[1,1],"collision":[50,22],"height":0.455,"hp":65,"cost":{"wood":3},"layer":"object","pivot":"ground_corner","snap":"cell"},
+    {"id":"torch","name":"Tocha de jardim","category":"furniture","size":[1,1],"collision":[12,12],"height":1.245,"hp":60,"cost":{"wood":2,"copper":1},"layer":"object","light":true,"pivot":"ground_corner","snap":"cell"},
+    {"id":"workbench","name":"Bancada de carpintaria","category":"stations","size":[1,1],"collision":[52,36],"height":0.945,"hp":140,"cost":{"wood":10,"stone":4},"layer":"object","station":"workbench","pivot":"ground_corner","snap":"cell"},
+    {"id":"forge","name":"Forja","category":"stations","size":[2,1],"collision":[104,46],"height":1.45,"hp":280,"cost":{"stone":18,"plank":4,"copper":2},"layer":"object","station":"forge","light":true,"pivot":"ground_corner","snap":"cell"}
   ],
   "recipes": [
     {"id":"plank","name":"Serrar tábuas","station":"workbench","minutes":8,"cost":{"wood":2},"output":{"plank":2}},

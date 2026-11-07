@@ -130,6 +130,7 @@ func discover(id:String)->bool:
 	return true
 
 func claim(position:Vector2,owner:String="player")->Dictionary:
+	position=snap_home(position)
 	var id:="home_"+owner
 	if not position.is_finite() or position.x<192 or position.y<192 or position.x>WorldData.SIZE.x-192 or position.y>WorldData.SIZE.y-192:return result(false,"Terreno fora dos limites do continente.")
 	if houses.has(id):return result(false,"Você já tem um terreno. Conclua sua casa primeiro.")
@@ -144,6 +145,10 @@ func claim(position:Vector2,owner:String="player")->Dictionary:
 	house_changed.emit(id)
 	changed.emit()
 	return result(true,"Terreno reservado. Use um martelo para construir em três etapas.")
+
+static func snap_home(point:Vector2)->Vector2:
+	var corner:=(point-Vector2(96,128)).snapped(Vector2.ONE*WorldGrid.CELL)
+	return corner+Vector2(96,128)
 
 func build(id:String,owner:String="player")->Dictionary:
 	if not houses.has(id) or houses[id].owner!=owner:return result(false,"Este terreno pertence a outro morador.")

@@ -15,6 +15,9 @@ WASD/setas: mover e nadar | E: interagir | I: inventário | J: objetivos
 B: catálogo de construção | T: girar peça na prévia | M: mapa | Espaço: atacar | Esc: pausar
 
 E em camas e bancadas: descansar, produzir, reparar e designar NPCs.
+O grid tem 1 m, com pivôs no canto e paredes nas bordas.
+B > Validar grid e modelos: localizar desalinhamentos e exportar relatório.
+Leia GUIA-DO-GRID.md e MODELOS-FORA-DO-GRID.md dentro do ZIP.
 Construções, filas e moradores são salvos automaticamente por mapa.
 E em NPCs: conversas, presentes, memórias, missões, romance e companhia.
 J > Relações, missões e identidade: vínculos, classe e facção.

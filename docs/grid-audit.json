@@ -1,0 +1,2198 @@
+{
+  "assets": {
+    "environment_instances": [
+      {
+        "aligned": true,
+        "id": "base_building_0",
+        "kind": "castle",
+        "name": "Castelo de Aurélia",
+        "position_metres": [
+          68.0,
+          51.0
+        ],
+        "size_metres": [
+          8.0,
+          5.0
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_1",
+        "kind": "forge",
+        "name": "Ferraria e comércio de Aurélia",
+        "position_metres": [
+          67.375,
+          63.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_2",
+        "kind": "tavern",
+        "name": "Estalagem de Aurélia",
+        "position_metres": [
+          73.375,
+          63.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_3",
+        "kind": "forge",
+        "name": "Forja de Bento",
+        "position_metres": [
+          64.625,
+          64.0
+        ],
+        "size_metres": [
+          2.75,
+          2.0
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_4",
+        "kind": "library",
+        "name": "Arquivo dos Reinos",
+        "position_metres": [
+          76.625,
+          58.0
+        ],
+        "size_metres": [
+          2.75,
+          2.0
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_5",
+        "kind": "stone_house",
+        "name": "Casa de Aurélia 1",
+        "position_metres": [
+          51.5013580322266,
+          46.3248901367188
+        ],
+        "size_metres": [
+          2.6875,
+          2.375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_6",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 2",
+        "position_metres": [
+          53.6545562744141,
+          55.8749313354492
+        ],
+        "size_metres": [
+          2.40625,
+          2.09375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_7",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 3",
+        "position_metres": [
+          51.3248825073242,
+          68.4799346923828
+        ],
+        "size_metres": [
+          3.140625,
+          2.15625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_8",
+        "kind": "timber",
+        "name": "Casa de Aurélia 4",
+        "position_metres": [
+          54.4463500976562,
+          75.1827392578125
+        ],
+        "size_metres": [
+          3.078125,
+          1.984375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_9",
+        "kind": "timber",
+        "name": "Casa de Aurélia 5",
+        "position_metres": [
+          61.2276954650879,
+          54.6920013427734
+        ],
+        "size_metres": [
+          3.203125,
+          2.125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_10",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 6",
+        "position_metres": [
+          57.9234962463379,
+          68.0900955200195
+        ],
+        "size_metres": [
+          2.625,
+          2.375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_11",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 7",
+        "position_metres": [
+          96.4685516357422,
+          66.8036727905273
+        ],
+        "size_metres": [
+          2.40625,
+          2.25
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_12",
+        "kind": "timber",
+        "name": "Casa de Aurélia 8",
+        "position_metres": [
+          47.6802291870117,
+          76.4238967895508
+        ],
+        "size_metres": [
+          2.96875,
+          1.984375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_13",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 9",
+        "position_metres": [
+          90.8906021118164,
+          57.0156059265137
+        ],
+        "size_metres": [
+          3.046875,
+          2.109375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_14",
+        "kind": "timber",
+        "name": "Casa de Aurélia 10",
+        "position_metres": [
+          89.2514419555664,
+          66.5260925292969
+        ],
+        "size_metres": [
+          3.203125,
+          1.828125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_15",
+        "kind": "stone_house",
+        "name": "Casa de Aurélia 11",
+        "position_metres": [
+          44.0131683349609,
+          47.1132431030273
+        ],
+        "size_metres": [
+          3.15625,
+          1.75
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_16",
+        "kind": "stone_house",
+        "name": "Casa de Aurélia 12",
+        "position_metres": [
+          86.428337097168,
+          47.0151100158691
+        ],
+        "size_metres": [
+          3.0,
+          1.9375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_17",
+        "kind": "timber",
+        "name": "Casa de Aurélia 13",
+        "position_metres": [
+          63.9261703491211,
+          74.2523040771484
+        ],
+        "size_metres": [
+          2.609375,
+          2.03125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_18",
+        "kind": "stone_house",
+        "name": "Casa de Aurélia 14",
+        "position_metres": [
+          94.7634582519531,
+          79.7849502563477
+        ],
+        "size_metres": [
+          3.03125,
+          2.25
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_19",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 15",
+        "position_metres": [
+          44.9171600341797,
+          55.0647010803223
+        ],
+        "size_metres": [
+          2.421875,
+          2.0
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_20",
+        "kind": "timber",
+        "name": "Casa de Aurélia 16",
+        "position_metres": [
+          64.1102066040039,
+          67.8821868896484
+        ],
+        "size_metres": [
+          2.5625,
+          1.765625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_21",
+        "kind": "timber",
+        "name": "Casa de Aurélia 17",
+        "position_metres": [
+          84.8325576782227,
+          65.0136337280273
+        ],
+        "size_metres": [
+          3.09375,
+          2.203125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_22",
+        "kind": "timber",
+        "name": "Casa de Aurélia 18",
+        "position_metres": [
+          79.8106536865234,
+          77.2940368652344
+        ],
+        "size_metres": [
+          2.734375,
+          2.328125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_23",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 19",
+        "position_metres": [
+          91.0540542602539,
+          48.063232421875
+        ],
+        "size_metres": [
+          2.890625,
+          1.90625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_24",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 20",
+        "position_metres": [
+          48.2331275939941,
+          55.6816749572754
+        ],
+        "size_metres": [
+          3.078125,
+          2.234375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_25",
+        "kind": "timber",
+        "name": "Casa de Aurélia 21",
+        "position_metres": [
+          59.9920501708984,
+          46.7552871704102
+        ],
+        "size_metres": [
+          2.421875,
+          1.765625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_26",
+        "kind": "stone_house",
+        "name": "Casa de Aurélia 22",
+        "position_metres": [
+          96.4774932861328,
+          55.9003067016602
+        ],
+        "size_metres": [
+          2.90625,
+          2.140625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_27",
+        "kind": "timber",
+        "name": "Casa de Aurélia 23",
+        "position_metres": [
+          63.9552459716797,
+          45.8869857788086
+        ],
+        "size_metres": [
+          2.6875,
+          1.9375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_28",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 24",
+        "position_metres": [
+          81.3562545776367,
+          64.6206893920898
+        ],
+        "size_metres": [
+          2.671875,
+          1.9375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_29",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 25",
+        "position_metres": [
+          83.2929840087891,
+          55.9011154174805
+        ],
+        "size_metres": [
+          2.796875,
+          1.75
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_30",
+        "kind": "stone_house",
+        "name": "Casa de Aurélia 26",
+        "position_metres": [
+          77.7833862304688,
+          45.9333763122559
+        ],
+        "size_metres": [
+          2.6875,
+          2.109375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_31",
+        "kind": "timber",
+        "name": "Casa de Aurélia 27",
+        "position_metres": [
+          48.1533622741699,
+          46.9635581970215
+        ],
+        "size_metres": [
+          2.3125,
+          2.078125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_32",
+        "kind": "timber",
+        "name": "Casa de Aurélia 28",
+        "position_metres": [
+          97.1598892211914,
+          45.9787940979004
+        ],
+        "size_metres": [
+          2.4375,
+          2.296875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_33",
+        "kind": "stone_house",
+        "name": "Casa de Aurélia 29",
+        "position_metres": [
+          59.3481788635254,
+          74.2108535766602
+        ],
+        "size_metres": [
+          3.203125,
+          1.953125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_34",
+        "kind": "stone_house",
+        "name": "Casa de Aurélia 30",
+        "position_metres": [
+          46.100658416748,
+          68.046257019043
+        ],
+        "size_metres": [
+          2.875,
+          2.375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_35",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 31",
+        "position_metres": [
+          56.4121704101562,
+          46.8230361938477
+        ],
+        "size_metres": [
+          2.578125,
+          1.75
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_36",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 32",
+        "position_metres": [
+          93.2529144287109,
+          66.8324737548828
+        ],
+        "size_metres": [
+          2.4375,
+          2.078125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_37",
+        "kind": "cottage",
+        "name": "Casa de Aurélia 33",
+        "position_metres": [
+          86.8596725463867,
+          56.3066902160645
+        ],
+        "size_metres": [
+          2.71875,
+          1.84375
+        ]
+      },
+      {
+        "aligned": true,
+        "id": "base_building_38",
+        "kind": "castle",
+        "name": "Castelo de Valverde",
+        "position_metres": [
+          172.0,
+          71.0
+        ],
+        "size_metres": [
+          8.0,
+          5.0
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_39",
+        "kind": "forge",
+        "name": "Ferraria e comércio de Valverde",
+        "position_metres": [
+          171.375,
+          83.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_40",
+        "kind": "tavern",
+        "name": "Estalagem de Valverde",
+        "position_metres": [
+          177.375,
+          83.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_41",
+        "kind": "timber",
+        "name": "Casa de Valverde 1",
+        "position_metres": [
+          159.273574829102,
+          67.3502807617188
+        ],
+        "size_metres": [
+          2.265625,
+          1.90625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_42",
+        "kind": "cottage",
+        "name": "Casa de Valverde 2",
+        "position_metres": [
+          196.814300537109,
+          69.4355621337891
+        ],
+        "size_metres": [
+          2.5625,
+          2.265625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_43",
+        "kind": "stone_house",
+        "name": "Casa de Valverde 3",
+        "position_metres": [
+          148.369750976562,
+          84.6105880737305
+        ],
+        "size_metres": [
+          3.140625,
+          2.140625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_44",
+        "kind": "timber",
+        "name": "Casa de Valverde 4",
+        "position_metres": [
+          192.065689086914,
+          87.0923233032227
+        ],
+        "size_metres": [
+          2.3125,
+          2.015625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_45",
+        "kind": "timber",
+        "name": "Casa de Valverde 5",
+        "position_metres": [
+          160.281143188477,
+          96.3405685424805
+        ],
+        "size_metres": [
+          2.953125,
+          2.140625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_46",
+        "kind": "stone_house",
+        "name": "Casa de Valverde 6",
+        "position_metres": [
+          192.028457641602,
+          97.0464324951172
+        ],
+        "size_metres": [
+          2.5,
+          2.25
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_47",
+        "kind": "cottage",
+        "name": "Casa de Valverde 7",
+        "position_metres": [
+          159.789306640625,
+          73.1743698120117
+        ],
+        "size_metres": [
+          3.140625,
+          1.90625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_48",
+        "kind": "cottage",
+        "name": "Casa de Valverde 8",
+        "position_metres": [
+          193.812744140625,
+          79.7085418701172
+        ],
+        "size_metres": [
+          3.0625,
+          2.25
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_49",
+        "kind": "cottage",
+        "name": "Casa de Valverde 9",
+        "position_metres": [
+          154.445007324219,
+          87.2506637573242
+        ],
+        "size_metres": [
+          2.25,
+          1.953125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_50",
+        "kind": "cottage",
+        "name": "Casa de Valverde 10",
+        "position_metres": [
+          183.21142578125,
+          95.8650054931641
+        ],
+        "size_metres": [
+          2.84375,
+          2.140625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_51",
+        "kind": "stone_house",
+        "name": "Casa de Valverde 11",
+        "position_metres": [
+          152.174331665039,
+          75.2011108398438
+        ],
+        "size_metres": [
+          2.359375,
+          1.984375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_52",
+        "kind": "timber",
+        "name": "Casa de Valverde 12",
+        "position_metres": [
+          155.735504150391,
+          67.8594970703125
+        ],
+        "size_metres": [
+          2.4375,
+          2.03125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_53",
+        "kind": "timber",
+        "name": "Casa de Valverde 13",
+        "position_metres": [
+          195.101364135742,
+          87.3661499023438
+        ],
+        "size_metres": [
+          2.46875,
+          2.015625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_54",
+        "kind": "cottage",
+        "name": "Casa de Valverde 14",
+        "position_metres": [
+          165.316390991211,
+          96.2041549682617
+        ],
+        "size_metres": [
+          2.609375,
+          1.9375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_55",
+        "kind": "timber",
+        "name": "Casa de Valverde 15",
+        "position_metres": [
+          150.453842163086,
+          97.6604309082031
+        ],
+        "size_metres": [
+          3.03125,
+          2.078125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_56",
+        "kind": "timber",
+        "name": "Casa de Valverde 16",
+        "position_metres": [
+          199.112808227539,
+          98.2837753295898
+        ],
+        "size_metres": [
+          2.640625,
+          1.96875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_57",
+        "kind": "timber",
+        "name": "Casa de Valverde 17",
+        "position_metres": [
+          188.655166625977,
+          79.0883331298828
+        ],
+        "size_metres": [
+          3.09375,
+          1.984375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_58",
+        "kind": "stone_house",
+        "name": "Casa de Valverde 18",
+        "position_metres": [
+          185.690139770508,
+          86.3410415649414
+        ],
+        "size_metres": [
+          2.75,
+          2.15625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_59",
+        "kind": "cottage",
+        "name": "Casa de Valverde 19",
+        "position_metres": [
+          163.6708984375,
+          72.2960052490234
+        ],
+        "size_metres": [
+          2.84375,
+          2.015625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_60",
+        "kind": "stone_house",
+        "name": "Casa de Valverde 20",
+        "position_metres": [
+          155.205902099609,
+          97.2462844848633
+        ],
+        "size_metres": [
+          3.125,
+          2.03125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_61",
+        "kind": "stone_house",
+        "name": "Casa de Valverde 21",
+        "position_metres": [
+          170.12873840332,
+          66.4066009521484
+        ],
+        "size_metres": [
+          2.859375,
+          1.96875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_62",
+        "kind": "stone_house",
+        "name": "Casa de Valverde 22",
+        "position_metres": [
+          160.160842895508,
+          86.9992752075195
+        ],
+        "size_metres": [
+          2.375,
+          2.25
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_63",
+        "kind": "cottage",
+        "name": "Casa de Valverde 23",
+        "position_metres": [
+          198.779205322266,
+          87.1894836425781
+        ],
+        "size_metres": [
+          3.203125,
+          1.875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_64",
+        "kind": "stone_house",
+        "name": "Casa de Valverde 24",
+        "position_metres": [
+          187.511108398438,
+          96.2099151611328
+        ],
+        "size_metres": [
+          2.625,
+          2.046875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_65",
+        "kind": "cottage",
+        "name": "Casa de Valverde 25",
+        "position_metres": [
+          195.281494140625,
+          97.9674987792969
+        ],
+        "size_metres": [
+          2.984375,
+          1.90625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_66",
+        "kind": "timber",
+        "name": "Casa de Valverde 26",
+        "position_metres": [
+          200.563018798828,
+          68.6587066650391
+        ],
+        "size_metres": [
+          2.4375,
+          1.90625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_67",
+        "kind": "cottage",
+        "name": "Casa de Valverde 27",
+        "position_metres": [
+          148.64436340332,
+          74.3278045654297
+        ],
+        "size_metres": [
+          2.6875,
+          2.328125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_68",
+        "kind": "cottage",
+        "name": "Casa de Valverde 28",
+        "position_metres": [
+          162.29736328125,
+          66.8362121582031
+        ],
+        "size_metres": [
+          2.734375,
+          2.375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_69",
+        "kind": "cottage",
+        "name": "Casa de Valverde 29",
+        "position_metres": [
+          183.501647949219,
+          78.6397552490234
+        ],
+        "size_metres": [
+          2.265625,
+          1.96875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_70",
+        "kind": "cottage",
+        "name": "Casa de Valverde 30",
+        "position_metres": [
+          181.751968383789,
+          85.7922058105469
+        ],
+        "size_metres": [
+          2.65625,
+          2.21875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_71",
+        "kind": "forge",
+        "name": "Ferraria e comércio de Pedra Alta",
+        "position_metres": [
+          85.375,
+          25.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_72",
+        "kind": "tavern",
+        "name": "Estalagem de Pedra Alta",
+        "position_metres": [
+          91.375,
+          25.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_73",
+        "kind": "timber",
+        "name": "Casa de Pedra Alta 1",
+        "position_metres": [
+          73.750732421875,
+          18.5112800598145
+        ],
+        "size_metres": [
+          2.453125,
+          2.21875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_74",
+        "kind": "cottage",
+        "name": "Casa de Pedra Alta 2",
+        "position_metres": [
+          81.7902679443359,
+          32.3769302368164
+        ],
+        "size_metres": [
+          2.796875,
+          2.265625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_75",
+        "kind": "timber",
+        "name": "Casa de Pedra Alta 3",
+        "position_metres": [
+          75.8617324829102,
+          26.1406669616699
+        ],
+        "size_metres": [
+          2.734375,
+          2.265625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_76",
+        "kind": "cottage",
+        "name": "Casa de Pedra Alta 4",
+        "position_metres": [
+          103.679183959961,
+          24.2798881530762
+        ],
+        "size_metres": [
+          2.609375,
+          2.328125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_77",
+        "kind": "cottage",
+        "name": "Casa de Pedra Alta 5",
+        "position_metres": [
+          74.2849349975586,
+          34.2165031433105
+        ],
+        "size_metres": [
+          2.515625,
+          2.109375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_78",
+        "kind": "timber",
+        "name": "Casa de Pedra Alta 6",
+        "position_metres": [
+          80.215950012207,
+          18.4945087432861
+        ],
+        "size_metres": [
+          2.515625,
+          2.0625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_79",
+        "kind": "cottage",
+        "name": "Casa de Pedra Alta 7",
+        "position_metres": [
+          93.8432769775391,
+          33.1042175292969
+        ],
+        "size_metres": [
+          2.390625,
+          1.921875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_80",
+        "kind": "stone_house",
+        "name": "Casa de Pedra Alta 8",
+        "position_metres": [
+          104.466651916504,
+          14.1662921905518
+        ],
+        "size_metres": [
+          2.296875,
+          1.9375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_81",
+        "kind": "stone_house",
+        "name": "Casa de Pedra Alta 9",
+        "position_metres": [
+          98.6261749267578,
+          23.3547191619873
+        ],
+        "size_metres": [
+          2.703125,
+          1.765625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_82",
+        "kind": "stone_house",
+        "name": "Casa de Pedra Alta 10",
+        "position_metres": [
+          97.1270294189453,
+          32.3951416015625
+        ],
+        "size_metres": [
+          2.65625,
+          2.265625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_83",
+        "kind": "stone_house",
+        "name": "Casa de Pedra Alta 11",
+        "position_metres": [
+          104.85546875,
+          36.349422454834
+        ],
+        "size_metres": [
+          2.484375,
+          1.96875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_84",
+        "kind": "cottage",
+        "name": "Casa de Pedra Alta 12",
+        "position_metres": [
+          97.1828460693359,
+          14.2934894561768
+        ],
+        "size_metres": [
+          2.609375,
+          2.046875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_85",
+        "kind": "forge",
+        "name": "Ferraria e comércio de Ponte Velha",
+        "position_metres": [
+          45.375,
+          127.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_86",
+        "kind": "tavern",
+        "name": "Estalagem de Ponte Velha",
+        "position_metres": [
+          51.375,
+          127.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_87",
+        "kind": "stone_house",
+        "name": "Casa de Ponte Velha 1",
+        "position_metres": [
+          41.7055397033691,
+          120.43856048584
+        ],
+        "size_metres": [
+          2.75,
+          2.375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_88",
+        "kind": "cottage",
+        "name": "Casa de Ponte Velha 2",
+        "position_metres": [
+          56.6455078125,
+          123.738677978516
+        ],
+        "size_metres": [
+          2.78125,
+          2.15625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_89",
+        "kind": "timber",
+        "name": "Casa de Ponte Velha 3",
+        "position_metres": [
+          36.6666946411133,
+          121.245071411133
+        ],
+        "size_metres": [
+          2.484375,
+          2.25
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_90",
+        "kind": "stone_house",
+        "name": "Casa de Ponte Velha 4",
+        "position_metres": [
+          37.4001884460449,
+          127.440841674805
+        ],
+        "size_metres": [
+          3.140625,
+          1.9375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_91",
+        "kind": "stone_house",
+        "name": "Casa de Ponte Velha 5",
+        "position_metres": [
+          37.8094482421875,
+          138.373504638672
+        ],
+        "size_metres": [
+          2.859375,
+          2.125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_92",
+        "kind": "stone_house",
+        "name": "Casa de Ponte Velha 6",
+        "position_metres": [
+          63.136360168457,
+          118.379051208496
+        ],
+        "size_metres": [
+          2.859375,
+          2.015625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_93",
+        "kind": "cottage",
+        "name": "Casa de Ponte Velha 7",
+        "position_metres": [
+          60.0857124328613,
+          139.059753417969
+        ],
+        "size_metres": [
+          2.546875,
+          1.765625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_94",
+        "kind": "timber",
+        "name": "Casa de Ponte Velha 8",
+        "position_metres": [
+          62.115795135498,
+          126.032699584961
+        ],
+        "size_metres": [
+          2.953125,
+          2.171875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_95",
+        "kind": "stone_house",
+        "name": "Casa de Ponte Velha 9",
+        "position_metres": [
+          64.8590240478516,
+          136.04801940918
+        ],
+        "size_metres": [
+          2.484375,
+          2.375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_96",
+        "kind": "stone_house",
+        "name": "Casa de Ponte Velha 10",
+        "position_metres": [
+          32.9842338562012,
+          126.528228759766
+        ],
+        "size_metres": [
+          3.0,
+          1.890625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_97",
+        "kind": "cottage",
+        "name": "Casa de Ponte Velha 11",
+        "position_metres": [
+          32.5742034912109,
+          120.967628479004
+        ],
+        "size_metres": [
+          3.09375,
+          1.890625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_98",
+        "kind": "timber",
+        "name": "Casa de Ponte Velha 12",
+        "position_metres": [
+          32.3511657714844,
+          135.08837890625
+        ],
+        "size_metres": [
+          2.8125,
+          2.109375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_99",
+        "kind": "forge",
+        "name": "Ferraria e comércio de Porto Claro",
+        "position_metres": [
+          165.375,
+          159.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_100",
+        "kind": "tavern",
+        "name": "Estalagem de Porto Claro",
+        "position_metres": [
+          171.375,
+          159.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_101",
+        "kind": "cottage",
+        "name": "Casa de Porto Claro 1",
+        "position_metres": [
+          180.105484008789,
+          160.941925048828
+        ],
+        "size_metres": [
+          2.796875,
+          1.78125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_102",
+        "kind": "cottage",
+        "name": "Casa de Porto Claro 2",
+        "position_metres": [
+          184.062789916992,
+          168.531921386719
+        ],
+        "size_metres": [
+          3.125,
+          1.953125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_103",
+        "kind": "stone_house",
+        "name": "Casa de Porto Claro 3",
+        "position_metres": [
+          182.083831787109,
+          151.720687866211
+        ],
+        "size_metres": [
+          2.78125,
+          2.3125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_104",
+        "kind": "stone_house",
+        "name": "Casa de Porto Claro 4",
+        "position_metres": [
+          153.413955688477,
+          151.615219116211
+        ],
+        "size_metres": [
+          3.09375,
+          1.84375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_105",
+        "kind": "stone_house",
+        "name": "Casa de Porto Claro 5",
+        "position_metres": [
+          159.081497192383,
+          158.620620727539
+        ],
+        "size_metres": [
+          2.34375,
+          2.328125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_106",
+        "kind": "timber",
+        "name": "Casa de Porto Claro 6",
+        "position_metres": [
+          184.162109375,
+          158.483612060547
+        ],
+        "size_metres": [
+          3.15625,
+          2.078125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_107",
+        "kind": "timber",
+        "name": "Casa de Porto Claro 7",
+        "position_metres": [
+          153.590728759766,
+          160.465911865234
+        ],
+        "size_metres": [
+          2.375,
+          2.28125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_108",
+        "kind": "cottage",
+        "name": "Casa de Porto Claro 8",
+        "position_metres": [
+          173.353820800781,
+          167.699447631836
+        ],
+        "size_metres": [
+          2.765625,
+          2.0625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_109",
+        "kind": "timber",
+        "name": "Casa de Porto Claro 9",
+        "position_metres": [
+          157.426635742188,
+          150.551177978516
+        ],
+        "size_metres": [
+          2.3125,
+          2.09375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_110",
+        "kind": "cottage",
+        "name": "Casa de Porto Claro 10",
+        "position_metres": [
+          177.37678527832,
+          150.358108520508
+        ],
+        "size_metres": [
+          2.3125,
+          1.890625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_111",
+        "kind": "forge",
+        "name": "Ferraria e comércio de Cedro",
+        "position_metres": [
+          207.375,
+          127.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_112",
+        "kind": "tavern",
+        "name": "Estalagem de Cedro",
+        "position_metres": [
+          213.375,
+          127.5
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_113",
+        "kind": "stone_house",
+        "name": "Casa de Cedro 1",
+        "position_metres": [
+          203.977554321289,
+          134.565994262695
+        ],
+        "size_metres": [
+          2.890625,
+          2.21875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_114",
+        "kind": "cottage",
+        "name": "Casa de Cedro 2",
+        "position_metres": [
+          220.283126831055,
+          137.443344116211
+        ],
+        "size_metres": [
+          2.296875,
+          2.140625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_115",
+        "kind": "cottage",
+        "name": "Casa de Cedro 3",
+        "position_metres": [
+          206.100677490234,
+          117.009407043457
+        ],
+        "size_metres": [
+          2.53125,
+          2.03125
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_116",
+        "kind": "timber",
+        "name": "Casa de Cedro 4",
+        "position_metres": [
+          195.213562011719,
+          135.879913330078
+        ],
+        "size_metres": [
+          2.34375,
+          2.34375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_117",
+        "kind": "stone_house",
+        "name": "Casa de Cedro 5",
+        "position_metres": [
+          226.735717773438,
+          138.787536621094
+        ],
+        "size_metres": [
+          2.296875,
+          1.984375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_118",
+        "kind": "timber",
+        "name": "Casa de Cedro 6",
+        "position_metres": [
+          225.882446289062,
+          115.490631103516
+        ],
+        "size_metres": [
+          2.640625,
+          2.046875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_119",
+        "kind": "cottage",
+        "name": "Casa de Cedro 7",
+        "position_metres": [
+          194.750076293945,
+          125.573913574219
+        ],
+        "size_metres": [
+          2.5625,
+          2.015625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_120",
+        "kind": "cottage",
+        "name": "Casa de Cedro 8",
+        "position_metres": [
+          194.831207275391,
+          115.277702331543
+        ],
+        "size_metres": [
+          2.96875,
+          2.171875
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_121",
+        "kind": "cottage",
+        "name": "Casa de Cedro 9",
+        "position_metres": [
+          199.670562744141,
+          118.147605895996
+        ],
+        "size_metres": [
+          3.015625,
+          2.0
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_122",
+        "kind": "timber",
+        "name": "Casa de Cedro 10",
+        "position_metres": [
+          203.820114135742,
+          123.652961730957
+        ],
+        "size_metres": [
+          2.484375,
+          2.09375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_123",
+        "kind": "stone_house",
+        "name": "Casa de Cedro 11",
+        "position_metres": [
+          218.725036621094,
+          124.579788208008
+        ],
+        "size_metres": [
+          2.484375,
+          2.109375
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_124",
+        "kind": "stone_house",
+        "name": "Casa de Cedro 12",
+        "position_metres": [
+          225.3564453125,
+          125.865074157715
+        ],
+        "size_metres": [
+          2.59375,
+          1.765625
+        ]
+      },
+      {
+        "aligned": false,
+        "id": "base_building_125",
+        "kind": "barracks",
+        "name": "Quartel da Travessia",
+        "position_metres": [
+          128.509841918945,
+          72.0
+        ],
+        "size_metres": [
+          2.75,
+          2.0
+        ]
+      }
+    ],
+    "environment_prefabs": [
+      {
+        "fractional_size": true,
+        "id": "cottage",
+        "mesh_size_metres": [
+          3.17000007629395,
+          2.85999989509583,
+          2.57000017166138
+        ],
+        "modular": false,
+        "oversized_mesh": true,
+        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "size_metres": [
+          2.75,
+          2.0
+        ],
+        "source": "game/building_visual.gd"
+      },
+      {
+        "fractional_size": true,
+        "id": "timber",
+        "mesh_size_metres": [
+          3.42000007629395,
+          2.45000004768372,
+          2.82000017166138
+        ],
+        "modular": false,
+        "oversized_mesh": true,
+        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "size_metres": [
+          3.0,
+          2.25
+        ],
+        "source": "game/building_visual.gd"
+      },
+      {
+        "fractional_size": true,
+        "id": "stone_house",
+        "mesh_size_metres": [
+          3.17000007629395,
+          3.01999998092651,
+          2.57000017166138
+        ],
+        "modular": false,
+        "oversized_mesh": true,
+        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "size_metres": [
+          2.75,
+          2.0
+        ],
+        "source": "game/building_visual.gd"
+      },
+      {
+        "fractional_size": true,
+        "id": "tavern",
+        "mesh_size_metres": [
+          3.92000007629395,
+          3.65999984741211,
+          3.32999992370605
+        ],
+        "modular": false,
+        "oversized_mesh": true,
+        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "size_metres": [
+          3.5,
+          2.5
+        ],
+        "source": "game/building_visual.gd"
+      },
+      {
+        "fractional_size": true,
+        "id": "forge",
+        "mesh_size_metres": [
+          3.92000007629395,
+          2.85999989509583,
+          3.32999992370605
+        ],
+        "modular": false,
+        "oversized_mesh": true,
+        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "size_metres": [
+          3.5,
+          2.5
+        ],
+        "source": "game/building_visual.gd"
+      },
+      {
+        "fractional_size": false,
+        "id": "tower",
+        "mesh_size_metres": [
+          2.27999973297119,
+          5.14999961853027,
+          2.5
+        ],
+        "modular": false,
+        "oversized_mesh": true,
+        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "size_metres": [
+          2.0,
+          2.0
+        ],
+        "source": "game/building_visual.gd"
+      },
+      {
+        "fractional_size": true,
+        "id": "castle",
+        "mesh_size_metres": [
+          7.28000068664551,
+          6.19999980926514,
+          5.0
+        ],
+        "modular": false,
+        "oversized_mesh": true,
+        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "size_metres": [
+          7.0,
+          4.5
+        ],
+        "source": "game/building_visual.gd"
+      },
+      {
+        "fractional_size": true,
+        "id": "library",
+        "mesh_size_metres": [
+          3.17000007629395,
+          4.30999994277954,
+          2.57000017166138
+        ],
+        "modular": false,
+        "oversized_mesh": true,
+        "reason": "Prédio completo da base dos reinos; não é uma peça do catálogo modular.",
+        "size_metres": [
+          2.75,
+          2.0
+        ],
+        "source": "game/building_visual.gd"
+      },
+      {
+        "fractional_size": true,
+        "id": "barracks",
+        "mesh_size_metres": [
+          3.17000007629395,
+          3.17999982833862,
+          2.57000017166138
+        ],
+        "modular": false,
+        "oversized_mesh": true,
+        "reason": "Prédio completo da base dos reinos; não é uma peça do catálogo modular.",
+        "size_metres": [
+          2.75,
+          2.0
+        ],
+        "source": "game/building_visual.gd"
+      }
+    ],
+    "modules": [
+      {
+        "allocation_metres": [
+          1.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "wood_wall",
+        "maximum_metres": [
+          1.0,
+          2.0,
+          0.125
+        ],
+        "minimum_metres": [
+          0.0,
+          0.0,
+          -0.125
+        ],
+        "name": "Parede de madeira",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          1.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "stone_wall",
+        "maximum_metres": [
+          1.0,
+          2.0,
+          0.125
+        ],
+        "minimum_metres": [
+          0.0,
+          0.0,
+          -0.125
+        ],
+        "name": "Parede de pedra",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          1.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "door",
+        "maximum_metres": [
+          1.0,
+          2.0,
+          0.125
+        ],
+        "minimum_metres": [
+          0.0,
+          0.0,
+          -0.125
+        ],
+        "name": "Porta de madeira",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          1.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "roof",
+        "maximum_metres": [
+          1.0,
+          2.11999988555908,
+          1.0
+        ],
+        "minimum_metres": [
+          0.0,
+          2.0,
+          0.0
+        ],
+        "name": "Cobertura de madeira",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          1.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "wood_floor",
+        "maximum_metres": [
+          1.0,
+          0.0799999982118607,
+          1.0
+        ],
+        "minimum_metres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "name": "Piso de tábuas",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          1.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "stone_floor",
+        "maximum_metres": [
+          1.0,
+          0.0799999982118607,
+          1.0
+        ],
+        "minimum_metres": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "name": "Piso de pedra",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          1.0,
+          2.0
+        ],
+        "errors": [],
+        "id": "bed",
+        "maximum_metres": [
+          0.875,
+          0.649999976158142,
+          1.83749997615814
+        ],
+        "minimum_metres": [
+          0.125,
+          0.0,
+          0.162500023841858
+        ],
+        "name": "Cama",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          1.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "table",
+        "maximum_metres": [
+          0.875,
+          0.829999983310699,
+          0.860000014305115
+        ],
+        "minimum_metres": [
+          0.125,
+          0.0,
+          0.139999985694885
+        ],
+        "name": "Mesa",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          1.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "bench",
+        "maximum_metres": [
+          0.875,
+          0.454999983310699,
+          0.680000007152557
+        ],
+        "minimum_metres": [
+          0.125,
+          0.0,
+          0.319999992847443
+        ],
+        "name": "Banco",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          1.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "torch",
+        "maximum_metres": [
+          0.625,
+          1.24500000476837,
+          0.625
+        ],
+        "minimum_metres": [
+          0.375,
+          0.0,
+          0.375
+        ],
+        "name": "Tocha de jardim",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          1.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "workbench",
+        "maximum_metres": [
+          0.875,
+          0.944999992847443,
+          0.800000011920929
+        ],
+        "minimum_metres": [
+          0.125,
+          0.0,
+          0.199999988079071
+        ],
+        "name": "Bancada de carpintaria",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      },
+      {
+        "allocation_metres": [
+          2.0,
+          1.0
+        ],
+        "errors": [],
+        "id": "forge",
+        "maximum_metres": [
+          1.87249994277954,
+          1.45000004768372,
+          0.875
+        ],
+        "minimum_metres": [
+          0.127499938011169,
+          0.0,
+          0.125
+        ],
+        "name": "Forja",
+        "ok": true,
+        "source": "game/construction_visual.gd"
+      }
+    ],
+    "ok": true,
+    "outside_standard": []
+  },
+  "existing": {
+    "checked": 0,
+    "grid": {
+      "metres": 1.0,
+      "pivot": "ground_corner",
+      "version": 2,
+      "world_units": 64.0
+    },
+    "issues": [],
+    "ok": true
+  },
+  "grid": {
+    "cell_metres": 1.0,
+    "pivot": "ground_corner",
+    "version": 2,
+    "world_units": 64.0
+  }
+}

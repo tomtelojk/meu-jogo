@@ -3,7 +3,7 @@ extends Node3D
 
 # Render the existing XY simulation on the XZ ground plane. Collision,
 # schedules and saved positions retain their original world coordinates.
-const UNIT := 64.0
+const UNIT := WorldGrid.UNITS_PER_METRE
 const BILLBOARD_SHADER := """
 shader_type spatial;
 render_mode unshaded, cull_disabled, depth_prepass_alpha;
@@ -642,6 +642,7 @@ func preview_house(point:Vector2,valid:bool)->void:
 	build_ghost.visible=true
 	build_ghost.position=_point(point)+Vector3(0,0.045,-1)
 	build_ghost.material_override.albedo_color=Color(0.35,0.8,0.45,0.5) if valid else Color(0.9,0.3,0.22,0.5)
+	show_build_grid(point)
 
 func cancel_preview()->void:
 	if build_ghost!=null:build_ghost.visible=false
@@ -650,23 +651,36 @@ func cancel_preview()->void:
 
 func preview_piece(entry:Dictionary,valid:bool)->void:
 	if build_ghost!=null:build_ghost.hide()
-	var signature:String=entry.kind+str(entry.turn)
+	var prospective:Dictionary=game.rpg.construction.pieces.duplicate();prospective["preview"]=entry
+	var joints:=ConstructionCatalog.network(prospective)
+	var signature:String=entry.kind+str(entry.turn)+(JSON.stringify(ConstructionCatalog.wall_parts(entry,joints)) if ConstructionCatalog.is_edge(entry.kind) else "")
 	if piece_ghost==null or piece_ghost.get_meta("signature","")!=signature:
 		if piece_ghost!=null:piece_ghost.queue_free()
-		piece_ghost=ConstructionVisual.new();piece_ghost.setup_piece(entry);piece_ghost.set_meta("signature",signature);add_child(piece_ghost)
+		piece_ghost=ConstructionVisual.new();piece_ghost.setup_piece(entry,joints);piece_ghost.set_meta("signature",signature);add_child(piece_ghost)
 		var material:=StandardMaterial3D.new();material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;material.no_depth_test=false
 		piece_ghost.visual_mesh.material_override=material;piece_ghost.visual_mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;piece_ghost.visual_mesh.layers=16
-		var footprint:=MeshInstance3D.new();var box:=BoxMesh.new();var definition:=ConstructionCatalog.piece(entry.kind);box.size=Vector3(definition.size[0],0.025,definition.size[1]);footprint.mesh=box;footprint.position.y=0.11;footprint.material_override=material;footprint.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;footprint.layers=16;piece_ghost.add_child(footprint)
-	var rect:=ConstructionCatalog.footprint(entry)
-	piece_ghost.position=_point(rect.get_center());piece_ghost.show()
+		var footprint:=MeshInstance3D.new();var box:=BoxMesh.new();var dimensions:=Vector2(ConstructionCatalog.size_cells(entry.kind))*WorldGrid.CELL_SIZE
+		box.size=Vector3(dimensions.x,0.018,WorldGrid.WALL_THICKNESS if ConstructionCatalog.is_edge(entry.kind) else dimensions.y);footprint.mesh=box
+		footprint.position=Vector3(dimensions.x/2,WorldGrid.FLOOR_HEIGHT+0.012,0 if ConstructionCatalog.is_edge(entry.kind) else dimensions.y/2)
+		footprint.material_override=material;footprint.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;footprint.layers=16;piece_ghost.add_child(footprint)
+		var pivot:=MeshInstance3D.new();var marker:=CylinderMesh.new();marker.top_radius=0.065;marker.bottom_radius=0.065;marker.height=0.012;pivot.mesh=marker;pivot.position.y=WorldGrid.FLOOR_HEIGHT+0.025
+		var gold:=StandardMaterial3D.new();gold.albedo_color=Color("f1cf79");gold.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;gold.no_depth_test=true;pivot.material_override=gold;pivot.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;pivot.layers=16;piece_ghost.add_child(pivot)
+	piece_ghost.position=WorldGrid.point3(ConstructionCatalog.pivot(entry));piece_ghost.show()
 	piece_ghost.visual_mesh.material_override.albedo_color=Color(0.3,0.95,0.48,0.48) if valid else Color(1.0,0.18,0.15,0.48)
+	show_build_grid(ConstructionCatalog.pivot(entry))
+
+func show_build_grid(point:Vector2)->void:
 	if build_grid==null:
-		build_grid=MeshInstance3D.new();var lines:=SurfaceTool.new();lines.begin(Mesh.PRIMITIVE_LINES)
-		for i in range(-6,8):
-			var edge:=i-0.5
-			lines.add_vertex(Vector3(edge,0.09,-6.5));lines.add_vertex(Vector3(edge,0.09,6.5));lines.add_vertex(Vector3(-6.5,0.09,edge));lines.add_vertex(Vector3(6.5,0.09,edge))
-		build_grid.mesh=lines.commit();var material:=StandardMaterial3D.new();material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;material.albedo_color=Color(0.85,0.93,0.80,0.22);build_grid.material_override=material;build_grid.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;build_grid.layers=16;add_child(build_grid)
-	build_grid.position=_point(Vector2(entry.x,entry.y)*64);build_grid.show()
+		build_grid=MeshInstance3D.new();var lines:=SurfaceTool.new();lines.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var radius:=8.0*WorldGrid.CELL_SIZE;var half:=0.018;var height:=WorldGrid.FLOOR_HEIGHT+0.006
+		for i in range(-8,9):
+			var at:=i*WorldGrid.CELL_SIZE
+			lines.set_color(Color(0.98,0.82,0.48,0.85) if posmod(i,4)==0 else Color(0.54,0.83,1.0,0.72))
+			for v in [Vector3(at-half,height,-radius),Vector3(at+half,height,-radius),Vector3(at-half,height,radius),Vector3(at-half,height,radius),Vector3(at+half,height,-radius),Vector3(at+half,height,radius),Vector3(-radius,height,at-half),Vector3(-radius,height,at+half),Vector3(radius,height,at-half),Vector3(radius,height,at-half),Vector3(-radius,height,at+half),Vector3(radius,height,at+half)]:lines.add_vertex(v)
+		build_grid.mesh=lines.commit();var material:=StandardMaterial3D.new();material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;material.vertex_color_use_as_albedo=true;material.cull_mode=BaseMaterial3D.CULL_DISABLED
+		build_grid.material_override=material;build_grid.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;build_grid.layers=16;add_child(build_grid)
+	var center:Vector2=(point/(WorldGrid.CELL*4)).floor()*WorldGrid.CELL*4
+	build_grid.position=WorldGrid.point3(center);build_grid.show()
 
 func _settlement_labels()->void:
 	for town in KingdomData.towns():

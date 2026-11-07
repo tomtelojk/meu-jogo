@@ -9,6 +9,11 @@ var queues:Dictionary={}
 var stock:Dictionary={}
 var serial:=0
 var player_bed:=""
+var joints:Dictionary={}
+var import_issues:Array=[]
+var migrated:=false
+
+func rebuild_joints()->void:joints=ConstructionCatalog.network(pieces)
 
 func amount(rpg:RPGState,item:String)->int:
 	return int(stock.get(item,0)) if item in ConstructionCatalog.PROCESSED else int(rpg.get(item))
@@ -32,8 +37,15 @@ func validate(kind:String,at:Vector2i,turn:int)->Dictionary:
 	var rect:=ConstructionCatalog.footprint(entry)
 	if rect.position.x<64 or rect.position.y<64 or rect.end.x>WorldData.SIZE.x-64 or rect.end.y>WorldData.SIZE.y-64:return result(false,"Fora dos limites do continente.")
 	for built in pieces.values():
-		if ConstructionCatalog.piece(built.kind).layer==definition.layer and rect.grow(-0.5).intersects(ConstructionCatalog.footprint(built)):
+		var other:=ConstructionCatalog.piece(built.kind)
+		if definition.layer=="edge" and other.layer=="edge":
+			if WorldGrid.edge_key(entry)==WorldGrid.edge_key(built):return result(false,"Esta borda já tem uma parede ou porta.")
+		elif other.layer==definition.layer and rect.grow(-0.01).intersects(ConstructionCatalog.footprint(built)):
 			return result(false,"Já existe uma peça nesta camada do grid.")
+		elif (definition.layer=="edge" and other.layer=="object") or (definition.layer=="object" and other.layer=="edge"):
+			for own_part in ConstructionCatalog.collision_parts(entry):
+				for other_part in ConstructionCatalog.collision_parts(built):
+					if own_part.grow(-0.01).intersects(other_part):return result(false,"A parede cruza um móvel ou estação.")
 	return result(true,"Posição livre.")
 
 func place(rpg:RPGState,kind:String,at:Vector2i,turn:int=0)->Dictionary:
@@ -46,6 +58,7 @@ func place(rpg:RPGState,kind:String,at:Vector2i,turn:int=0)->Dictionary:
 	var id:="piece_"+str(serial)
 	transfer(rpg,definition.cost,-1)
 	pieces[id]={"kind":kind,"x":at.x,"y":at.y,"turn":posmod(turn,4),"hp":int(definition.hp),"open":false,"resident":"","worker":""}
+	rebuild_joints()
 	piece_changed.emit(id);rpg.changed.emit()
 	return {"ok":true,"message":"Construção concluída · "+definition.name,"id":id}
 
@@ -87,6 +100,7 @@ func remove(rpg:RPGState,id:String,salvage:bool=true)->Dictionary:
 		for item in definition.cost:refund[item]=floori(float(definition.cost[item])*0.5*float(entry.hp)/float(definition.hp))
 		transfer(rpg,refund,1)
 	pieces.erase(id)
+	rebuild_joints()
 	if player_bed==id:player_bed=""
 	piece_changed.emit(id);rpg.changed.emit()
 	return result(true,"Peça desmontada. Parte dos materiais foi recuperada; reservas da fila foram devolvidas.")
@@ -169,10 +183,10 @@ func advance(rpg:RPGState,minutes:float,working:Dictionary={})->Array[String]:
 	return completed
 
 func save_data()->Dictionary:
-	return {"pieces":pieces.duplicate(true),"queues":queues.duplicate(true),"stock":stock.duplicate(true),"serial":serial,"player_bed":player_bed}
+	return {"grid_version":WorldGrid.VERSION,"pieces":pieces.duplicate(true),"queues":queues.duplicate(true),"stock":stock.duplicate(true),"serial":serial,"player_bed":player_bed}
 
 func restore(source:Variant)->void:
-	pieces.clear();queues.clear();stock.clear();serial=0;player_bed=""
+	pieces.clear();queues.clear();stock.clear();joints.clear();import_issues.clear();migrated=false;serial=0;player_bed=""
 	if not source is Dictionary:return
 	ConstructionCatalog.load_data()
 	var saved:Variant=source.get("pieces",{})
@@ -185,7 +199,12 @@ func restore(source:Variant)->void:
 			var entry:Variant=saved[id]
 			if not entry is Dictionary or not entry.get("kind","") is String or ConstructionCatalog.piece(entry.get("kind","")).is_empty():continue
 			if not ResourceProgress.number(entry.get("x")) or not ResourceProgress.number(entry.get("y")) or not ResourceProgress.number(entry.get("turn",0)) or not ResourceProgress.number(entry.get("hp")):continue
-			var at:=Vector2i(int(entry.x),int(entry.y));var turn:=posmod(int(entry.get("turn",0)),4)
+			var at:=Vector2i(roundi(entry.x),roundi(entry.y));var turn:=posmod(roundi(entry.get("turn",0)),4)
+			if not WorldGrid.aligned(entry.x) or not WorldGrid.aligned(entry.y) or not WorldGrid.aligned(entry.get("turn",0)):
+				import_issues.append({"id":id,"code":"off_grid","message":"Coordenada ou giro fracionário no save; encaixado no grid.","before":entry.duplicate(true)})
+			if not ResourceProgress.number(source.get("grid_version",1)) or int(source.get("grid_version",1))<WorldGrid.VERSION:
+				migrated=true
+				at=WorldGrid.anchor(at,Vector2i(1,0) if ConstructionCatalog.is_edge(entry.kind) else ConstructionCatalog.size_cells(entry.kind),turn)
 			if not validate(entry.kind,at,turn).ok or float(entry.hp)<=0:continue
 			var definition:=ConstructionCatalog.piece(entry.kind)
 			var clean:={"kind":entry.kind,"x":at.x,"y":at.y,"turn":turn,"hp":clampi(int(entry.hp),1,int(definition.hp)),"open":entry.get("open",false)==true,"resident":"","worker":""}
@@ -194,6 +213,7 @@ func restore(source:Variant)->void:
 				if not person is String or person.is_empty() or KingdomData.person(person).is_empty() or not assigned(person,slot).is_empty():continue
 				if slot=="resident" and definition.get("home",false) or slot=="worker" and definition.has("station"):clean[slot]=person
 			pieces[id]=clean;serial=maxi(serial,number)
+	rebuild_joints()
 	var inventory:Variant=source.get("stock",{})
 	if ResourceProgress.number(source.get("serial",0)):serial=maxi(serial,clampi(int(source.get("serial",0)),0,100000000))
 	if inventory is Dictionary:
