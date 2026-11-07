@@ -43,6 +43,8 @@ var social:RelationshipSystem
 var politics:FactionSystem
 var housing:HouseSystem
 var placement:PlacementSystem
+var appearance_records:Dictionary={}
+var npc_sprite_overrides:Dictionary={}
 var saved_house_location:Dictionary={}
 var loading_journey:=false
 var building_preview:=false
@@ -62,6 +64,9 @@ func _enter_tree() -> void:
 				document.generation=clampi(int(version),1,3) if ResourceProgress.number(version) else 2
 		MapDocument.activate(document)
 	save_path=_map_save_path()
+	if persistence and FileAccess.file_exists(save_path):
+		var saved:Variant=JSON.parse_string(FileAccess.get_file_as_string(save_path))
+		if saved is Dictionary:appearance_records=AppearanceGenerator.valid_records(saved.get("npc_appearances",{}))
 
 func _map_save_path() -> String:
 	return SAVE_PATH if MapDocument.current.id=="reinos" else "user://maps/"+MapDocument.current.id+".journey.json"
@@ -86,10 +91,6 @@ func _ready() -> void:
 	hud.touch_moved.connect(func(value: Vector2): player.touch_vector = value)
 	if persistence:
 		_load_journey()
-		for id in world.npcs:
-			var sprite_path := "user://npcs/" + String(id) + ".png"
-			if FileAccess.file_exists(sprite_path):
-				world.npcs[id].load_original_sprite(sprite_path)
 	world.apply_progress(collected, complete)
 	_refresh_quest()
 	hud.update_status(player, world.data, world.clock)
@@ -297,7 +298,7 @@ func open_npc(id: String, topic: String = "greeting") -> void:
 	var known := met_npcs.has(id)
 	met_npcs[id] = true
 	npc.face(player.position)
-	var body: String = profile.greeting
+	var body: String = AppearanceGenerator.greeting(profile)
 	if topic == "greeting":
 		body = ("Bom te ver de novo, viajante.\n\n" if known else "") + body
 	elif topic == "realm":
@@ -338,6 +339,7 @@ func open_npc(id: String, topic: String = "greeting") -> void:
 			{"label": "Tem algum conselho para mim?", "callback": open_npc.bind(id, "hint")},
 			{"label": "Podemos unir os dois reinos?", "callback": open_npc.bind(id, "peace")},
 			{"label": "Escolher sprite deste morador", "callback": _open_npc_sprite.bind(id)},
+			{"label":"Restaurar aparência modular","name":"npc_modular","callback":restore_modular_npc.bind(id)},
 			{"label": "Até logo", "callback": close_dialog},
 		]
 		if id in ["bento","lia","iris"] or profile.role=="Mercador":
@@ -350,6 +352,7 @@ func open_npc(id: String, topic: String = "greeting") -> void:
 	else:
 		actions = [{"label": "Perguntar outra coisa", "callback": open_npc.bind(id, "greeting")}, {"label": "Até logo", "callback": close_dialog}]
 	_open_dialog(String(KingdomData.REALMS[profile.realm].name).to_upper(), "%s · %s" % [profile.name, profile.role], body, actions, "npc")
+	if audio!=null:audio.speak(npc.appearance_data,body)
 
 func rest_until_morning() -> void:
 	rpg.health=100
@@ -383,9 +386,17 @@ func import_npc_sprite(path: String) -> bool:
 		if path != destination and DirAccess.copy_absolute(path, destination) != OK:
 			hud.toast("Sprite disponível nesta sessão; não foi possível guardar a imagem.")
 		else:
+			npc_sprite_overrides[npc_sprite_target]=true
 			hud.toast("A aparência do morador foi atualizada.")
+	else:npc_sprite_overrides[npc_sprite_target]=true
+	save_journey()
 	close_dialog()
 	return true
+
+func restore_modular_npc(id:String)->void:
+	if not world.npcs.has(id):return
+	npc_sprite_overrides.erase(id);world.npcs[id].load_default_sprite()
+	save_journey();close_dialog();hud.toast("Aparência modular restaurada.")
 
 func _open_dialog(eyebrow: String, title: String, body: String, actions: Array[Dictionary], kind: String = "dialog", map_view: ForestMinimap = null) -> void:
 	if social!=null and kind!="relationship_scene":social.reset_cinematic()
@@ -459,6 +470,8 @@ func apply_map(document:Dictionary) -> bool:
 	world.free()
 	MapDocument.activate(checked.document)
 	save_path=_map_save_path()
+	appearance_records.clear()
+	npc_sprite_overrides.clear()
 	rpg=RPGState.new()
 	if economy!=null:economy.builder_sites.clear()
 	collected.clear();met_npcs.clear();royal_seals.clear();complete=false
@@ -605,7 +618,7 @@ func _use_default_character() -> void:
 func journey_data() -> Dictionary:
 	if construction!=null and not loading_journey:construction._time_changed()
 	var outside:=housing.return_point if housing!=null and housing.inside() else player.position
-	return {"version": 2,"world_generation":MapDocument.current.generation,"rpg":rpg.save_data(), "x": outside.x, "y": outside.y,"interior":housing.location_data() if housing!=null else saved_house_location, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled,"stamina":player.stamina,"visual":{"zoom":camera_settings.zoom,"yaw":camera_settings.yaw,"weather":weather_mode}, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
+	return {"version": 2,"world_generation":MapDocument.current.generation,"npc_appearances":appearance_records.duplicate(),"npc_sprite_overrides":npc_sprite_overrides.duplicate(),"rpg":rpg.save_data(), "x": outside.x, "y": outside.y,"interior":housing.location_data() if housing!=null else saved_house_location, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled,"stamina":player.stamina,"visual":{"zoom":camera_settings.zoom,"yaw":camera_settings.yaw,"weather":weather_mode}, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
 
 func apply_journey(data: Dictionary) -> bool:
 	if (data.get("version")!=1 and data.get("version")!=2) or not data.get("seeds",[]) is Array:
@@ -614,6 +627,18 @@ func apply_journey(data: Dictionary) -> bool:
 	saved_house_location=data.get("interior",{}).duplicate() if data.get("interior",{}) is Dictionary else {}
 	if housing!=null:housing.restore_location(saved_house_location)
 	loading_journey=true
+	var profiles:Array=[]
+	for npc in world.npcs.values():profiles.append(npc.definition)
+	appearance_records=AppearanceGenerator.prepare(profiles,AppearanceGenerator.valid_records(data.get("npc_appearances",{})))
+	npc_sprite_overrides.clear()
+	var overrides:Variant=data.get("npc_sprite_overrides",{})
+	if overrides is Dictionary:
+		for id in world.npcs:
+			if overrides.get(id)==true:npc_sprite_overrides[id]=true
+	for npc in world.npcs.values():
+		var sprite_path:String="user://npcs/"+String(npc.definition.id)+".png"
+		if not (persistence and npc_sprite_overrides.has(npc.definition.id) and npc.load_original_sprite(sprite_path)):npc.load_default_sprite()
+		npc.refresh_presence()
 	collected.clear()
 	for id in data.get("seeds",[]):
 		for seed_data in WorldData.SEEDS:

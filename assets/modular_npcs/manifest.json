@@ -1,0 +1,230 @@
+{
+  "version": 1,
+  "cell": [
+    48,
+    64
+  ],
+  "columns": 5,
+  "rows": 8,
+  "sole_y": 60,
+  "encoding": "red=palette index 0..31, alpha=coverage",
+  "creator": "Original project pixel drawings; scripts/generate_modular_sprites.py",
+  "files": [
+    {
+      "layer": "body",
+      "option": "regular",
+      "path": "assets/modular_npcs/body/regular.png",
+      "sha256": "53f2bb30df9e5ff0b521ddb05b618bd9f47a052fbdfa0c59e624f56906a2faeb"
+    },
+    {
+      "layer": "body",
+      "option": "round",
+      "path": "assets/modular_npcs/body/round.png",
+      "sha256": "a99addf9dc9f0f731bdc92db34162b0557ad7edb38ea0e580dbcbb90c75261a3"
+    },
+    {
+      "layer": "body",
+      "option": "angular",
+      "path": "assets/modular_npcs/body/angular.png",
+      "sha256": "515c06f4bc9742acd9bacff7595d38205b430f9f8f4d8c026ced302e40465aa3"
+    },
+    {
+      "layer": "hair",
+      "option": "cropped",
+      "path": "assets/modular_npcs/hair/cropped.png",
+      "sha256": "5d8a0295a0d32984fd4e586849ba4aeba9f0b04f67b6d87c0dae019a992f8491"
+    },
+    {
+      "layer": "hair",
+      "option": "wavy",
+      "path": "assets/modular_npcs/hair/wavy.png",
+      "sha256": "67259cba825b5cd8ab3e206d96af0c01ceac9e51b9c43d5a723fcf68b74bb10e"
+    },
+    {
+      "layer": "hair",
+      "option": "long",
+      "path": "assets/modular_npcs/hair/long.png",
+      "sha256": "a8baa1edaf31c1e7914e816b9f14268ab8a43ac80770f1e65e09d8662d967d79"
+    },
+    {
+      "layer": "hair",
+      "option": "braid",
+      "path": "assets/modular_npcs/hair/braid.png",
+      "sha256": "66476edd0899cc4bc4a3cd267e579d0dad4d97db72d7a3827165166d2f3aea99"
+    },
+    {
+      "layer": "hair",
+      "option": "bun",
+      "path": "assets/modular_npcs/hair/bun.png",
+      "sha256": "2e0746ef14a4d00df63d1f31f12ae125a49134e397cab897b2385da3ca7a8fc8"
+    },
+    {
+      "layer": "hair",
+      "option": "beard",
+      "path": "assets/modular_npcs/hair/beard.png",
+      "sha256": "21be97daa6b470c0812e4f5482a51c25341881112b4c9d65f9b962a443b7ff6e"
+    },
+    {
+      "layer": "hair",
+      "option": "bald",
+      "path": "assets/modular_npcs/hair/bald.png",
+      "sha256": "2cd6c6732f2767e3c88abc64cc0ba14d4d67e8199620b9cd12bca0244f8ff2c6"
+    },
+    {
+      "layer": "clothing",
+      "option": "tunic",
+      "path": "assets/modular_npcs/clothing/tunic.png",
+      "sha256": "6321e0d05f752f735af3a66f8a1bec1cd960a19cc80e9d60c088ceb983506ec2"
+    },
+    {
+      "layer": "clothing",
+      "option": "workshirt",
+      "path": "assets/modular_npcs/clothing/workshirt.png",
+      "sha256": "04ab4150fc0df53d54541a285e9adff7ff79d67db83d4a77cdfef34f4d47ab78"
+    },
+    {
+      "layer": "clothing",
+      "option": "dress",
+      "path": "assets/modular_npcs/clothing/dress.png",
+      "sha256": "e14845a6eb07a67bb68d8a8033ffa1124147000c6bd5dc8d2fc796463a13d73f"
+    },
+    {
+      "layer": "clothing",
+      "option": "vest",
+      "path": "assets/modular_npcs/clothing/vest.png",
+      "sha256": "aee5babacffc99aa898806072c2204ea7100ea360241225593ea68d8cdb4143d"
+    },
+    {
+      "layer": "clothing",
+      "option": "coat",
+      "path": "assets/modular_npcs/clothing/coat.png",
+      "sha256": "0c4bc447b6d5a83f4c38321a2c479564d318d66f54674c885f47db90a78b597c"
+    },
+    {
+      "layer": "clothing",
+      "option": "robe",
+      "path": "assets/modular_npcs/clothing/robe.png",
+      "sha256": "e14845a6eb07a67bb68d8a8033ffa1124147000c6bd5dc8d2fc796463a13d73f"
+    },
+    {
+      "layer": "clothing",
+      "option": "armor",
+      "path": "assets/modular_npcs/clothing/armor.png",
+      "sha256": "52887bb35e8f15b07b6412d4e28f563186fcd036e8ae70a0d8c70b05fb344d19"
+    },
+    {
+      "layer": "clothing",
+      "option": "finery",
+      "path": "assets/modular_npcs/clothing/finery.png",
+      "sha256": "8566b770dd41715a2bceb68f05b4bf5f3da1ac92c3a81893a4768e1c9066ff00"
+    },
+    {
+      "layer": "accessory",
+      "option": "none",
+      "path": "assets/modular_npcs/accessory/none.png",
+      "sha256": "cb0e955a0b866e879cf7bfa478ef7c083b5b23d869bff373fb55f580f9b3bdde"
+    },
+    {
+      "layer": "accessory",
+      "option": "pouch",
+      "path": "assets/modular_npcs/accessory/pouch.png",
+      "sha256": "22185498862c8c383f956fdaf5b64d5d88b0f3f5b6c32e97fd1c1d03fcaa40e6"
+    },
+    {
+      "layer": "accessory",
+      "option": "apron",
+      "path": "assets/modular_npcs/accessory/apron.png",
+      "sha256": "8d530406e7a1284b24b7c4e4611a1e9da051bf3c1b80ebaab5519e6ff2fee025"
+    },
+    {
+      "layer": "accessory",
+      "option": "scarf",
+      "path": "assets/modular_npcs/accessory/scarf.png",
+      "sha256": "8ee3264d78b0639d9be1a6d82423c310d8a9bf2bed3c9c83df68030b6bab5b8c"
+    },
+    {
+      "layer": "accessory",
+      "option": "satchel",
+      "path": "assets/modular_npcs/accessory/satchel.png",
+      "sha256": "c8d09b4fbfb50aa31936715616946284f6590039ab22699267b11c9f3ec1eb87"
+    },
+    {
+      "layer": "accessory",
+      "option": "medallion",
+      "path": "assets/modular_npcs/accessory/medallion.png",
+      "sha256": "83019e0a0da058d0d441efe076eddfca929f4d2943ea7eb458caf0534e8027a7"
+    },
+    {
+      "layer": "accessory",
+      "option": "pauldron",
+      "path": "assets/modular_npcs/accessory/pauldron.png",
+      "sha256": "c16d14ae21f5ac4c40f649a5a649e98c14481c3a92edb8858b42230e7e0cacd7"
+    },
+    {
+      "layer": "accessory",
+      "option": "toolbelt",
+      "path": "assets/modular_npcs/accessory/toolbelt.png",
+      "sha256": "695fbf73104ae031cf46f364cce75f35379b1e4a39750f00846cdf8d998a765a"
+    },
+    {
+      "layer": "hat",
+      "option": "none",
+      "path": "assets/modular_npcs/hat/none.png",
+      "sha256": "cb0e955a0b866e879cf7bfa478ef7c083b5b23d869bff373fb55f580f9b3bdde"
+    },
+    {
+      "layer": "hat",
+      "option": "cap",
+      "path": "assets/modular_npcs/hat/cap.png",
+      "sha256": "d4250ae43018744d01e1a93644d5ed52f233ff96518a178f9763671c75e77aa7"
+    },
+    {
+      "layer": "hat",
+      "option": "straw",
+      "path": "assets/modular_npcs/hat/straw.png",
+      "sha256": "60ccf5e3629b1bda43b8b1000d12bd07927a65c98c08daf5157800ebde332a8e"
+    },
+    {
+      "layer": "hat",
+      "option": "hood",
+      "path": "assets/modular_npcs/hat/hood.png",
+      "sha256": "b22a2a7fc7dfb46c1ec5e5dce7123d8d7ae29beb6209e85ef56eac923051d120"
+    },
+    {
+      "layer": "hat",
+      "option": "helmet",
+      "path": "assets/modular_npcs/hat/helmet.png",
+      "sha256": "c51e3064f34e7726dbb4f75fd79c124c4ef3d63bd7b92a9e54cea99d5af007b9"
+    },
+    {
+      "layer": "hat",
+      "option": "crested_helmet",
+      "path": "assets/modular_npcs/hat/crested_helmet.png",
+      "sha256": "77b5b674ba705fb146ee961fca919a5e427405c246d81d82ffeccd7a21e7cc43"
+    },
+    {
+      "layer": "hat",
+      "option": "crown",
+      "path": "assets/modular_npcs/hat/crown.png",
+      "sha256": "11cd9fbac4b6a010e30cb2fc520aa29c29c839d393616373d154e5ed3ab4e80a"
+    },
+    {
+      "layer": "hat",
+      "option": "tiara",
+      "path": "assets/modular_npcs/hat/tiara.png",
+      "sha256": "994cba0a7c1ca38a864736afb98178523e7708013700fadf4543d049aacb8e33"
+    },
+    {
+      "layer": "hat",
+      "option": "beret",
+      "path": "assets/modular_npcs/hat/beret.png",
+      "sha256": "0d89f727bf53df95158efce016a4f0aced9fc4c415f3e88342f15a5c91b6384e"
+    },
+    {
+      "layer": "hat",
+      "option": "headscarf",
+      "path": "assets/modular_npcs/hat/headscarf.png",
+      "sha256": "12006a13e058f81792951eccac6f449791754de53c72ff091c1e6dd3da52a5eb"
+    }
+  ]
+}

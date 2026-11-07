@@ -40,6 +40,11 @@ Clima pode ser automático ou fixado no menu Esc.
 Seu progresso é salvo automaticamente neste computador.
 
 NPCS E RELACIONAMENTOS
+Cada NPC combina corpo, cabelo, roupa, acessório e chapéu, com cores por papel.
+Seu ID define aparência, estatura e voz; o save mantém as variantes.
+Som ligado ativa sílabas estilizadas de RPG durante as conversas.
+E > Restaurar aparência modular retorna ao kit após importar uma prancha.
+GUIA-DAS-APARENCIAS.md explica camadas, paletas e regras por profissão/facção.
 E perto de um NPC > Conversar e relacionamentos.
 J > Relações, missões e identidade mostra vínculos, classe e facção.
 Afinidade vai de -100 a 100. Há preferências próprias e dois presentes por dia.
@@ -194,7 +199,7 @@ def package(system: str, output: Path) -> Path:
     shutil.copy2(ROOT / "docs" / "mapa-exemplo.json", stage / "MAPA-EXEMPLO.json")
     guide = (ROOT / "docs" / "editor-de-mapas.md").read_text(encoding="utf-8")
     (stage / "GUIA-DO-EDITOR.md").write_text(
-        guide.replace("(mapa-exemplo.json)", "(MAPA-EXEMPLO.json)"), encoding="utf-8"
+        guide.replace("(mapa-exemplo.json)", "(MAPA-EXEMPLO.json)").replace("(aparencia-modular.md)", "(GUIA-DAS-APARENCIAS.md)"), encoding="utf-8"
     )
     shutil.copy2(ROOT / "docs" / "editor-mapa.png", stage / "editor-mapa.png")
     shutil.copy2(ROOT / "docs" / "coleta-e-ferramentas.md", stage / "GUIA-DA-COLETA.md")
@@ -208,7 +213,12 @@ def package(system: str, output: Path) -> Path:
     (stage / "MODELOS-FORA-DO-GRID.md").write_text(model_guide.replace("(construcao-grid.md)", "(GUIA-DO-GRID.md)").replace("(casas-modulares.md)", "(GUIA-DAS-CASAS.md)").replace("(estradas-e-posicionamento.md)", "(GUIA-DO-POSICIONAMENTO.md)"), encoding="utf-8")
     for name in ["grid-audit-before.json", "grid-audit.json", "grid-guias.png", "grid-cantos.png", "grid-validacao.png"]:
         shutil.copy2(ROOT / "docs" / name, stage / name)
-    shutil.copy2(ROOT / "docs" / "npcs-e-relacionamentos.md", stage / "GUIA-DOS-RELACIONAMENTOS.md")
+    relationships_guide = (ROOT / "docs" / "npcs-e-relacionamentos.md").read_text(encoding="utf-8")
+    (stage / "GUIA-DOS-RELACIONAMENTOS.md").write_text(relationships_guide.replace("(aparencia-modular.md)", "(GUIA-DAS-APARENCIAS.md)"), encoding="utf-8")
+    shutil.copy2(ROOT / "docs" / "aparencia-modular.md", stage / "GUIA-DAS-APARENCIAS.md")
+    for name in ["modular-galeria.png", "modular-mundo.png", "modular-validacao.json", "modular-populacao.json"]:
+        shutil.copy2(ROOT / "docs" / name, stage / name)
+    shutil.copy2(ROOT / "assets" / "modular_npcs" / "manifest.json", stage / "FONTES-NPCS-MODULARES.json")
     shutil.copy2(ROOT / "docs" / "faccoes-e-guildas.md", stage / "GUIA-DAS-FACCOES.md")
     house_guide = (ROOT / "docs" / "casas-modulares.md").read_text(encoding="utf-8")
     (stage / "GUIA-DAS-CASAS.md").write_text(house_guide.replace("(construcao-grid.md)", "(GUIA-DO-GRID.md)").replace("(construcao-e-fabricacao.md)", "(GUIA-DA-CONSTRUCAO.md)").replace("(editor-de-mapas.md)", "(GUIA-DO-EDITOR.md)").replace("(estradas-e-posicionamento.md)", "(GUIA-DO-POSICIONAMENTO.md)"), encoding="utf-8")
@@ -230,8 +240,10 @@ def package(system: str, output: Path) -> Path:
         "Os avisos do Godot e de suas dependências acompanham este pacote.\n"
         "Sprites: dez PNGs originais de tomate.zip, fornecidos pelo autor do projeto.\n"
         "Inclui personagens, árvores, terrenos, transições, água e casas.\n"
-        "NPCs: oito pranchas originais de abc.zip, fornecidas pelo autor, além do agricultor de tomate.zip.\n"
-        "FONTES-NPCS.json registra a origem e os hashes das pranchas de NPCs.\n"
+        "NPCs: kit original do projeto com 36 spritesheets em cinco camadas e paletas por shader.\n"
+        "FONTES-NPCS-MODULARES.json registra as medidas, origem e hashes das camadas.\n"
+        "As oito pranchas de abc.zip e o agricultor de tomate.zip permanecem intactos.\n"
+        "FONTES-NPCS.json registra a origem e os hashes dessas pranchas originais.\n"
         "Modelos 3D dos animais e das construções por etapas: geometria procedural do projeto.\n"
         "Fonte bitmap 5x7, ícones da interface e paisagem do menu: criados no projeto.\n"
         "Os PNGs foram copiados e renomeados, preservando seus bytes originais.\n"

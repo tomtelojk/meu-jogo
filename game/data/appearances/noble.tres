@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AppearanceData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/appearance_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+role = "noble"
+clothing_options = PackedStringArray("finery", "robe")
+hat_options = PackedStringArray("crown", "tiara", "beret")
+accessory_options = PackedStringArray("medallion", "scarf")

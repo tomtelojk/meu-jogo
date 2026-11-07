@@ -2,6 +2,8 @@
 
 RPG de mundo aberto 2.5D para PC de 64 bits. Não é necessário instalar o Godot.
 
+**Novas aparências dos NPCs:** cinco camadas e 36 peças, com cores por shader, regras de profissão/facção e seed por ID. Os 44 moradores têm combinações diferentes; o save mantém seus visuais. Som ligado ativa timbres curtos de conversa. O ZIP inclui `GUIA-DAS-APARENCIAS.md`. [Ver galeria e guia](../docs/aparencia-modular.md).
+
 **Estradas e casas:** a nova geração coloca as ruas antes dos lotes e verifica margens de estrada, água, rochas e outras construções. Para mundos existentes, use **B → Validar estradas e terrenos → Realocar casas em conflito**. Há backup, relatório e opção de desfazer; conflitos sem espaço seguro continuam listados. F2 também valida e corrige. O ZIP inclui `GUIA-DO-POSICIONAMENTO.md`. [Guia](../docs/estradas-e-posicionamento.md).
 
 **Casas modulares:** cinco kits, portas com interiores mobiliados, varandas, beirais, degraus, janelas iluminadas à noite e chaminés com fumaça lenta. Use **B → Casas completas**, **T** para girar e **V** para variar. F2 também permite colocar e variar os kits. O ZIP inclui `GUIA-DAS-CASAS.md`. [Ver casas e controles](../docs/casas-modulares.md).
@@ -19,7 +21,7 @@ O mapa tem **25 vezes a área anterior**, dois reinos maiores, quatro vilarejos,
 
 **F2 abre o Ateliê de Mundos**, incluído no jogo. Comece com um mapa vazio ou edite os reinos: pinte terreno e água, coloque casas, pontes, árvores, animais e NPCs e marque suas rotinas. Salve, exporte ou importe mapas em JSON e use **Testar mapa** para jogar. O ZIP inclui um mapa de exemplo e o guia do editor.
 
-Os moradores usam nove bases visuais, com os sprites originais de NPCs enviados pelo autor. As casas combinam cinco kits com cores, tamanhos e giros controlados por semente. Shaders melhoram água, materiais e cor; podem ser desligados no menu de pausa.
+Os moradores combinam corpo, cabelo, roupa, acessório e chapéu. Os sprites originais enviados pelo autor continuam preservados para importação individual; E oferece restaurar a aparência modular. As casas combinam cinco kits com cores, tamanhos e giros controlados por semente. Shaders melhoram água, materiais e cor; os efeitos de ambiente podem ser desligados no menu de pausa.
 
 Os NPCs têm turnos de trabalho, comércio, refeições, patrulhas, encontros e descanso. Evitam aglomerações, procuram desvios e fogem de javalis. Quatro moradores também compram equipamento e constroem casas. A iluminação acompanha o dia, com neblina de distância, postes e lanterna à noite. O título e toda a interface seguem o estilo de RPG em pixel art.
 

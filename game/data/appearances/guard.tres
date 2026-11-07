@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AppearanceData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/appearance_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+role = "guard"
+clothing_options = PackedStringArray("armor")
+hat_options = PackedStringArray("helmet", "crested_helmet")
+accessory_options = PackedStringArray("pauldron", "scarf")

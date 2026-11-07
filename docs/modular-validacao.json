@@ -1,0 +1,210 @@
+{
+  "ok": true,
+  "godot": "4.6.3.stable",
+  "checks": 1929,
+  "suites": [
+    {
+      "name": "modular",
+      "checks": 68,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "core",
+      "checks": 240,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "motion",
+      "checks": 46,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "editor",
+      "checks": 40,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "life",
+      "checks": 22,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "houses",
+      "checks": 395,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "portals",
+      "checks": 33,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "relationships",
+      "checks": 158,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "factions",
+      "checks": 103,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "construction",
+      "checks": 76,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "placement",
+      "checks": 280,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "modular-graph",
+      "checks": 71,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "hybrid",
+      "checks": 24,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "hd2d",
+      "checks": 33,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "editor-graph",
+      "checks": 48,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "life-graph",
+      "checks": 26,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "relationships-graph",
+      "checks": 161,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "factions-graph",
+      "checks": 105,
+      "ok": true,
+      "exit_code": 0
+    }
+  ],
+  "modular": {
+    "headless": 68,
+    "graphical": 71,
+    "layer_sheets": 36,
+    "role_resources": 7,
+    "distinct_npcs": 44,
+    "distinct_front_images": 44,
+    "dense_roster": 320,
+    "real_collision_resolved": true,
+    "shader_pixels_checked": [
+      "canvas_item palette",
+      "spatial palette"
+    ],
+    "original_uploads_preserved": true
+  },
+  "native_linux": {
+    "ok": true,
+    "platform": "Linux x86_64 release",
+    "checks": [
+      "old save gains per-ID appearance records",
+      "two legacy identical PNG overrides stay inactive",
+      "native E opens the correct guard conversation",
+      "inventory and gold preserved",
+      "restart preserves variants",
+      "original PNG files keep their bytes"
+    ],
+    "logs": [
+      "/tmp/modular-native.log",
+      "/tmp/modular-native-reload.log"
+    ]
+  },
+  "exports": [
+    {
+      "platform": "linux",
+      "packed_files": 310,
+      "layer_sheets": 36,
+      "role_resources": 7,
+      "new_scripts_and_shader": true,
+      "excluded_tests_docs_downloads_scripts": true,
+      "ok": true,
+      "bytes": 96476008
+    },
+    {
+      "platform": "windows",
+      "packed_files": 310,
+      "layer_sheets": 36,
+      "role_resources": 7,
+      "new_scripts_and_shader": true,
+      "excluded_tests_docs_downloads_scripts": true,
+      "ok": true,
+      "bytes": 130059608
+    }
+  ],
+  "native_windows_tested": false,
+  "performance": {
+    "buildings": 131,
+    "loaded_regions": 25,
+    "npcs": 44,
+    "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "results": [
+      {
+        "cpu_ms": 46.929,
+        "draw_calls": 65,
+        "fps": 37.3231814279849,
+        "median_ms": 26.793,
+        "p95_ms": 32.691,
+        "scene": "capital"
+      },
+      {
+        "cpu_ms": 47.069,
+        "draw_calls": 75,
+        "fps": 34.9748181309457,
+        "median_ms": 28.592,
+        "p95_ms": 36.273,
+        "scene": "ferraria"
+      },
+      {
+        "cpu_ms": 41.446,
+        "draw_calls": 76,
+        "fps": 33.0928585611225,
+        "median_ms": 30.218,
+        "p95_ms": 37.362,
+        "scene": "ponte"
+      }
+    ],
+    "scale_3d": 0.649999976158142,
+    "window_size": [
+      1280,
+      800
+    ],
+    "world_size": [
+      16000.0,
+      12800.0
+    ]
+  }
+}

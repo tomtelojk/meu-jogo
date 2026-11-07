@@ -13,6 +13,9 @@ uniform vec4 tint : source_color = vec4(1.0);
 uniform vec4 frame_uv = vec4(0.0,0.0,1.0,1.0);
 uniform vec2 tex_size = vec2(1.0);
 uniform vec4 clothing_tint : source_color = vec4(1.0);
+uniform bool indexed_palette = false;
+uniform sampler2D index_art : filter_nearest, repeat_disable;
+uniform sampler2D palette_map : source_color, filter_nearest, repeat_disable;
 uniform vec3 day_color : source_color = vec3(1.0);
 uniform bool face_camera = true;
 uniform float swim_amount = 0.0;
@@ -29,11 +32,17 @@ void fragment() {
  vec2 local = (UV-frame_uv.xy)/frame_uv.zw;
  vec2 uv = clamp(UV,frame_uv.xy+0.5/tex_size,frame_uv.xy+frame_uv.zw-0.5/tex_size);
  vec4 c=texture(art,uv);
+ if(indexed_palette){
+  vec4 pixel=texture(index_art,uv);
+  float index=floor(pixel.r*255.0+0.5);
+  c=texture(palette_map,vec2((index+0.5)/32.0,0.5));
+  c.a*=pixel.a;
+ }
  float key=min(c.r,c.b)-c.g;
- c.a*=1.0-smoothstep(0.08,0.3,key);
+ if(!indexed_palette)c.a*=1.0-smoothstep(0.08,0.3,key);
  c.a*=mix(1.0,1.0-smoothstep(0.57,0.61,local.y),swim_amount);
  if(c.a*tint.a<0.12) discard;
- float cloth=step(0.44,local.y)*step(local.y,0.68)*step(0.08,c.r)*step(c.r,0.68)*smoothstep(0.06,0.18,c.r-c.g);
+ float cloth=(indexed_palette?0.0:1.0)*step(0.44,local.y)*step(local.y,0.68)*step(0.08,c.r)*step(c.r,0.68)*smoothstep(0.06,0.18,c.r-c.g);
  c.rgb=mix(c.rgb,c.rgb*clothing_tint.rgb,cloth*0.55);
  ALBEDO=c.rgb*tint.rgb*(day_color+pixel_local_light(pixel_world));
  ALPHA=c.a*tint.a;
@@ -381,7 +390,13 @@ func _sync(card:Sprite3D,source:AnimatedSprite2D)->void:
 	_sprite_geometry(card,source)
 	var mat:=card.material_override as ShaderMaterial
 	mat.set_shader_parameter("tint",source.modulate)
-	if source.material is ShaderMaterial:
+	var modular:=ModularSpriteSheet.is_sheet(source.sprite_frames) and source.material is ShaderMaterial
+	mat.set_shader_parameter("indexed_palette",modular)
+	if modular:
+		mat.set_shader_parameter("index_art",tex)
+		mat.set_shader_parameter("palette_map",source.material.get_shader_parameter("palette_map"))
+		mat.set_shader_parameter("clothing_tint",Color.WHITE)
+	elif source.material is ShaderMaterial:
 		mat.set_shader_parameter("clothing_tint",source.material.get_shader_parameter("clothing_tint"))
 	else:mat.set_shader_parameter("clothing_tint",Color.WHITE)
 

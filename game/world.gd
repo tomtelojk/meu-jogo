@@ -137,7 +137,9 @@ func _build_population()->void:
 				if navigator.is_in_boundsv(cell):navigator.set_point_weight_scale(cell,0.65)
 	clock=WorldClock.new()
 	add_child(clock)
-	for profile in KingdomData.people():
+	var profiles:=KingdomData.people()
+	get_parent().appearance_records=AppearanceGenerator.prepare(profiles,get_parent().appearance_records)
+	for profile in profiles:
 		var npc:=ForestNPC.new()
 		npc.setup(profile,player.default_frames,navigator,clock.minute)
 		entities.add_child(npc)

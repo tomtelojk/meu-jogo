@@ -108,6 +108,7 @@ func show_dialogue(id:String,node:String="start",reply:String="")->void:
 	if node!="start":actions.append({"label":"Outro assunto","callback":show_dialogue.bind(id,"start","")})
 	actions.append({"label":"Relação e presentes","callback":show_menu.bind(id)})
 	game._open_dialog("CONVERSA · AFINIDADE %+d"%state().record(id).affinity,game.world.npcs[id].definition.name,body,actions,"relationship_dialogue")
+	game.audio.speak(game.world.npcs[id].appearance_data,body)
 
 func choose(id:String,node:String,key:String)->void:
 	if not near(id):return
@@ -258,6 +259,7 @@ func show_scene()->void:
 	var event:=RelationshipCatalog.event(event_id)
 	var actions:Array[Dictionary]=[{"label":"Concluir encontro" if step==event.pages.size()-1 else "Continuar","name":"scene_next","callback":advance_scene},{"label":"Pular para o desfecho","name":"scene_skip","callback":finish_scene},{"label":"Pausar encontro","name":"scene_pause","callback":game.close_dialog}]
 	game._open_dialog("ENCONTRO · %d/%d"%[step+1,event.pages.size()],event.name,format_text(event.pages[step],id),actions,"relationship_scene")
+	game.audio.speak(game.world.npcs[id].appearance_data,format_text(event.pages[step],id))
 	if game.hybrid!=null:game.hybrid.cinematic_focus=(game.player.position+game.world.npcs[id].position)/2
 	for top in [true,false]:
 		var bar:=ColorRect.new();bar.color=Color("080d16");bar.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -272,7 +274,10 @@ func show_scene()->void:
 		picture.texture=actor.sprite.sprite_frames.get_frame_texture("idle_down",0)
 		if portrait_shader==null:
 			portrait_shader=Shader.new();portrait_shader.code="shader_type canvas_item; void fragment(){vec4 c=texture(TEXTURE,UV);c.a*=1.0-smoothstep(0.08,0.3,min(c.r,c.b)-c.g);COLOR=c;}"
-		var material:=ShaderMaterial.new();material.shader=portrait_shader;picture.material=material;box.add_child(picture)
+		if ModularSpriteSheet.is_sheet(actor.sprite.sprite_frames):picture.material=actor.sprite.material
+		else:
+			var material:=ShaderMaterial.new();material.shader=portrait_shader;picture.material=material
+		box.add_child(picture)
 		var label:=game.hud._text("Você" if actor==game.player else actor.definition.name,12,game.hud.CREAM);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(label)
 	game.hud.modal_content.add_child(portraits);game.hud.modal_content.move_child(portraits,2);game.hud.call_deferred("_layout_modal")
 

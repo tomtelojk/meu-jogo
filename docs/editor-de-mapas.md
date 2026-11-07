@@ -25,7 +25,7 @@ O desenho do ateliê é uma planta de cima. **Testar mapa** mostra a aparência 
 
 ## Rotinas dos moradores
 
-Na categoria **NPCs**, escolha a aparência antes de colocar o morador. Ferreiro, comerciante, guarda, herbalista, sábio, dois reis, camponesa e agricultor têm bases visuais diferentes.
+Na categoria **NPCs**, escolha o papel antes de colocar o morador: ferreiro, comerciante, guarda, herbalista, sábio, rei, camponesa ou agricultor. Cada ID gera uma combinação própria de corpo, cabelo, roupa, acessório, chapéu e paleta, respeitando o papel. [Aparências modulares](aparencia-modular.md).
 
 Selecione um NPC e role até **Objeto selecionado**. Você pode mudar seu nome, pressionando Enter para confirmar, e marcar três pontos no mapa:
 
@@ -53,6 +53,6 @@ Arquivos locais ficam em `user://maps`: normalmente `%APPDATA%/EntreFolhas/maps`
 
 ## Aparência e desempenho
 
-As cidades usam seis paletas e modelos com vigas, janelas, chaminés, toldos, telhados e torres. A população mistura os sprites originais de NPCs enviados em `abc.zip` com o agricultor de `tomate.zip`, mantendo os PNGs intactos e o alinhamento das caminhadas.
+As cidades usam modelos com vigas, janelas, chaminés, toldos, telhados e torres. A população usa o kit modular de cinco camadas, com o mesmo quadro e pivô para todas as peças. Os PNGs originais de `abc.zip` e `tomate.zip` permanecem intactos; o protagonista continua usando o agricultor original.
 
 Os novos shaders acrescentam movimento e brilho à água e detalhes aos materiais das construções. O modo nítido também inclui uma correção suave de cor. **Esc → Shaders** desliga esses efeitos; **Esc → Gráficos** alterna entre leve e nítido. A interface permanece na resolução integral.

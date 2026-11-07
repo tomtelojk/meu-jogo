@@ -10,6 +10,7 @@ var definition: Dictionary
 var current_schedule: Dictionary = {}
 var navigator: AStarGrid2D
 var sprite: AnimatedSprite2D
+var appearance_data:AppearanceData
 var name_label: Label
 var interaction_area: Area2D
 var route := PackedVector2Array()
@@ -348,6 +349,8 @@ func load_original_sprite(path: String) -> bool:
 		return false
 	sprite.sprite_frames = sheet.frames
 	sprite.material = null
+	appearance_data=AppearanceGenerator.for_profile(definition)
+	if sprite.has_meta("appearance_data"):sprite.remove_meta("appearance_data")
 	sprite.scale = Vector2.ONE * 72.0 / sheet.cell.y
 	sprite.position = Vector2(0, -31)
 	sprite.modulate = Color.WHITE
@@ -359,6 +362,7 @@ func load_original_sprite(path: String) -> bool:
 func load_default_sprite() -> bool:
 	if not NPCAppearance.apply(sprite,definition):
 		return false
+	appearance_data=sprite.get_meta("appearance_data")
 	custom_sprite = true
 	sprite.play("idle_" + facing)
 	_sync_character_geometry()

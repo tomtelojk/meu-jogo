@@ -18,18 +18,25 @@ static func sheet(face: String) -> Dictionary:
 
 static func apply(sprite: AnimatedSprite2D, profile: Dictionary) -> bool:
 	var face := identity(profile)
-	var data := sheet(face)
+	var appearance:=AppearanceGenerator.for_profile(profile)
+	var data:=ModularSpriteSheet.read(appearance)
 	if data.is_empty():return false
+	sprite.set_meta("appearance_data",appearance)
 	sprite.sprite_frames=data.frames
-	var palette: Color = Color.WHITE if profile.id in MapDocument.FACES else PALETTES[posmod(String(profile.id).hash()/7,PALETTES.size())]
-	sprite.material=TomateCharacterSheet.make_material(palette)
+	var material:=ShaderMaterial.new();material.shader=load("res://game/shaders/npc_palette.gdshader")
+	material.set_shader_parameter("index_art",data.texture)
+	material.set_shader_parameter("palette_map",appearance.palette_texture())
+	sprite.material=material
 	sprite.set_meta("appearance",face)
-	sprite.set_meta("body_height",64.0+posmod(String(profile.id).hash(),9))
+	sprite.set_meta("body_height",68.0*appearance.stature)
 	sprite.modulate=Color.WHITE
 	geometry(sprite)
 	return true
 
 static func geometry(sprite: AnimatedSprite2D) -> void:
+	if ModularSpriteSheet.is_sheet(sprite.sprite_frames):
+		ModularSpriteSheet.apply_geometry(sprite)
+		return
 	if TomateCharacterSheet.is_sheet(sprite.sprite_frames):
 		TomateCharacterSheet.apply_geometry(sprite)
 		return

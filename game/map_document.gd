@@ -230,6 +230,12 @@ static func clean_object(entry: Dictionary) -> Dictionary:
 		if options.is_empty() or not obj.kind in HouseKit.KINDS:return {}
 		obj.merge(options)
 	if obj.kind=="npc":
+		if entry.has("faction"):
+			if not entry.faction is String:return {}
+			var faction:String=String(entry.faction).trim_prefix("guild_")
+			FactionCatalog.load_data()
+			if not faction.is_empty() and not FactionCatalog.data.factions.has(faction) and not FactionCatalog.data.guilds.has(faction):return {}
+			obj.faction=faction
 		for place in ["home","work","social"]:
 			var x: Variant=entry.get(place+"_x",obj.x)
 			var y: Variant=entry.get(place+"_y",obj.y)

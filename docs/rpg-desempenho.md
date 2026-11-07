@@ -59,3 +59,12 @@ A revisão de posicionamento passou em **2.462 verificações** nas suítes atua
 O executável Linux foi controlado por teclado: B/Tab/Enter exportou o conflito real de uma casa sobre uma rua; a correção moveu apenas essa casa, manteve o lote livre e os materiais, salvou mapa e aventura e gravou cópias. Uma segunda execução preservou a disposição corrigida. Ambas encerraram com código 0, sem erros de script ou shader. Os dois executáveis contêm os novos scripts, regras e a base antiga; os pacotes não embutem testes ou downloads. Windows foi exportado e inspecionado, sem execução nativa disponível.
 
 O diagnóstico de desempenho foi repetido sem outro Godot ou empacotamento concorrente, em llvmpipe, modo leve, 1280 × 800. As medianas foram **38,3 FPS** na capital, **34,4 FPS** na ferraria e **34,0 FPS** na ponte, com 65/75/76 chamadas de desenho. São medições deste renderizador por software, com população pausada e posições fixas; não garantem o desempenho em outro computador. [Dados da medição](rpg-desempenho.json).
+
+
+## Aparências modulares
+
+A integração do kit modular passou em **1.929 verificações**, em 18 suítes, incluindo **68 sem renderização e 71 gráficas** para as novas aparências. Foram verificadas as combinações e os pixels frontais distintos dos 44 moradores, uma colisão real de opções resolvida por variante, estabilidade ao reordenar e ampliar a população, um grupo de 320 nomes sem repetição, regras de papel/facção, vozes, pivôs e persistência. Os shaders 2D e 3D foram medidos por pixels, com troca de roupa sem alterar a pele. [Relatório](modular-validacao.json) · [Galeria e Resources](aparencia-modular.md).
+
+O executável Linux foi iniciado com um save antigo e dois PNGs de NPC idênticos. A migração adotou as camadas, salvou variantes por ID e manteve os PNGs antigos intactos e inativos. O teclado real abriu a conversa do guarda; uma nova execução preservou os visuais e o inventário. Ambas terminaram com código 0, sem erros de script ou shader. Os pacotes de Linux e Windows contêm as 36 camadas, sete presets e os novos scripts/shader; Windows não teve execução nativa neste ambiente.
+
+O kit compõe as camadas uma vez e mantém um billboard por personagem. Na medição isolada em llvmpipe, modo leve e 1280 × 800, foram mantidas **65/75/76 chamadas de desenho** na capital, ferraria e ponte. As medianas ficaram em **37,3 / 35,0 / 33,1 FPS**, com a população pausada. Esses valores são um diagnóstico do renderizador por software deste ambiente, sem garantia de FPS em outro computador. [Dados atuais](rpg-desempenho.json).

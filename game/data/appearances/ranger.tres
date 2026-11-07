@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AppearanceData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/appearance_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+role = "ranger"
+clothing_options = PackedStringArray("tunic", "coat", "dress")
+hat_options = PackedStringArray("hood", "none", "headscarf")
+accessory_options = PackedStringArray("satchel", "scarf", "pouch")

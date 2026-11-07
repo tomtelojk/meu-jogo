@@ -4,7 +4,9 @@ extends Node
 var enabled: bool = false
 var wind: AudioStreamPlayer
 var effect: AudioStreamPlayer
+var voice:AudioStreamPlayer
 var impacts:Dictionary={}
+var voices:Dictionary={}
 
 func _ready() -> void:
 	wind = AudioStreamPlayer.new()
@@ -13,6 +15,7 @@ func _ready() -> void:
 	effect = AudioStreamPlayer.new()
 	effect.volume_db = -16.0
 	add_child(effect)
+	voice=AudioStreamPlayer.new();voice.volume_db=-22.0;add_child(voice)
 
 func toggle() -> bool:
 	enabled = not enabled
@@ -23,7 +26,36 @@ func toggle() -> bool:
 	else:
 		wind.stop()
 		effect.stop()
+		voice.stop()
 	return enabled
+
+func speak(data:AppearanceData,text:String)->void:
+	if not enabled or data==null:return
+	voice.stream=voice_stream(data,clampi(text.length()/35,3,7))
+	voice.pitch_scale=data.voice_pitch;voice.play()
+
+## Short RPG syllables, not recorded speech or text-to-speech. Each identity
+## keeps its pitch, harmonic character, cadence and reproducible intonation.
+func voice_stream(data:AppearanceData,syllables:int=5)->AudioStreamWAV:
+	var key:="%d:%d:%d"%[data.seed,data.variant,syllables]
+	if voices.has(key):return voices[key]
+	var rate:=11025;var duration:=data.voice_cadence*syllables
+	var bytes:=PackedByteArray();bytes.resize(ceili(duration*rate)*2)
+	var rng:=RandomNumberGenerator.new();rng.seed=data.seed
+	var tones:Array[float]=[]
+	for i in syllables:tones.append(rng.randf_range(0.89,1.12))
+	var base:=155.0+data.voice_timbre*37.0+posmod(data.seed,57)
+	for i in bytes.size()/2:
+		var time:=float(i)/rate
+		var syllable:=mini(syllables-1,floori(time/data.voice_cadence))
+		var local:=fmod(time,data.voice_cadence)/data.voice_cadence
+		var phase:=time*base*tones[syllable]*TAU
+		var tone:=sin(phase)*0.5+sin(phase*2.0+0.3)*0.18+sin(phase*(3+data.voice_timbre))*0.1
+		if data.voice_timbre in [2,4]:tone+=rng.randf_range(-0.10,0.10)
+		var envelope:=sin(minf(local/0.78,1.0)*PI)*0.35 if local<0.78 else 0.0
+		bytes.encode_s16(i*2,roundi(tone*envelope*24000))
+	voices[key]=_wav(bytes,rate)
+	return voices[key]
 
 func chime(victory: bool = false) -> void:
 	if not enabled:

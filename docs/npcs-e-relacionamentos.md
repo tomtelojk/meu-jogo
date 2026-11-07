@@ -2,6 +2,8 @@
 
 Use **E** perto de um NPC e escolha **Conversar e relacionamentos**. O painel mostra afinidade, vínculo, atividade atual e a reação às suas ações. Em **J → Relações, missões e identidade**, acompanhe pessoas conhecidas, compromissos, classe, facção e reputação.
 
+Os 44 moradores usam peças e paletas próprias, determinadas pelo ID e pelo papel. Com Som ligado, os diálogos têm timbres curtos individuais. A aparência e a voz não alteram afinidade, memórias ou missões. [Kit modular e regras](aparencia-modular.md).
+
 ![Painel de amizade](relacoes-amizade.png)
 
 ## Afinidade e presentes

@@ -4,6 +4,10 @@ Um **RPG de mundo aberto 2.5D para Windows e Linux**. Personagens em pixel art v
 
 [Baixar o jogo pronto](downloads/README.md)
 
+**NPCs modulares:** 36 peças em cinco camadas, cores por shader e seed pelo ID. Os 44 moradores têm combinações distintas, com regras de roupa por profissão e facção, estatura leve e timbres de diálogo próprios. O save mantém as variantes. [Guia de aparência e Resources](docs/aparencia-modular.md).
+
+![Os moradores com visuais distintos](docs/modular-galeria.png)
+
 **Casas fora das estradas:** novas vilas geram primeiro as ruas e depois os lotes, com fachadas voltadas para elas. Construções verificam a área inteira e as margens de ruas, água, rochas e outros prédios. **B → Validar estradas e terrenos → Realocar casas em conflito** corrige mapas existentes, guarda cópia e permite desfazer. F2 também destaca e corrige lotes inválidos. [Guia e script de verificação](docs/estradas-e-posicionamento.md).
 
 **Casas modulares:** cinco kits em `HouseData` — humilde, comum, rica, taverna e loja — com fundações, fachadas, janelas, portas, coberturas, chaminés e varandas. **B → Casas completas** escolhe o kit; **T** gira e **V** muda a variação na prévia. As casas têm interiores mobiliados, entrada e saída por E, janelas acesas à noite e fumaça lenta. F2 permite colocar e variar os kits no seu mapa. [Guia das casas](docs/casas-modulares.md).
@@ -38,7 +42,7 @@ Pressione **F2** para abrir o **Ateliê de Mundos**, incluído no jogo pronto. C
 
 ![Aparências dos NPCs](docs/editor-npcs.png)
 
-Os NPCs agora misturam **nove bases visuais diferentes**, incluindo os oito personagens de `abc.zip`. As casas combinam **cinco kits modulares**, com cores, tamanhos, giros e detalhes variados. Novos shaders trabalham a água, os materiais das casas e as cores do cenário; os efeitos podem ser desligados no menu de pausa.
+Os NPCs usam **corpo, cabelo, roupa, acessório e chapéu combináveis**, com paletas independentes e presets por papel. As pranchas originais de `abc.zip` continuam intactas e disponíveis para importação individual. As casas combinam **cinco kits modulares**, com cores, tamanhos, giros e detalhes variados. Shaders trabalham água, materiais e cores do cenário; os efeitos de ambiente podem ser desligados no menu de pausa.
 
 ## O novo mundo
 
@@ -218,6 +222,8 @@ Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambien
 ./scripts/godot.sh --headless --script res://tests/placement_tests.gd -- --test
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/placement_tests.gd -- --test --hybrid
 ./scripts/godot.sh --headless --script scripts/validate_placement.gd -- --report /tmp/posicionamento.json
+./scripts/godot.sh --headless --script tests/modular_appearance_tests.gd -- --test
+./scripts/godot.sh --audio-driver Dummy --script tests/modular_appearance_tests.gd -- --test --hybrid
 ```
 
 A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.
