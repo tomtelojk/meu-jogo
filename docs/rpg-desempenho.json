@@ -5,27 +5,27 @@
   "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
   "results": [
     {
-      "cpu_ms": 39.773,
-      "draw_calls": 85,
-      "fps": 36.003600360036,
-      "median_ms": 27.775,
-      "p95_ms": 34.112,
+      "cpu_ms": 37.288,
+      "draw_calls": 86,
+      "fps": 34.0170765724394,
+      "median_ms": 29.397,
+      "p95_ms": 37.26,
       "scene": "capital"
     },
     {
-      "cpu_ms": 36.005,
-      "draw_calls": 86,
-      "fps": 34.4186686858952,
-      "median_ms": 29.054,
-      "p95_ms": 34.007,
+      "cpu_ms": 48.477,
+      "draw_calls": 88,
+      "fps": 31.2519532470779,
+      "median_ms": 31.998,
+      "p95_ms": 39.292,
       "scene": "ferraria"
     },
     {
-      "cpu_ms": 46.376,
-      "draw_calls": 89,
-      "fps": 29.0250486169564,
-      "median_ms": 34.453,
-      "p95_ms": 44.488,
+      "cpu_ms": 36.851,
+      "draw_calls": 90,
+      "fps": 31.750063500127,
+      "median_ms": 31.496,
+      "p95_ms": 38.219,
       "scene": "ponte"
     }
   ],

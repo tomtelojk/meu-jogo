@@ -129,8 +129,11 @@ func discover(id:String)->bool:
 	changed.emit()
 	return true
 
-func claim(position:Vector2,owner:String="player")->Dictionary:
-	position=snap_home(position)
+func claim(position:Vector2,owner:String="player",options:Dictionary={})->Dictionary:
+	var kit_options:=HouseKit.clean_options(options)
+	var size:=HouseKit.size_for(kit_options.house_style,kit_options.house_seed,kit_options.house_turn) if not kit_options.is_empty() else Vector2(192,128)
+	var corner:=(position-Vector2(size.x/2,size.y)).snapped(Vector2.ONE*WorldGrid.CELL)
+	position=corner+Vector2(size.x/2,size.y)
 	var id:="home_"+owner
 	if not position.is_finite() or position.x<192 or position.y<192 or position.x>WorldData.SIZE.x-192 or position.y>WorldData.SIZE.y-192:return result(false,"Terreno fora dos limites do continente.")
 	if houses.has(id):return result(false,"Você já tem um terreno. Conclua sua casa primeiro.")
@@ -142,6 +145,7 @@ func claim(position:Vector2,owner:String="player")->Dictionary:
 		if account.gold<20:return result(false,"Economizando para o terreno.")
 		account.gold-=20
 	houses[id]={"owner":owner,"x":position.x,"y":position.y,"stage":0,"hp":HOUSE_HP[0]}
+	houses[id].merge(kit_options)
 	house_changed.emit(id)
 	changed.emit()
 	return result(true,"Terreno reservado. Use um martelo para construir em três etapas.")
@@ -214,7 +218,9 @@ func deliver(town:String,day:int)->Dictionary:
 	return result(true,"Encomenda entregue: +80 moedas · +40 XP.")
 
 func home_rect(house:Dictionary)->Rect2:
-	return Rect2(Vector2(house.x-96,house.y-128),Vector2(192,128))
+	var options:=HouseKit.clean_options(house)
+	var size:=HouseKit.size_for(options.house_style,options.house_seed,options.house_turn) if not options.is_empty() else Vector2(192,128)
+	return Rect2(Vector2(house.x-size.x/2,house.y-size.y),size)
 
 func save_data()->Dictionary:
 	return {"gold":gold,"wood":wood,"stone":stone,"copper":copper,"iron":iron,"resources":resources.save_data(),"construction":construction.save_data(),"relationships":relationships.save_data(),"politics":politics.save_data(),"food":food,"meat":meat,"xp":xp,"health":health,"tools":tools.keys(),"discovered":discovered.keys(),"depleted":depleted.keys(),"houses":houses.duplicate(true),"npc_accounts":npc_accounts.duplicate(true),"contracts":contracts.duplicate(),"produce_times":produce_times.duplicate()}
@@ -244,6 +250,7 @@ func restore(data:Dictionary)->void:
 					var stage:=clampi(int(h.get("stage",0)),0,3)
 					var hp:int=clampi(int(h.get("hp",HOUSE_HP[stage])),1,HOUSE_HP[stage]) if ResourceProgress.number(h.get("hp",HOUSE_HP[stage])) else HOUSE_HP[stage]
 					houses[id]={"owner":h.owner,"x":p.x,"y":p.y,"stage":stage,"hp":hp}
+					houses[id].merge(HouseKit.clean_options(h))
 	var accounts=data.get("npc_accounts",{})
 	if accounts is Dictionary:
 		for id in accounts:

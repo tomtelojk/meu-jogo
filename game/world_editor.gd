@@ -8,6 +8,8 @@ var base_npcs: Dictionary = {}
 var tool := "grass"
 var appearance := "bento"
 var chosen_style := 0
+var house_turn := 0
+var house_seed := 42
 var brush_size := 1
 var selection := ""
 var canvas: MapCanvas
@@ -107,6 +109,11 @@ func _build_ui() -> void:
 	var style:=OptionButton.new()
 	for value in ["Terracota e creme","Madeira e verde","Pedra e ardósia","Argila e marrom","Oliva e ameixa","Rústico"]:style.add_item(value)
 	style.item_selected.connect(func(value:int):chosen_style=value);left.add_child(style)
+	var rotation_choice:=OptionButton.new()
+	for degrees in [0,90,180,270]:rotation_choice.add_item("Casa · giro %d°"%degrees)
+	rotation_choice.item_selected.connect(func(value:int):house_turn=value;canvas.queue_redraw());left.add_child(rotation_choice)
+	var seed_choice:=SpinBox.new();seed_choice.min_value=0;seed_choice.max_value=999999;seed_choice.value=house_seed;seed_choice.prefix="Variação ";left.add_child(seed_choice)
+	seed_choice.value_changed.connect(func(value:float):house_seed=int(value);canvas.queue_redraw())
 	var brush:=OptionButton.new()
 	for value in ["Pincel · 1 célula","Pincel · 3 células","Pincel · 5 células","Pincel · 9 células"]:brush.add_item(value)
 	brush.item_selected.connect(func(value:int):brush_size=[1,3,5,9][value]);left.add_child(brush)
@@ -211,6 +218,11 @@ func paint_at(point:Vector2) -> bool:
 	_snapshot()
 	var at:=point.snapped(Vector2.ONE*32)
 	var obj:=MapDocument.clean_object({"id":"obj_"+str(Time.get_ticks_usec()),"kind":tool,"x":at.x,"y":at.y,"name":LABELS.get(tool,"Morador"),"style":chosen_style,"appearance":appearance,"realm":KingdomData.realm_at(at),"home_x":at.x,"home_y":clampf(at.y+128,64,12736),"work_x":at.x,"work_y":at.y,"social_x":clampf(at.x+192,64,15936),"social_y":at.y})
+	if tool in HouseKit.KINDS:
+		obj.merge({"house_style":HouseKit.KINDS[tool],"house_seed":house_seed,"house_turn":house_turn})
+		var rect:=KingdomData.building_rect(preview_building(point))
+		obj.x=rect.get_center().x;obj.y=rect.end.y
+		house_seed+=1
 	if tool=="npc":obj.name={"bento":"Ferreiro","lia":"Comerciante","tomas":"Guarda","iris":"Herbalista","eron":"Sábio","aurel":"Rei Aurel","caio":"Rei Caio","mila":"Camponesa","farmer":"Agricultor"}[appearance]
 	draft.objects.append(obj);selection=obj.id;dirty=true;_show_inspector()
 	return true
@@ -222,8 +234,9 @@ func valid_at(point:Vector2,ignore_id:String="") -> bool:
 	var kind: String=draft.terrain.get(MapDocument.cell_key(MapDocument.cell_at(at)),"")
 	if tool!="bridge" and (kind=="water" or kind.is_empty() and draft.base=="reinos" and absf(at.x-WorldData.river_x(at.y))<180):return false
 	if tool in MapDocument.STRUCTURES or tool=="spawn":
-		var dim:=MapDocument.building_size(tool) if tool in MapDocument.STRUCTURES else Vector2(24,24)
+		var dim:Vector2=preview_building(point,selected_object() if not ignore_id.is_empty() else {}).size if tool in HouseKit.KINDS else (MapDocument.building_size(tool) if tool in MapDocument.STRUCTURES else Vector2(24,24))
 		var rect:=Rect2(at-Vector2(dim.x/2,dim.y),dim)
+		if tool in HouseKit.KINDS:rect=KingdomData.building_rect(preview_building(point,selected_object() if not ignore_id.is_empty() else {}))
 		if tool=="bridge":rect=Rect2(at-dim/2,dim)
 		if not Rect2(Vector2.ONE*32,MapDocument.LIMIT-Vector2.ONE*64).encloses(rect):return false
 		for sample in [rect.position,rect.end,Vector2(rect.position.x,rect.end.y),Vector2(rect.end.x,rect.position.y),rect.get_center()]:
@@ -237,6 +250,16 @@ func valid_at(point:Vector2,ignore_id:String="") -> bool:
 			if building.id!=ignore_id and KingdomData.building_rect(building).grow(16).has_point(at):return false
 	return true
 
+func preview_building(point: Vector2, existing: Dictionary = {}) -> Dictionary:
+	var obj:Dictionary={"id":"preview","kind":tool,"x":point.x,"y":point.y,"house_style":HouseKit.KINDS.get(tool,"common"),"house_seed":house_seed,"house_turn":house_turn} if existing.is_empty() else existing.duplicate()
+	obj.x=point.x;obj.y=point.y
+	var data:=MapDocument.object_building(obj)
+	var rect:=KingdomData.building_rect(data)
+	if obj.has("house_style"):
+		var corner:=rect.position.snapped(Vector2.ONE*WorldGrid.CELL)
+		data.tile=Vector2(corner.x+rect.size.x/2,corner.y+rect.size.y)/WorldGrid.CELL
+	return data
+
 func _buildings_in_draft() -> Array[Dictionary]:
 	var result:Array[Dictionary]=[]
 	if draft.base=="reinos":
@@ -244,7 +267,7 @@ func _buildings_in_draft() -> Array[Dictionary]:
 			var id:="base_building_"+str(i)
 			if not draft.removed.has(id):result.append(KingdomData.base_buildings(int(draft.get("generation",2)))[i].merged({"id":id}))
 	for obj in draft.objects:
-		if obj.kind in MapDocument.BUILDINGS:result.append({"id":obj.id,"tile":Vector2(obj.x,obj.y)/64,"size":MapDocument.building_size(obj.kind)})
+		if obj.kind in MapDocument.BUILDINGS:result.append(MapDocument.object_building(obj))
 	return result
 
 func hit_test(point:Vector2) -> String:
@@ -252,8 +275,7 @@ func hit_test(point:Vector2) -> String:
 		var obj:Dictionary=draft.objects[i]
 		if obj.kind=="bridge" and MapDocument.bridge_rect(obj).has_point(point):return obj.id
 		if obj.kind in MapDocument.BUILDINGS:
-			var dim:=MapDocument.building_size(obj.kind)
-			if Rect2(Vector2(obj.x,obj.y)-Vector2(dim.x/2,dim.y),dim).has_point(point):return obj.id
+			if KingdomData.building_rect(MapDocument.object_building(obj)).has_point(point):return obj.id
 		elif point.distance_to(Vector2(obj.x,obj.y))<maxf(24,14/canvas.zoom):return obj.id
 	if draft.base=="reinos":
 		for id in base_npcs:
@@ -279,6 +301,9 @@ func move_selected(point:Vector2) -> bool:
 	_snapshot()
 	obj=editable_selected()
 	var at:=point.snapped(Vector2.ONE*32)
+	if obj.has("house_style"):
+		var building:=preview_building(point,obj)
+		at=building.tile*WorldGrid.CELL
 	var old_tool:=tool
 	tool=obj.kind
 	var valid:=valid_at(at,selection)
@@ -309,9 +334,26 @@ func _show_inspector() -> void:
 	inspector.add_child(game.hud._text("Renomeie e pressione Enter.",10,Color("c1c6b2")))
 	inspector.add_child(_button("Mover: clique no destino",select_tool.bind("select")))
 	inspector.add_child(_button("Apagar selecionado",func():begin_stroke();delete_selected();end_stroke();canvas.queue_redraw()))
+	if obj.has("house_style"):
+		inspector.add_child(game.hud._text(HouseKit.definition(obj.house_style).title+" · giro %d°"%(int(obj.house_turn)*90),11,Color("e0c998")))
+		inspector.add_child(_button("Girar casa 90°",change_house_option.bind("house_turn",posmod(int(obj.house_turn)+1,4))))
+		inspector.add_child(_button("Outra variação",change_house_option.bind("house_seed",int(obj.house_seed)+1)))
 	if obj.kind=="npc":
 		for place in ["home","work","social"]:inspector.add_child(_button({"home":"Marcar casa / descanso","work":"Marcar trabalho","social":"Marcar passeio"}[place],select_tool.bind("anchor_"+place)))
 		inspector.add_child(game.hud._text("Rotina: casa → trabalho → passeio.\nOs horários variam por morador.",10,Color("c1c6b2")))
+
+func change_house_option(key: String, value: int) -> void:
+	var obj:=selected_object()
+	if not obj.has("house_style"):return
+	begin_stroke();_snapshot()
+	var old:=obj.duplicate();obj[key]=value
+	var current_tool:=tool;tool=obj.kind
+	if not valid_at(Vector2(obj.x,obj.y),obj.id):
+		obj.merge(old,true);message("A nova variação precisa de mais espaço livre.")
+	else:
+		var at:Vector2=preview_building(Vector2(obj.x,obj.y),obj).tile*WorldGrid.CELL
+		obj.x=at.x;obj.y=at.y;dirty=true
+	tool=current_tool;end_stroke();_show_inspector();canvas.queue_redraw()
 
 func _commit(change:Dictionary) -> void:
 	undo_stack.append(change);redo_stack.clear()

@@ -1,0 +1,208 @@
+{
+  "date": "2026-11-07",
+  "godot": "4.6.3",
+  "base_revision": "b7c575f0a62637c7ae518b58d931cb631118c848",
+  "checks": 2290,
+  "all_passed": true,
+  "cases": [
+    {
+      "name": "houses",
+      "checks": 390,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "houses-graph",
+      "checks": 396,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "grid",
+      "checks": 119,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "grid-graph",
+      "checks": 121,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "core",
+      "checks": 240,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "appearance",
+      "checks": 46,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "editor",
+      "checks": 40,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "life",
+      "checks": 22,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "resources",
+      "checks": 32,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "construction",
+      "checks": 76,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "relationships",
+      "checks": 158,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "factions",
+      "checks": 103,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "hybrid",
+      "checks": 24,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "editor-graph",
+      "checks": 48,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "life-graph",
+      "checks": 26,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "resources-graph",
+      "checks": 34,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "hd2d",
+      "checks": 33,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "construction-graph",
+      "checks": 83,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "relationships-graph",
+      "checks": 161,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "factions-graph",
+      "checks": 105,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "house-portals",
+      "checks": 33,
+      "ok": true,
+      "exit_code": 0
+    }
+  ],
+  "performance": {
+    "buildings": 126,
+    "loaded_regions": 25,
+    "npcs": 44,
+    "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "results": [
+      {
+        "cpu_ms": 37.288,
+        "draw_calls": 86,
+        "fps": 34.0170765724394,
+        "median_ms": 29.397,
+        "p95_ms": 37.26,
+        "scene": "capital"
+      },
+      {
+        "cpu_ms": 48.477,
+        "draw_calls": 88,
+        "fps": 31.2519532470779,
+        "median_ms": 31.998,
+        "p95_ms": 39.292,
+        "scene": "ferraria"
+      },
+      {
+        "cpu_ms": 36.851,
+        "draw_calls": 90,
+        "fps": 31.750063500127,
+        "median_ms": 31.496,
+        "p95_ms": 38.219,
+        "scene": "ponte"
+      }
+    ],
+    "scale_3d": 0.649999976158142,
+    "window_size": [
+      1280,
+      800
+    ],
+    "world_size": [
+      16000.0,
+      12800.0
+    ]
+  },
+  "performance_method": "llvmpipe; 1280x800; modo leve 65%; simulação pausada; 25 quadros de aquecimento e 45 amostras por cena; V-Sync desligado. Não representa medição em GPU dedicada.",
+  "native_windows": {
+    "tested": false,
+    "exported": true,
+    "embedded_pack_verified": true
+  },
+  "export_packs": {
+    "linux/EntreReinos.x86_64": {
+      "files": 203,
+      "five_house_data_resources": true,
+      "development_and_download_folders_excluded": true,
+      "embedded_pack_verified": true
+    },
+    "windows/EntreReinos.exe": {
+      "files": 203,
+      "five_house_data_resources": true,
+      "development_and_download_folders_excluded": true,
+      "embedded_pack_verified": true
+    }
+  },
+  "native_linux": {
+    "tested": true,
+    "binary": "Linux release",
+    "checks": [
+      "native key E enters furnished interior",
+      "native key A moves player in interior",
+      "native key E exits to exact outdoor return point",
+      "re-enter and close saves active room",
+      "restart resumes room and exit works",
+      "inventory and gold preserved"
+    ]
+  }
+}

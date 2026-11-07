@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="HouseData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://game/house_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "tavern"
+title = "Taverna"
+description = "Dois pavimentos, varanda coberta, letreiro de caneca e mesas para viajantes."
+min_cells = Vector2i(5, 4)
+max_cells = Vector2i(7, 5)
+floors = 2
+wall_height = 1.65
+roof_height = 1.0
+wall_color = Color(0.81, 0.66, 0.48, 1)
+roof_color = Color(0.57, 0.28, 0.22, 1)
+timber_color = Color(0.30, 0.21, 0.17, 1)
+accent_color = Color(0.77, 0.61, 0.30, 1)
+interior_cells = Vector2i(11, 8)

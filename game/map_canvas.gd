@@ -122,6 +122,9 @@ func _draw()->void:
 			var at:=hover_world.snapped(Vector2.ONE*32)
 			var dim:=MapDocument.building_size(editor.tool)
 			rect=Rect2(to_screen(at-Vector2(dim.x/2,dim.y)),dim*zoom)
+			if editor.tool in HouseKit.KINDS:
+				var footprint:=KingdomData.building_rect(editor.preview_building(hover_world))
+				rect=Rect2(to_screen(footprint.position),footprint.size*zoom)
 			if editor.tool=="bridge":rect.position=to_screen(at-dim/2)
 		var valid:=editor.valid_at(hover_world)
 		var color:=Color("e9d19a") if valid else Color("ef8274")
@@ -154,8 +157,7 @@ func _object(obj:Dictionary)->void:
 		if obj.id==editor.selection:draw_rect(Rect2(to_screen(rect.position),rect.size*zoom).grow(3),Color("ffe0a4"),false,2)
 		return
 	if obj.kind in MapDocument.BUILDINGS:
-		var dim:=MapDocument.building_size(obj.kind)
-		_building(Rect2(Vector2(obj.x,obj.y)-Vector2(dim.x/2,dim.y),dim),obj.kind,obj.style,obj.id)
+		_building(KingdomData.building_rect(MapDocument.object_building(obj)),obj.kind,obj.style,obj.id)
 		return
 	if not Rect2(Vector2.ZERO,size).grow(40).has_point(at):return
 	if obj.kind=="npc":

@@ -18,8 +18,12 @@ var faded:=false
 var surface: SurfaceTool
 var building_kind := ""
 var style := 0
+var house_plan: Dictionary = {}
 
 func setup(data: Dictionary) -> void:
+	if data.get("kind", "") in HouseKit.KINDS:
+		HouseMesh.build(self, data)
+		return
 	name=String(data.get("id","Building"))
 	building_kind=data.kind
 	var seed_value := posmod(String(data.name).hash(),100000)
@@ -156,7 +160,9 @@ func _roof(at: Vector3, size: Vector2, height: float, color: Color, hip: bool) -
 	var f:=at+Vector3(0,height,z*(0.50 if hip else 1.0))
 	for triangle in [[a,d,e],[d,f,e],[b,e,c],[c,e,f],[a,e,b],[d,c,f]]:
 		var normal: Vector3=(triangle[1]-triangle[0]).cross(triangle[2]-triangle[0]).normalized()
-		for v: Vector3 in triangle:
+		# Godot's front faces use clockwise winding. Keep the outward normal
+		# while writing clockwise vertices, so closed roofs can use back culling.
+		for v: Vector3 in [triangle[0],triangle[2],triangle[1]]:
 			surface.set_color(color);surface.set_normal(normal)
 			surface.set_uv(Vector2(v.x,v.z));surface.set_uv2(Vector2(3,0))
 			surface.add_vertex(v)

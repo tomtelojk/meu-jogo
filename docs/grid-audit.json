@@ -1771,86 +1771,86 @@
         "fractional_size": true,
         "id": "cottage",
         "mesh_size_metres": [
-          3.17000007629395,
-          2.85999989509583,
-          2.57000017166138
+          3.41500020027161,
+          3.07000017166138,
+          2.51000022888184
         ],
         "modular": false,
         "oversized_mesh": true,
-        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "reason": "Lote herdado adaptado ao kit poor; novas casas usam dimensões inteiras. Beirais e degraus são decorativos.",
         "size_metres": [
           2.75,
           2.0
         ],
-        "source": "game/building_visual.gd"
+        "source": "game/house_mesh.gd"
       },
       {
         "fractional_size": true,
         "id": "timber",
         "mesh_size_metres": [
-          3.42000007629395,
-          2.45000004768372,
-          2.82000017166138
+          3.66500020027161,
+          3.24500012397766,
+          2.76000022888184
         ],
         "modular": false,
         "oversized_mesh": true,
-        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "reason": "Lote herdado adaptado ao kit common; novas casas usam dimensões inteiras. Beirais e degraus são decorativos.",
         "size_metres": [
           3.0,
           2.25
         ],
-        "source": "game/building_visual.gd"
+        "source": "game/house_mesh.gd"
       },
       {
         "fractional_size": true,
         "id": "stone_house",
         "mesh_size_metres": [
-          3.17000007629395,
-          3.01999998092651,
-          2.57000017166138
+          3.42000007629395,
+          4.87000036239624,
+          2.74000000953674
         ],
         "modular": false,
         "oversized_mesh": true,
-        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "reason": "Lote herdado adaptado ao kit rich; novas casas usam dimensões inteiras. Beirais e degraus são decorativos.",
         "size_metres": [
           2.75,
           2.0
         ],
-        "source": "game/building_visual.gd"
+        "source": "game/house_mesh.gd"
       },
       {
         "fractional_size": true,
         "id": "tavern",
         "mesh_size_metres": [
-          3.92000007629395,
-          3.65999984741211,
-          3.32999992370605
+          4.01000022888184,
+          4.82000017166138,
+          3.16499996185303
         ],
         "modular": false,
         "oversized_mesh": true,
-        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "reason": "Lote herdado adaptado ao kit tavern; novas casas usam dimensões inteiras. Beirais e degraus são decorativos.",
         "size_metres": [
           3.5,
           2.5
         ],
-        "source": "game/building_visual.gd"
+        "source": "game/house_mesh.gd"
       },
       {
         "fractional_size": true,
         "id": "forge",
         "mesh_size_metres": [
-          3.92000007629395,
-          2.85999989509583,
-          3.32999992370605
+          4.01000022888184,
+          3.29500007629395,
+          3.16499996185303
         ],
         "modular": false,
         "oversized_mesh": true,
-        "reason": "Prédio completo do editor/cenário; não é uma peça do catálogo modular.",
+        "reason": "Lote herdado adaptado ao kit shop; novas casas usam dimensões inteiras. Beirais e degraus são decorativos.",
         "size_metres": [
           3.5,
           2.5
         ],
-        "source": "game/building_visual.gd"
+        "source": "game/house_mesh.gd"
       },
       {
         "fractional_size": false,
@@ -1890,35 +1890,132 @@
         "fractional_size": true,
         "id": "library",
         "mesh_size_metres": [
-          3.17000007629395,
-          4.30999994277954,
-          2.57000017166138
+          3.49000000953674,
+          4.87000036239624,
+          2.67000031471252
         ],
         "modular": false,
         "oversized_mesh": true,
-        "reason": "Prédio completo da base dos reinos; não é uma peça do catálogo modular.",
+        "reason": "Lote herdado adaptado ao kit rich; novas casas usam dimensões inteiras. Beirais e degraus são decorativos.",
         "size_metres": [
           2.75,
           2.0
         ],
-        "source": "game/building_visual.gd"
+        "source": "game/house_mesh.gd"
       },
       {
         "fractional_size": true,
         "id": "barracks",
         "mesh_size_metres": [
-          3.17000007629395,
-          3.17999982833862,
-          2.57000017166138
+          3.26000022888184,
+          3.24500012397766,
+          2.66499996185303
         ],
         "modular": false,
         "oversized_mesh": true,
-        "reason": "Prédio completo da base dos reinos; não é uma peça do catálogo modular.",
+        "reason": "Lote herdado adaptado ao kit common; novas casas usam dimensões inteiras. Beirais e degraus são decorativos.",
         "size_metres": [
           2.75,
           2.0
         ],
-        "source": "game/building_visual.gd"
+        "source": "game/house_mesh.gd"
+      }
+    ],
+    "house_kits": [
+      {
+        "decorative_overhang": true,
+        "fractional_size": false,
+        "id": "poor",
+        "mesh_size_metres": [
+          4.51000022888184,
+          3.07000017166138,
+          2.66499996185303
+        ],
+        "modules": 23,
+        "pivot": "ground_corner",
+        "resource": "game/data/houses/poor.tres",
+        "size_metres": [
+          4.0,
+          2.0
+        ],
+        "source": "game/house_mesh.gd",
+        "surface_count": 1
+      },
+      {
+        "decorative_overhang": true,
+        "fractional_size": false,
+        "id": "common",
+        "mesh_size_metres": [
+          5.51000022888184,
+          3.24500012397766,
+          3.66499996185303
+        ],
+        "modules": 33,
+        "pivot": "ground_corner",
+        "resource": "game/data/houses/common.tres",
+        "size_metres": [
+          5.0,
+          3.0
+        ],
+        "source": "game/house_mesh.gd",
+        "surface_count": 1
+      },
+      {
+        "decorative_overhang": true,
+        "fractional_size": false,
+        "id": "rich",
+        "mesh_size_metres": [
+          6.67000007629395,
+          4.87000036239624,
+          4.73999977111816
+        ],
+        "modules": 64,
+        "pivot": "ground_corner",
+        "resource": "game/data/houses/rich.tres",
+        "size_metres": [
+          6.0,
+          4.0
+        ],
+        "source": "game/house_mesh.gd",
+        "surface_count": 1
+      },
+      {
+        "decorative_overhang": true,
+        "fractional_size": false,
+        "id": "tavern",
+        "mesh_size_metres": [
+          7.51000022888184,
+          4.82000017166138,
+          4.66499948501587
+        ],
+        "modules": 72,
+        "pivot": "ground_corner",
+        "resource": "game/data/houses/tavern.tres",
+        "size_metres": [
+          7.0,
+          4.0
+        ],
+        "source": "game/house_mesh.gd",
+        "surface_count": 1
+      },
+      {
+        "decorative_overhang": true,
+        "fractional_size": false,
+        "id": "shop",
+        "mesh_size_metres": [
+          6.51000022888184,
+          3.29500007629395,
+          3.66499996185303
+        ],
+        "modules": 38,
+        "pivot": "ground_corner",
+        "resource": "game/data/houses/shop.tres",
+        "size_metres": [
+          6.0,
+          3.0
+        ],
+        "source": "game/house_mesh.gd",
+        "surface_count": 1
       }
     ],
     "modules": [

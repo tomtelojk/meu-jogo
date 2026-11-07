@@ -28,7 +28,7 @@ func sync_population()->void:
 	game.world.apply_assignments()
 
 func _process(delta:float)->void:
-	if game==null or game.mode!="playing" or game.building_preview:return
+	if game==null or game.mode!="playing" or game.building_preview or game.housing!=null and game.housing.inside():return
 	elapsed+=delta
 	if elapsed<0.45:return
 	elapsed=0

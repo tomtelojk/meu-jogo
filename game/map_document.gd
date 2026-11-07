@@ -70,8 +70,13 @@ static func custom_buildings() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for obj in current.objects:
 		if obj.kind in BUILDINGS:
-			result.append({"id":obj.id,"name":obj.name,"kind":obj.kind,"style":obj.style,"realm":obj.realm,"tile":Vector2(obj.x,obj.y)/64,"size":building_size(obj.kind),"editor":true})
+			result.append(object_building(obj))
 	return result
+
+static func object_building(obj: Dictionary) -> Dictionary:
+	var options:=HouseKit.clean_options(obj)
+	var size:=HouseKit.size_for(options.house_style,options.house_seed,options.house_turn) if not options.is_empty() else building_size(obj.kind)
+	return {"id":obj.id,"name":obj.get("name","Casa"),"kind":obj.kind,"style":obj.get("style",0),"realm":obj.get("realm","aurelia"),"tile":Vector2(obj.x,obj.y)/64,"size":size,"editor":true}.merged(options)
 
 static func building_size(kind: String) -> Vector2:
 	match kind:
@@ -178,7 +183,7 @@ static func validate(raw: Variant) -> Dictionary:
 		var obj := clean_object(entry)
 		if obj.is_empty():return fail
 		if obj.kind in STRUCTURES:
-			var rect := Rect2(Vector2(obj.x,obj.y)-Vector2(building_size(obj.kind).x/2,building_size(obj.kind).y),building_size(obj.kind))
+			var rect := KingdomData.building_rect(object_building(obj))
 			if obj.kind=="bridge":rect=bridge_rect(obj)
 			if not Rect2(Vector2(32,32),LIMIT-Vector2(64,64)).encloses(rect):return fail
 		clean.objects.append(obj);ids[obj.id]=true
@@ -203,6 +208,10 @@ static func clean_object(entry: Dictionary) -> Dictionary:
 	obj.size=clampf(float(size),32,220)
 	obj.realm="valverde" if entry.get("realm")=="valverde" else "aurelia"
 	obj.appearance=entry.get("appearance","farmer") if entry.get("appearance","farmer") in FACES else "farmer"
+	if entry.has("house_style"):
+		var options:=HouseKit.clean_options(entry)
+		if options.is_empty() or not obj.kind in HouseKit.KINDS:return {}
+		obj.merge(options)
 	if obj.kind=="npc":
 		for place in ["home","work","social"]:
 			var x: Variant=entry.get(place+"_x",obj.x)

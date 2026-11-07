@@ -67,6 +67,9 @@ static func assets()->Dictionary:
 		prefabs.append({"id":kind,"source":"game/building_visual.gd","size_metres":[size.x,size.y],"modular":false,"fractional_size":fractional,"reason":"Prédio completo do editor/cenário; não é uma peça do catálogo modular."})
 	for kind in ["library","barracks"]:prefabs.append({"id":kind,"source":"game/building_visual.gd","size_metres":[2.75,2.0],"modular":false,"fractional_size":true,"reason":"Prédio completo da base dos reinos; não é uma peça do catálogo modular."})
 	for prefab in prefabs:
+		if prefab.id in HouseKit.KINDS:
+			prefab.source="game/house_mesh.gd"
+			prefab.reason="Lote herdado adaptado ao kit "+HouseKit.KINDS[prefab.id]+"; novas casas usam dimensões inteiras. Beirais e degraus são decorativos."
 		var model:=BuildingVisual.new();model.setup({"id":"audit_"+prefab.id,"name":prefab.id,"kind":prefab.id,"realm":"aurelia","tile":Vector2.ZERO,"size":Vector2(prefab.size_metres[0],prefab.size_metres[1])*WorldGrid.UNITS_PER_METRE,"style":0})
 		var bounds:AABB=model.visual_mesh.transform*model.visual_mesh.get_aabb()
 		prefab.mesh_size_metres=[bounds.size.x,bounds.size.y,bounds.size.z];prefab.oversized_mesh=bounds.position.x< -0.001 or bounds.position.z< -0.001 or bounds.end.x>prefab.size_metres[0]+0.001 or bounds.end.z>prefab.size_metres[1]+0.001
@@ -75,7 +78,14 @@ static func assets()->Dictionary:
 	for building in KingdomData.buildings():
 		var rect:=KingdomData.building_rect(building);var size:=rect.size/WorldGrid.UNITS_PER_METRE
 		instances.append({"id":building.id,"kind":building.kind,"name":building.name,"size_metres":[size.x,size.y],"position_metres":[rect.position.x/WorldGrid.UNITS_PER_METRE,rect.position.y/WorldGrid.UNITS_PER_METRE],"aligned":WorldGrid.aligned(rect.position.x/WorldGrid.CELL) and WorldGrid.aligned(rect.position.y/WorldGrid.CELL) and WorldGrid.aligned(size.x/WorldGrid.CELL_SIZE) and WorldGrid.aligned(size.y/WorldGrid.CELL_SIZE)})
-	return {"ok":outside.is_empty(),"modules":modules,"outside_standard":outside,"environment_prefabs":prefabs,"environment_instances":instances}
+	var house_kits:Array=[]
+	for id in HouseKit.IDS:
+		var size:=HouseKit.size_for(id,42)
+		var model:=BuildingVisual.new();model.setup({"id":"audit_kit_"+id,"name":id,"kind":"timber","realm":"aurelia","tile":Vector2.ZERO,"size":size,"house_style":id,"house_seed":42,"house_turn":0})
+		var bounds:=model.visual_mesh.get_aabb()
+		house_kits.append({"id":id,"resource":"game/data/houses/"+id+".tres","source":"game/house_mesh.gd","size_metres":[size.x/64,size.y/64],"mesh_size_metres":[bounds.size.x,bounds.size.y,bounds.size.z],"pivot":"ground_corner","surface_count":model.visual_mesh.mesh.get_surface_count(),"modules":model.house_plan.pieces.size(),"fractional_size":false,"decorative_overhang":true})
+		model.free()
+	return {"ok":outside.is_empty(),"modules":modules,"outside_standard":outside,"environment_prefabs":prefabs,"environment_instances":instances,"house_kits":house_kits}
 
 static func unwrap(document:Variant)->Variant:
 	if not document is Dictionary:return document

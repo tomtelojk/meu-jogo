@@ -121,6 +121,9 @@ var resource_fx:ResourceEffects
 var grass:ReactiveGrass
 var climate:HD2DAtmosphere
 var reflection:PlanarReflection
+var house_smoke:HouseSmoke
+var house_ghost:BuildingVisual
+var house_ghost_key:=""
 const MIN_ZOOM:=8.0
 const MAX_ZOOM:=18.0
 const MAX_YAW:=PI*0.1944444444
@@ -246,6 +249,7 @@ func _buildings()->void:
 		var model:=BuildingVisual.new()
 		model.setup(data)
 		architecture.add_child(model)
+	house_smoke=HouseSmoke.new();add_child(house_smoke);house_smoke.setup(game)
 
 func _bridge()->void:
 	for rect in WorldData.bridges():_bridge_mesh(rect)
@@ -452,6 +456,9 @@ func _body_height(body:Node2D)->float:
 	return maxf(WorldData.bridge_height(body.position)/UNIT,game.world.floor_height(body.position))
 
 func _update_light()->void:
+	# Clock signals still fire while the exterior is suspended. An interior owns
+	# its warm environment, so outdoor fog and sun must not overwrite it.
+	if game.housing!=null and game.housing.inside():return
 	last_daylight=game.world.daylight.color
 	var clouds:float=climate.cloud if climate!=null else 0.0
 	var daylight_color:=last_daylight.lerp(Color("718b9a"),clouds*0.3)
@@ -628,6 +635,7 @@ func world_position(screen:Vector2)->Vector2:
 	return Vector2(point.x,point.z)*UNIT
 
 func preview_house(point:Vector2,valid:bool)->void:
+	var footprint:=game.housing.footprint_at(point) if game.housing!=null else Rect2(point-Vector2(96,128),Vector2(192,128))
 	if build_ghost==null:
 		build_ghost=MeshInstance3D.new()
 		var mesh:=BoxMesh.new()
@@ -640,11 +648,23 @@ func preview_house(point:Vector2,valid:bool)->void:
 		build_ghost.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(build_ghost)
 	build_ghost.visible=true
-	build_ghost.position=_point(point)+Vector3(0,0.045,-1)
+	build_ghost.mesh.size=Vector3(footprint.size.x/64,0.07,footprint.size.y/64)
+	build_ghost.position=_point(footprint.get_center())+Vector3(0,0.045,0)
 	build_ghost.material_override.albedo_color=Color(0.35,0.8,0.45,0.5) if valid else Color(0.9,0.3,0.22,0.5)
+	if game.housing!=null and game.housing.plan_enabled:
+		var data:=game.housing.preview_data(point)
+		var key:=str(game.housing.options())
+		if house_ghost==null or house_ghost_key!=key:
+			if house_ghost!=null:house_ghost.free()
+			house_ghost=BuildingVisual.new();house_ghost.setup(data);add_child(house_ghost);house_ghost_key=key
+			var material:=StandardMaterial3D.new();material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+			house_ghost.visual_mesh.material_override=material;house_ghost.visual_mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		house_ghost.position=WorldGrid.point3(footprint.position);house_ghost.show()
+		house_ghost.visual_mesh.material_override.albedo_color=Color(0.35,0.8,0.45,0.30) if valid else Color(0.9,0.3,0.22,0.30)
 	show_build_grid(point)
 
 func cancel_preview()->void:
+	if house_ghost!=null:house_ghost.hide()
 	if build_ghost!=null:build_ghost.visible=false
 	if piece_ghost!=null:piece_ghost.visible=false
 	if build_grid!=null:build_grid.visible=false

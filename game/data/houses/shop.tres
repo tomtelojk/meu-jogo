@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="HouseData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://game/house_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+id = "shop"
+title = "Loja e oficina"
+description = "Vitrine, toldo listrado, balcão de mercadorias e chaminé de alvenaria."
+min_cells = Vector2i(4, 3)
+max_cells = Vector2i(6, 4)
+wall_height = 1.9
+roof_height = 0.75
+wall_color = Color(0.75, 0.69, 0.54, 1)
+roof_color = Color(0.43, 0.39, 0.34, 1)
+timber_color = Color(0.34, 0.25, 0.19, 1)
+accent_color = Color(0.40, 0.58, 0.54, 1)
+interior_cells = Vector2i(9, 7)

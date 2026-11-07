@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode unshaded, cull_disabled;
+render_mode unshaded, cull_back;
 #include "res://game/shaders/pixel_lighting.gdshaderinc"
 uniform vec3 day_color : source_color = vec3(1.0);
 uniform float effects = 1.0;

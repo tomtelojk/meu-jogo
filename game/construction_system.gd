@@ -58,6 +58,7 @@ func advance_worker(npc:ForestNPC)->bool:
 	return true
 
 func show_catalog(which:String="walls")->void:
+	if game.housing!=null and game.housing.inside():game.hud.toast("Saia da casa para construir.");return
 	category=which if ConstructionCatalog.CATEGORIES.has(which) else "walls"
 	ConstructionCatalog.load_data()
 	var actions:Array[Dictionary]=[]
@@ -65,7 +66,7 @@ func show_catalog(which:String="walls")->void:
 		var definition:=ConstructionCatalog.piece(id)
 		if definition.category!=category:continue
 		actions.append({"label":definition.name+"\n"+ConstructionCatalog.cost_text(definition.cost),"name":"piece_"+id,"callback":begin_piece.bind(id)})
-	actions.append({"label":"Casa completa por etapas","name":"house_kit","callback":game.start_building})
+	actions.append({"label":"Casas completas · 5 kits modulares","name":"house_kit","callback":game.housing.show_catalog})
 	actions.append({"label":"Validar grid e modelos","name":"construction_audit","callback":show_audit.bind(0)})
 	if not game.rpg.construction.pieces.is_empty():actions.append({"label":"Minhas construções e moradores","callback":show_owned.bind(0)})
 	actions.append({"label":"Voltar à aventura","callback":game.close_dialog})
@@ -92,6 +93,7 @@ func inventory_text()->String:
 	return text
 
 func begin_piece(kind:String)->void:
+	if game.housing!=null and game.housing.inside():game.hud.toast("Saia da casa para construir.");return
 	if ConstructionCatalog.piece(kind).is_empty():return
 	if not game.rpg.tools.has("hammer"):game.hud.toast("Compre um martelo na ferraria.");return
 	game.close_dialog();game.cancel_building()
@@ -169,6 +171,8 @@ func show_audit(page:int=0)->void:
 func show_asset_audit()->void:
 	var report:=ConstructionAudit.assets();var body:="MÓDULOS DO CATÁLOGO\n"
 	for row in report.modules:body+="%s · %.1f × %.1f m · %s\n"%[row.name,row.allocation_metres[0],row.allocation_metres[1],"conforme" if row.ok else "; ".join(row.errors)]
+	body+="\nKITS DE CASAS NOVAS\nPivô no canto e terreno em células inteiras; beirais e degraus decorativos:\n"
+	for row in report.house_kits:body+="%s · %.1f × %.1f m · uma superfície\n"%[HouseKit.definition(row.id).title,row.size_metres[0],row.size_metres[1]]
 	body+="\nPRÉDIOS COMPLETOS DO CENÁRIO\nNão são módulos de encaixe. Têm células fracionárias ou beirais e detalhes que excedem a área. Não devem ser usados como peças do catálogo:\n"
 	for row in report.environment_prefabs:
 		if row.fractional_size or row.oversized_mesh:body+="%s · terreno %.2f × %.2f m · mesh %.2f × %.2f m\n"%[row.id,row.size_metres[0],row.size_metres[1],row.mesh_size_metres[0],row.mesh_size_metres[2]]

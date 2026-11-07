@@ -82,7 +82,7 @@ func at_service()->bool:
 
 func _process(delta:float)->void:
 	update_uniform()
-	if game.mode!="playing":return
+	if game.mode!="playing" or game.housing!=null and game.housing.inside():return
 	gate_message=maxf(0,gate_message-delta);timer+=delta
 	if timer<0.5:return
 	timer=0;state().advance(day());state().visit(game.player.position)
@@ -90,7 +90,7 @@ func _process(delta:float)->void:
 	update_guards()
 
 func _physics_process(_delta:float)->void:
-	if game==null or game.mode!="playing" or not MapDocument.base_enabled():return
+	if game==null or game.mode!="playing" or game.housing!=null and game.housing.inside() or not MapDocument.base_enabled():return
 	for town in KingdomData.towns():
 		if not town.capital or state().reputation(game.rpg,town.realm)>-30:continue
 		var court:=Rect2(town.position-Vector2(600,760),Vector2(1200,1080))

@@ -5,7 +5,7 @@ var game:ForestGame
 var elapsed:=0.0
 func setup(source:ForestGame)->void:game=source
 func strike(id:String)->Dictionary:
-	if game.mode!="playing" or game.action_delay>0:return {"ok":false,"message":""}
+	if game.mode!="playing" or game.action_delay>0 or game.housing!=null and game.housing.inside():return {"ok":false,"message":""}
 	if not game.world.resources.has(id):return {"ok":false,"message":"Recurso distante."}
 	var entry:Dictionary=game.world.resources[id]
 	if game.player.position.distance_to(entry.resource.position)>64:return {"ok":false,"message":"Aproxime-se do recurso."}
@@ -19,7 +19,7 @@ func strike(id:String)->Dictionary:
 	game.hud.toast(result.message,1.5)
 	return result
 func _physics_process(delta:float)->void:
-	if game==null or game.mode!="playing" or game.building_preview:return
+	if game==null or game.mode!="playing" or game.building_preview or game.housing!=null and game.housing.inside():return
 	var progress:ResourceProgress=game.rpg.resources
 	for id in progress.drops.keys():
 		var drop:Dictionary=progress.drops[id]

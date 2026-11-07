@@ -2,23 +2,25 @@
 
 A medição atual encontrou **zero modelos fora do padrão entre os 12 módulos de construção**. As raízes usam canto no chão, escala 1 e medidas compatíveis com o grid de 1 m. A auditoria mede os meshes gerados em Godot; não há modelos GLB/GLTF importados neste projeto.
 
-Os prédios completos abaixo são **prefabs de cenário**, gerados por `game/building_visual.gd`. Não devem ser usados como segmentos intercambiáveis de parede, chão ou cobertura. O terreno de oito tipos tem dimensões fracionárias; todos têm beirais, degraus ou outros detalhes que excedem o terreno.
+Há também **cinco kits de casas em `game/data/houses/*.tres`**, montados por `game/house_mesh.gd`. Casas novas têm lotes inteiros no grid e uma superfície por casa; seus módulos e medidas aparecem no campo `house_kits` do relatório. Beirais e degraus têm extensão decorativa. [Ver os cinco kits e seus controles](casas-modulares.md).
 
-| Asset | Terreno nominal (largura × profundidade) | Mesh real no estilo 0 (largura × profundidade) |
+Os lotes herdados abaixo mantêm as medidas antigas. Cabana, casa de madeira, casa de pedra, taverna, ferraria, biblioteca e alojamento agora usam os kits, com peças de borda recortadas ao lote. Castelos e torres conservam a geometria própria em `game/building_visual.gd`.
+
+| Asset herdado | Terreno nominal (largura × profundidade) | Mesh medido (largura × profundidade) |
 | --- | ---: | ---: |
-| `cottage` | 2,75 × 2 m | 3,17 × 2,57 m |
-| `timber` | 3 × 2,25 m | 3,42 × 2,82 m |
-| `stone_house` | 2,75 × 2 m | 3,17 × 2,57 m |
-| `tavern` | 3,5 × 2,5 m | 3,92 × 3,33 m |
-| `forge` | 3,5 × 2,5 m | 3,92 × 3,33 m |
-| `tower` | 2 × 2 m | 2,28 × 2,5 m |
-| `castle` | 7 × 4,5 m | 7,28 × 5 m |
-| `library` | 2,75 × 2 m | 3,17 × 2,57 m |
-| `barracks` | 2,75 × 2 m | 3,17 × 2,57 m |
+| `cottage` | 2,75 × 2,00 m | 3,42 × 2,51 m |
+| `timber` | 3,00 × 2,25 m | 3,67 × 2,76 m |
+| `stone_house` | 2,75 × 2,00 m | 3,42 × 2,74 m |
+| `tavern` | 3,50 × 2,50 m | 4,01 × 3,16 m |
+| `forge` | 3,50 × 2,50 m | 4,01 × 3,16 m |
+| `tower` | 2,00 × 2,00 m | 2,28 × 2,50 m |
+| `castle` | 7,00 × 4,50 m | 7,28 × 5,00 m |
+| `library` | 2,75 × 2,00 m | 3,49 × 2,67 m |
+| `barracks` | 2,75 × 2,00 m | 3,26 × 2,66 m |
 
-As alturas e alguns detalhes variam com estilo e nome do prédio; a tabela mede um exemplar reproduzível com estilo 0. Os prédios da base também têm tamanhos próprios gerados por `SettlementLayout`, listados individualmente no JSON. Na base original, **124 dos 126 terrenos de prédios têm ao menos uma dimensão fracionária em metros**. Esses lotes preservam o desenho irregular das cidades. A refatoração padroniza seus pivôs de renderização sem mover as cidades.
+A tabela mede exemplares reproduzíveis com o nome do tipo, semente derivada do ID e estilo 0. Os campos `mesh_size_metres` e `source` do JSON registram as medidas e o gerador de cada exemplar. Na base original, **124 dos 126 terrenos têm uma dimensão fracionária em metros**. A adaptação preserva esses lotes e as ruas; as casas novas do ateliê e do catálogo usam os kits com dimensões inteiras.
 
-**`forge` acima é o prédio completo da ferraria.** A estação de forja do catálogo modular é outro modelo, definido em `game/construction_visual.gd`, ocupa 2 × 1 células e passou na validação.
+**`forge` aqui é o prédio completo da loja/oficina.** A estação de forja do catálogo avulso é outro modelo, ocupa 2 × 1 células e continua validada em `game/construction_visual.gd`.
 
 ## Divergências medidas e corrigidas no catálogo
 

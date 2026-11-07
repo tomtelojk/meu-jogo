@@ -25,6 +25,9 @@ B: catálogo de construção | T: girar peça | Clique: construir
 Botão direito/Esc: sair da prévia | B na prévia: voltar ao catálogo
 Grid de 1 m, pivôs no canto do chão e paredes nas bordas.
 B > Validar grid e modelos: apontar desalinhamentos e exportar JSON.
+B > Casas completas: cinco kits; T gira 90° e V muda a variação.
+E na porta: entrar na casa; E na saída: retornar ao continente.
+Lojas e tavernas oferecem Entrar no menu da porta; E no balcão negocia.
 M: mapa do continente
 F2: Ateliê de Mundos — crie ou edite seu mapa
 Esc: pausa e gráficos (leve / HD-2D), shaders e clima
@@ -198,11 +201,17 @@ def package(system: str, output: Path) -> Path:
     grid_guide = (ROOT / "docs" / "construcao-grid.md").read_text(encoding="utf-8")
     (stage / "GUIA-DO-GRID.md").write_text(grid_guide.replace("(modelos-fora-grid.md)", "(MODELOS-FORA-DO-GRID.md)").replace("(../game/world_grid.gd)", "(https://github.com/tomtelojk/meu-jogo/blob/main/game/world_grid.gd)"), encoding="utf-8")
     model_guide = (ROOT / "docs" / "modelos-fora-grid.md").read_text(encoding="utf-8")
-    (stage / "MODELOS-FORA-DO-GRID.md").write_text(model_guide.replace("(construcao-grid.md)", "(GUIA-DO-GRID.md)"), encoding="utf-8")
+    (stage / "MODELOS-FORA-DO-GRID.md").write_text(model_guide.replace("(construcao-grid.md)", "(GUIA-DO-GRID.md)").replace("(casas-modulares.md)", "(GUIA-DAS-CASAS.md)"), encoding="utf-8")
     for name in ["grid-audit-before.json", "grid-audit.json", "grid-guias.png", "grid-cantos.png", "grid-validacao.png"]:
         shutil.copy2(ROOT / "docs" / name, stage / name)
     shutil.copy2(ROOT / "docs" / "npcs-e-relacionamentos.md", stage / "GUIA-DOS-RELACIONAMENTOS.md")
     shutil.copy2(ROOT / "docs" / "faccoes-e-guildas.md", stage / "GUIA-DAS-FACCOES.md")
+    house_guide = (ROOT / "docs" / "casas-modulares.md").read_text(encoding="utf-8")
+    (stage / "GUIA-DAS-CASAS.md").write_text(house_guide.replace("(construcao-grid.md)", "(GUIA-DO-GRID.md)").replace("(construcao-e-fabricacao.md)", "(GUIA-DA-CONSTRUCAO.md)").replace("(editor-de-mapas.md)", "(GUIA-DO-EDITOR.md)"), encoding="utf-8")
+    for image_name in ["casas-kits.png", "casas-interior.png", "casas-noite.png"]:
+        shutil.copy2(ROOT / "docs" / image_name, stage / image_name)
+    for report_name in ["casas-validacao.json", "rpg-desempenho.json"]:
+        shutil.copy2(ROOT / "docs" / report_name, stage / report_name)
     for image_name in ["faccoes-reputacao.png", "faccoes-guilda.png", "faccoes-territorio.png", "faccoes-mapa.png", "faccoes-historia.png"]:
         shutil.copy2(ROOT / "docs" / image_name, stage / image_name)
     for image_name in ["coleta-queda.png", "coleta-toco.png", "hd2d-aurelia.png", "hd2d-noite.png", "hd2d-ponte.png", "hd2d-chuva.png", "construcao-catalogo.png", "construcao-previa.png", "construcao-fila.png", "construcao-assentamento.png", "relacoes-amizade.png", "relacoes-encontro.png", "relacoes-casamento.png", "relacoes-companhia.png", "relacoes-memoria.png"]:

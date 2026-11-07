@@ -4,6 +4,10 @@ Um **RPG de mundo aberto 2.5D para Windows e Linux**. Personagens em pixel art v
 
 [Baixar o jogo pronto](downloads/README.md)
 
+**Casas modulares:** cinco kits em `HouseData` — humilde, comum, rica, taverna e loja — com fundações, fachadas, janelas, portas, coberturas, chaminés e varandas. **B → Casas completas** escolhe o kit; **T** gira e **V** muda a variação na prévia. As casas têm interiores mobiliados, entrada e saída por E, janelas acesas à noite e fumaça lenta. F2 permite colocar e variar os kits no seu mapa. [Guia das casas](docs/casas-modulares.md).
+
+![Kits de casas](docs/casas-kits.png)
+
 ![Entre Reinos em pixel art](docs/rpg-inicio.png)
 
 O continente agora combina ruas curvas, lotes irregulares, bosques em grupos e transições suaves entre campos, pedreiras e costa. O rio varia de largura e direção. A geração usa uma semente fixa para manter o mundo consistente ao salvar e carregar.
@@ -32,7 +36,7 @@ Pressione **F2** para abrir o **Ateliê de Mundos**, incluído no jogo pronto. C
 
 ![Aparências dos NPCs](docs/editor-npcs.png)
 
-Os NPCs agora misturam **nove bases visuais diferentes**, incluindo os oito personagens de `abc.zip`. As construções usam **seis paletas**, telhados e detalhes variados. Novos shaders trabalham a água, os materiais das casas e as cores do cenário; os efeitos podem ser desligados no menu de pausa.
+Os NPCs agora misturam **nove bases visuais diferentes**, incluindo os oito personagens de `abc.zip`. As casas combinam **cinco kits modulares**, com cores, tamanhos, giros e detalhes variados. Novos shaders trabalham a água, os materiais das casas e as cores do cenário; os efeitos podem ser desligados no menu de pausa.
 
 ## O novo mundo
 

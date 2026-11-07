@@ -41,6 +41,8 @@ var gathering:ResourceGathering
 var construction:ConstructionSystem
 var social:RelationshipSystem
 var politics:FactionSystem
+var housing:HouseSystem
+var saved_house_location:Dictionary={}
 var loading_journey:=false
 var building_preview:=false
 var building_point:=Vector2.ZERO
@@ -96,6 +98,7 @@ func _ready() -> void:
 	construction=ConstructionSystem.new();add_child(construction);construction.setup(self)
 	social=RelationshipSystem.new();add_child(social);social.setup(self)
 	politics=FactionSystem.new();add_child(politics);politics.setup(self)
+	housing=HouseSystem.new();add_child(housing);housing.setup(self);housing.restore_location(saved_house_location)
 	camera.reset_smoothing()
 	if not "--test" in OS.get_cmdline_user_args() or "--hybrid" in OS.get_cmdline_user_args():
 		hybrid = HybridWorld.new()
@@ -131,6 +134,7 @@ func start_journey() -> void:
 	world.set_population_active(true)
 	hud.show_game()
 	hud.close_dialog()
+	if housing!=null:housing.resume()
 	save_journey()
 
 func _process(delta: float) -> void:
@@ -145,7 +149,8 @@ func _process(delta: float) -> void:
 		elapsed_hud = 0.0
 		hud.update_status(player, world.data, world.clock)
 		hud.update_rpg(rpg)
-		for town in KingdomData.towns():
+		if housing!=null:housing.update_hud()
+		for town in ([] if housing!=null and housing.inside() else KingdomData.towns()):
 			if player.position.distance_to(town.position)<1400 and rpg.discover(town.id):hud.toast("Você descobriu "+town.name+" · +25 XP")
 		if building_preview:_update_build_preview();return
 		var item := current_interaction()
@@ -163,6 +168,7 @@ func _process(delta: float) -> void:
 			_show_victory()
 
 func current_interaction() -> Dictionary:
+	if housing!=null and housing.inside():return housing.interaction()
 	var nearest: Dictionary = politics.nearby_interaction() if politics!=null else {}
 	var nearest_distance:float = player.position.distance_to(nearest.position)-45.0 if not nearest.is_empty() else INF
 	for area in player.sensor.get_overlapping_areas():
@@ -179,7 +185,7 @@ func current_interaction() -> Dictionary:
 		var range_limit: float = item.get("range", 65.0 if item.kind == "npc" else 63.0)
 		if distance > range_limit + 1.0:
 			continue
-		if item.kind in ["shop","inn","house","piece"]:distance-=40.0
+		if item.kind in ["shop","inn","house","piece","house_door"]:distance-=40.0
 		if item.kind=="piece" and rpg.construction.pieces.has(item.id):
 			if ConstructionCatalog.piece(rpg.construction.pieces[item.id].kind).layer in ["floor","roof"]:distance+=150
 		elif item.kind == "seed":distance-=24.0
@@ -190,6 +196,7 @@ func current_interaction() -> Dictionary:
 	return nearest
 
 func _interaction_label(item: Dictionary) -> String:
+	if item.kind in ["house_door","house_exit","house_bed","house_counter"]:return item.name
 	if item.kind=="politics_post":return item.name
 	if item.kind=="shop":return "Negociar na ferraria"
 	if item.kind=="inn":return "Estalagem e caravanas"
@@ -216,6 +223,8 @@ func interact() -> void:
 	var item := current_interaction()
 	if item.is_empty():
 		return
+	if item.kind=="house_door":housing.enter(item.id);return
+	if item.kind in ["house_exit","house_bed","house_counter"]:housing.interact(item);return
 	if item.kind=="politics_post":
 		if item.post_kind=="guild":politics.show_guild(item.id)
 		else:politics.show_post(item.id)
@@ -388,7 +397,7 @@ func close_dialog() -> void:
 	hud.close_dialog()
 	mode = return_mode
 	player.active = mode == "playing"
-	world.set_population_active(mode == "playing")
+	world.set_population_active(mode == "playing" and not (housing!=null and housing.inside()))
 
 func show_pause() -> void:
 	if mode != "playing" and not (mode=="dialog" and hud.modal_kind=="pause"):
@@ -422,6 +431,7 @@ func toggle_shaders() -> void:
 	show_pause()
 
 func show_map_editor() -> void:
+	if housing!=null and housing.inside():housing.leave()
 	if map_editor==null:
 		map_editor=WorldEditor.new()
 		add_child(map_editor)
@@ -432,8 +442,11 @@ func show_map_editor() -> void:
 func apply_map(document:Dictionary) -> bool:
 	var checked:=MapDocument.validate(document)
 	if not checked.ok:return false
+	if housing!=null and housing.inside():housing.leave(false)
 	map_snapshots[MapDocument.current.id]=journey_data().duplicate(true)
 	save_journey()
+	if housing!=null:housing.pending_location.clear();housing.plan_enabled=false
+	saved_house_location.clear()
 	if hybrid!=null:hybrid.free();hybrid=null
 	world.free()
 	MapDocument.activate(checked.document)
@@ -454,6 +467,7 @@ func apply_map(document:Dictionary) -> bool:
 	if map_snapshots.has(MapDocument.current.id):apply_journey(map_snapshots[MapDocument.current.id])
 	elif persistence:_load_journey()
 	world.refresh_rpg();world.ensure_region(player.position,true)
+	if housing!=null:housing.bind_world()
 	if social!=null:social.bind_world()
 	if politics!=null:politics.bind_world()
 	player.position=world.safe_position(player.position)
@@ -463,6 +477,7 @@ func apply_map(document:Dictionary) -> bool:
 	mode="playing";return_mode="playing"
 	player.active=true;world.set_population_active(true)
 	hud.root.show();hud.show_game();hud.close_dialog()
+	if housing!=null:housing.resume()
 	_refresh_quest()
 	if map_editor!=null:map_editor.visible=false
 	save_journey()
@@ -494,6 +509,8 @@ func confirm_reset() -> void:
 	], "reset")
 
 func reset_journey() -> void:
+	if housing!=null and housing.inside():housing.leave(false)
+	if housing!=null:housing.pending_location.clear();housing.plan_enabled=false
 	cancel_building()
 	for node in world.houses.values():node.queue_free()
 	for node in world.house_areas.values():node.queue_free()
@@ -578,11 +595,15 @@ func _use_default_character() -> void:
 
 func journey_data() -> Dictionary:
 	if construction!=null and not loading_journey:construction._time_changed()
-	return {"version": 2,"rpg":rpg.save_data(), "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled,"stamina":player.stamina,"visual":{"zoom":camera_settings.zoom,"yaw":camera_settings.yaw,"weather":weather_mode}, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
+	var outside:=housing.return_point if housing!=null and housing.inside() else player.position
+	return {"version": 2,"rpg":rpg.save_data(), "x": outside.x, "y": outside.y,"interior":housing.location_data() if housing!=null else saved_house_location, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled,"stamina":player.stamina,"visual":{"zoom":camera_settings.zoom,"yaw":camera_settings.yaw,"weather":weather_mode}, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
 
 func apply_journey(data: Dictionary) -> bool:
 	if (data.get("version")!=1 and data.get("version")!=2) or not data.get("seeds",[]) is Array:
 		return false
+	if housing!=null and housing.inside():housing.leave(false)
+	saved_house_location=data.get("interior",{}).duplicate() if data.get("interior",{}) is Dictionary else {}
+	if housing!=null:housing.restore_location(saved_house_location)
 	loading_journey=true
 	collected.clear()
 	for id in data.get("seeds",[]):
@@ -680,6 +701,9 @@ func save_journey() -> void:
 		if not save_warning_shown:save_warning_shown=true;hud.toast("Não foi possível atualizar o save. O salvamento anterior foi preservado.",6)
 
 func _input(event:InputEvent)->void:
+	if building_preview and housing!=null and housing.plan_enabled and (construction==null or construction.selected.is_empty()) and event is InputEventKey and event.pressed and not event.is_echo():
+		if event.physical_keycode==KEY_T:housing.chosen_turn=posmod(housing.chosen_turn+1,4);_update_build_preview();get_viewport().set_input_as_handled();return
+		if event.physical_keycode==KEY_V:housing.chosen_seed+=1;_update_build_preview();get_viewport().set_input_as_handled();return
 	# Camera keys remain usable when a HUD button still owns keyboard focus.
 	if mode=="playing" and hybrid!=null and event is InputEventKey and event.pressed and not event.is_echo():
 		if hybrid.camera_input(event):get_viewport().set_input_as_handled()
@@ -749,6 +773,9 @@ func open_shop(town:String,page:String="main")->void:
 		actions.insert(4,{"label":"Vender 3 ferro · +36 moedas","callback":sell_item.bind(town,"iron",3)})
 	else:
 		actions=[{"label":"Comprar ferramentas e espada","callback":open_shop.bind(town,"tools")},{"label":"Comprar provisão · %d moedas"%ceili(5*price_factor),"callback":buy_item.bind(town,"bread")},{"label":"Vender materiais","callback":open_shop.bind(town,"sell")},{"label":"Entregar encomenda · 15 madeira e 8 pedra · reputação +4 / rival -1","callback":deliver_order.bind(town)},{"label":"Continuar explorando","callback":close_dialog}]
+	if housing!=null:
+		var id:=housing.service_building(town,"shop")
+		if not id.is_empty():actions.push_front({"label":"Entrar na loja","callback":housing.enter.bind(id)})
 	_open_dialog("COMÉRCIO DOS REINOS","Ferramentas e provisões",body,actions,"shop")
 
 func buy_item(town:String,item:String)->void:
@@ -779,7 +806,11 @@ func deliver_order(town:String)->void:
 
 func open_inn(town:String)->void:
 	if politics!=null and not politics.trade_allowed(town):return
-	_open_dialog("ESTALAGEM","Descanso e caravanas","Uma cama quente recupera toda a vida. As caravanas fazem viagens entre as duas capitais e os quatro vilarejos.\n\nMoedas: %d"%rpg.gold,[{"label":"Descansar até a manhã · 5 moedas","callback":rest_inn.bind(town)},{"label":"Viajar de caravana","callback":show_caravans.bind(town)},{"label":"Continuar explorando","callback":close_dialog}],"inn")
+	var actions:Array[Dictionary]=[{"label":"Descansar até a manhã · 5 moedas","callback":rest_inn.bind(town)},{"label":"Viajar de caravana","callback":show_caravans.bind(town)},{"label":"Continuar explorando","callback":close_dialog}]
+	if housing!=null:
+		var id:=housing.service_building(town,"inn")
+		if not id.is_empty():actions.push_front({"label":"Entrar na taverna","callback":housing.enter.bind(id)})
+	_open_dialog("ESTALAGEM","Descanso e caravanas","Uma cama quente recupera toda a vida. As caravanas fazem viagens entre as duas capitais e os quatro vilarejos.\n\nMoedas: %d"%rpg.gold,actions,"inn")
 
 func rest_inn(town:String)->void:
 	if politics!=null and not politics.trade_allowed(town):return
@@ -802,6 +833,7 @@ func travel_to(id:String)->bool:
 		if town.id==id:target=town
 	if target.is_empty() or rpg.gold<5:hud.toast("São necessárias 5 moedas para a viagem.");return false
 	if politics!=null and not politics.trade_allowed(id):return false
+	if housing!=null and housing.inside():housing.leave(false)
 	rpg.gold-=5
 	player.position=target.position+Vector2(0,384)
 	player.restore_surface()
@@ -841,9 +873,10 @@ func show_journal()->void:
 	_open_dialog("REGISTROS DO AVENTUREIRO","Um mundo para descobrir",body,actions,"journal")
 
 func can_build_at(point:Vector2)->Dictionary:
-	point=RPGState.snap_home(point)
+	point=housing.snap(point) if housing!=null else RPGState.snap_home(point)
 	if not point.is_finite() or point.distance_to(player.position)>500:return {"ok":false,"message":"Escolha um terreno perto de você."}
-	var rect:=Rect2(point-Vector2(96,128),Vector2(192,128))
+	var rect:=housing.footprint_at(point) if housing!=null else Rect2(point-Vector2(96,128),Vector2(192,128))
+	if not Rect2(Vector2.ONE*64,WorldData.SIZE-Vector2.ONE*128).encloses(rect.grow(24)):return {"ok":false,"message":"Terreno fora dos limites do continente."}
 	for entry in rpg.construction.pieces.values():
 		if rect.intersects(ConstructionCatalog.footprint(entry)):return {"ok":false,"message":"Há uma peça construída neste terreno."}
 	for wall in world.data.solid_rects:
@@ -862,6 +895,7 @@ func can_build_at(point:Vector2)->Dictionary:
 	return {"ok":true,"message":"Terreno livre · 20 moedas"}
 
 func start_building()->void:
+	if housing!=null and housing.inside():hud.toast("Saia da casa para construir.");return
 	if construction!=null:construction.selected=""
 	if mode=="dialog":close_dialog()
 	if mode!="playing":return
@@ -873,12 +907,13 @@ func start_building()->void:
 
 func _update_build_preview()->void:
 	if construction!=null and not construction.selected.is_empty():construction.update_preview();return
-	building_point=RPGState.snap_home(hybrid.world_position(get_viewport().get_mouse_position()) if hybrid!=null else player.position+Vector2(192,192))
+	var raw:=hybrid.world_position(get_viewport().get_mouse_position()) if hybrid!=null else player.position+Vector2(192,192)
+	building_point=housing.snap(raw) if housing!=null else RPGState.snap_home(raw)
 	var result:=can_build_at(building_point)
 	if hybrid!=null:hybrid.preview_house(building_point,result.ok and rpg.gold>=20)
 	hud.show_interaction(result.message,hybrid.screen_position(player.position) if hybrid!=null else Vector2(640,400))
 	hud.interaction_label.text="Clique · "+result.message
-	hud.controls.text="Clique para reservar   •   Botão direito ou Esc para cancelar"
+	hud.controls.text="Clique para reservar   •   T: girar 90°   •   V: variar modelo   •   Esc: cancelar"
 
 func cancel_building()->void:
 	if hybrid!=null:hybrid.cancel_preview()
@@ -890,10 +925,10 @@ func cancel_building()->void:
 	world.set_population_active(mode=="playing")
 
 func place_house(point:Vector2)->Dictionary:
-	point=RPGState.snap_home(point)
+	point=housing.snap(point) if housing!=null else RPGState.snap_home(point)
 	var valid:=can_build_at(point)
 	if not valid.ok:hud.toast(valid.message);return valid
-	var result:=rpg.claim(point)
+	var result:=rpg.claim(point,"player",housing.options() if housing!=null else {})
 	if result.ok:
 		cancel_building()
 		open_house("home_player")
@@ -908,7 +943,8 @@ func open_house(id:String)->void:
 	var body:String="Etapa: "+RPGState.STAGES[house.stage]
 	body+="\nVida: %d/%d"%[house.get("hp",RPGState.HOUSE_HP[house.stage]),RPGState.HOUSE_HP[house.stage]]
 	if house.owner=="player":
-		var nearby:bool=player.position.distance_to(Vector2(house.x,house.y+36))<140
+		var approach:=HouseKit.approach(HouseKit.from_home(id,house,rpg)) if house.stage==3 else Vector2(house.x,house.y+36)
+		var nearby:bool=player.position.distance_to(approach)<140
 		if not nearby:
 			body+="\nVá até o terreno para construir ou descansar. Seu lar está marcado no mapa."
 			actions.append({"label":"Ver no mapa","callback":show_map})
@@ -918,10 +954,13 @@ func open_house(id:String)->void:
 			actions.append({"label":"Construir próxima etapa","callback":build_house.bind(id)})
 		else:
 			body+="\nEste é seu lar. Descansar recupera a vida, e você retorna aqui se for socorrido."
+			actions.append({"label":"Entrar em casa","callback":housing.enter.bind(id)})
 			actions.append({"label":"Descansar em casa","callback":rest_until_morning})
 		if nearby and not rpg.house_repair_cost(id).is_empty():actions.append({"label":"Reparar · "+ConstructionCatalog.cost_text(rpg.house_repair_cost(id)),"callback":repair_house.bind(id)})
 		actions.append({"label":"Abrir catálogo de construção","callback":construction.show_catalog.bind("walls")})
-	else:body+="\nMorador: "+KingdomData.person(house.owner).get("name","Viajante")
+	else:
+		body+="\nMorador: "+KingdomData.person(house.owner).get("name","Viajante")
+		if house.stage==3:actions.append({"label":"Entrar na casa","callback":housing.enter.bind(id)})
 	actions.append({"label":"Continuar explorando","callback":close_dialog})
 	_open_dialog("CONSTRUÇÃO","Meu lar" if house.owner=="player" else "Casa de um morador",body,actions,"house")
 
@@ -934,8 +973,8 @@ func build_house(id:String)->void:
 	var result:=rpg.build(id)
 	if result.ok:
 		var house:Dictionary=rpg.houses[id]
-		if rpg.home_rect(house).grow(20).has_point(player.position):
-			player.position=Vector2(house.x,house.y+48)
+		if house.stage==3 or rpg.home_rect(house).grow(20).has_point(player.position):
+			player.position=world.safe_position(HouseKit.approach(HouseKit.from_home(id,house,rpg))) if house.stage==3 else Vector2(house.x,house.y+48)
 			player.restore_surface()
 	open_house(id)
 	hud.toast(result.message)
@@ -944,10 +983,12 @@ func build_house(id:String)->void:
 func repair_house(id:String)->void:
 	if not rpg.houses.has(id):return
 	var at:Dictionary=rpg.houses[id]
-	if player.position.distance_to(Vector2(at.x,at.y+36))>140:hud.toast("Vá até sua casa para reparar.");return
+	var approach:=HouseKit.approach(HouseKit.from_home(id,at,rpg)) if at.stage==3 else Vector2(at.x,at.y+36)
+	if player.position.distance_to(approach)>140:hud.toast("Vá até sua casa para reparar.");return
 	var result:=rpg.repair_house(id);open_house(id);hud.toast(result.message);save_journey()
 
 func attack()->void:
+	if housing!=null and housing.inside():return
 	if mode!="playing" or building_preview or action_delay>0:return
 	action_delay=0.55
 	var target:WorldAnimal
@@ -964,6 +1005,7 @@ func attack()->void:
 	save_journey()
 
 func take_damage(amount:int)->void:
+	if housing!=null and housing.inside():return
 	if mode!="playing" or building_preview:return
 	rpg.health=maxi(0,rpg.health-amount)
 	damage_flash=0.25

@@ -107,7 +107,7 @@ func _build_settlements()->void:
 	for building in KingdomData.buildings():
 		if not building.get("editor",false) or not building.kind in ["forge","tavern"]:continue
 		var rect:=KingdomData.building_rect(building)
-		var area:=_interaction_area(Vector2(rect.get_center().x,rect.end.y+40),95)
+		var area:=_interaction_area(HouseKit.approach(building) if building.has("house_style") else Vector2(rect.get_center().x,rect.end.y+40),95)
 		area.set_meta("interaction",{"kind":"shop" if building.kind=="forge" else "inn","id":building.id,"name":building.name,"range":95.0})
 		add_child(area)
 	daylight=CanvasModulate.new()
@@ -400,13 +400,13 @@ func sync_house(id:String)->void:
 		if house.stage>0:
 			var shape:=CollisionShape2D.new()
 			var box:=RectangleShape2D.new()
-			box.size=Vector2(192,128)
+			box.size=rpg.home_rect(house).size
 			shape.shape=box
-			shape.position=Vector2(house.x,house.y-64)
+			shape.position=rpg.home_rect(house).get_center()
 			node.add_child(shape)
 		add_child(node)
 		houses[id]=node
-		var area:=_interaction_area(Vector2(house.x,house.y+36),90)
+		var area:=_interaction_area(HouseKit.approach(HouseKit.from_home(id,house,rpg)) if house.stage==3 else Vector2(house.x,house.y+36),90)
 		area.set_meta("interaction",{"kind":"house","id":id,"name":"Minha casa" if house.owner=="player" else "Casa de "+KingdomData.person(house.owner).get("name","morador"),"range":90.0})
 		add_child(area)
 		house_areas[id]=area

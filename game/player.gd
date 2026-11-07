@@ -24,6 +24,7 @@ var default_frames: SpriteFrames
 var swimming := false
 var on_bridge := false
 var swim_phase := 0.0
+var indoors := false
 
 func _ready() -> void:
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
@@ -90,6 +91,9 @@ func _physics_process(delta: float) -> void:
 	sprite.play(("run_" if running and not swimming else "walk_") + facing if moving and direction.length_squared() > 0.01 else "idle_" + facing)
 
 func update_surface() -> void:
+	if indoors:
+		swimming=false;on_bridge=false;collision_mask=WorldData.SOLID_LAYER
+		return
 	# A swimmer stays below the bridge. Only entry from dry land boards its
 	# ramps; deck rails block walkers, while swimmers can pass underneath.
 	if on_bridge and WorldData.bridge_at(position).size==Vector2.ZERO:

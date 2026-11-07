@@ -222,67 +222,9 @@ func update_house(id:String)->void:
 	node.set_meta("grid_pivot","ground_corner")
 	add_child(node)
 	house_models[id]=node
-	if house.stage>=3:
-		var model:=BuildingVisual.new()
-		model.setup({"id":id,"name":id,"kind":"timber" if house.owner=="player" else "cottage","realm":KingdomData.realm_at(Vector2(house.x,house.y)),"tile":Vector2(house.x,house.y)/64,"size":Vector2(192,128)})
-		node.add_child(model)
-		_house_label(node,house)
-		_localize_house(node)
-		return
-	var parts:Array[Dictionary]=[]
-	var x:float=house.x/64
-	var z:float=house.y/64-1
-	if house.stage==0:
-		for side in [-1,1]:
-			for front in [-1,1]:parts.append({"at":Vector3(x+side*1.5,0.3,z+front),"size":Vector3(0.08,0.6,0.08),"color":Color("a69465")})
-	else:
-		parts.append({"at":Vector3(x,0.08,z),"size":Vector3(3,0.16,2),"color":Color("818278")})
-		if house.stage>=1:
-			for side in [-1,1]:
-				for front in [-1,1]:parts.append({"at":Vector3(x+side*1.42,0.8,z+front*0.92),"size":Vector3(0.13,1.6,0.13),"color":Color("7c5938")})
-		if house.stage>=2:
-			parts.append({"at":Vector3(x,0.85,z-0.92),"size":Vector3(3,1.5,0.16),"color":Color("bdad8a")})
-			for side in [-1,1]:parts.append({"at":Vector3(x+side*1.42,0.85,z),"size":Vector3(0.16,1.5,2),"color":Color("b39a72")})
-			parts.append({"at":Vector3(x,0.85,z+0.93),"size":Vector3(3,1.5,0.16),"color":Color("c3b38d")})
-			parts.append({"at":Vector3(x,0.65,z+1.025),"size":Vector3(0.6,1.2,0.02),"color":Color("6d4b32")})
-	if not parts.is_empty():
-		var multi:=MultiMesh.new()
-		multi.transform_format=MultiMesh.TRANSFORM_3D
-		multi.use_colors=true
-		multi.mesh=BoxMesh.new()
-		multi.instance_count=parts.size()
-		for i in parts.size():
-			multi.set_instance_transform(i,Transform3D(Basis.from_scale(parts[i].size),parts[i].at))
-			multi.set_instance_color(i,parts[i].color)
-		var model:=MultiMeshInstance3D.new()
-		model.multimesh=multi
-		var mat:=StandardMaterial3D.new()
-		mat.vertex_color_use_as_albedo=true
-		mat.roughness=1
-		model.material_override=mat
-		model.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		node.add_child(model)
-
-	if house.stage>=2:
-		var texture:Texture2D=load("res://assets/tomate/villages.png")
-		var region:Rect2=load("res://game/settlements.gd").REGIONS[2]
-		var atlas:=AtlasTexture.new()
-		atlas.atlas=texture
-		atlas.region=Rect2(region.position+region.size*Vector2(0.12,0.55),region.size*Vector2(0.76,0.45))
-		var face:=Sprite3D.new()
-		face.texture=hybrid._bake(atlas)
-		face.centered=false
-		face.offset=Vector2(-face.texture.get_width()/2.0,0)
-		face.pixel_size=3.0/face.texture.get_width()
-		face.position=Vector3(x,0.02,z+1.035)
-		face.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		if house_front_material==null:
-			house_front_material=hybrid._material(face.texture)
-			house_front_material.set_shader_parameter("face_camera",false)
-			house_front_material.set_shader_parameter("day_color",Vector3(game.world.daylight.color.r,game.world.daylight.color.g,game.world.daylight.color.b))
-			hybrid.facade_materials.append(house_front_material)
-		face.material_override=house_front_material
-		node.add_child(face)
+	var model:=BuildingVisual.new()
+	HouseMesh.build(model,HouseKit.from_home(id,house,game.rpg),house.stage)
+	node.add_child(model)
 	_house_label(node,house)
 	_localize_house(node)
 

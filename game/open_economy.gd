@@ -10,7 +10,7 @@ func setup(source:ForestGame)->void:
 	game=source
 
 func _process(delta:float)->void:
-	if game==null or game.mode!="playing" or game.building_preview:return
+	if game==null or game.mode!="playing" or game.building_preview or game.housing!=null and game.housing.inside():return
 	elapsed+=delta
 	if elapsed<1.0:return
 	var dt:=elapsed
