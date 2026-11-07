@@ -17,6 +17,8 @@ Os NPCs têm turnos de trabalho, comércio, refeições, patrulhas, encontros e 
 
 **Coleta por golpes:** recursos têm vida, ferramenta mínima e drops próprios. Árvores tremem, caem e deixam tocos; materiais saltam para o chão e são recolhidos por atração ao se aproximar. Há partículas, fragmentos, som e números de dano. Ferramentas evoluem de madeira para pedra e ferro; habilidades de lenhador/mineiro melhoram dano e gasto de energia. Árvores regeneram em três dias e rochas/minérios em cinco a sete. O editor também permite colocar os depósitos. [Guia da coleta](../docs/coleta-e-ferramentas.md).
 
+**Visual HD-2D:** sprites preservam suas proporções ao acompanhar a câmera, sombras se projetam no chão, grama reage ao jogador e água reflete a cena. Há chuva, neblina, vento e iluminação de dia/noite, com tochas e janelas acesas. Ative **Esc → Gráficos: HD-2D** para blur, bloom e sombras do sol; o modo leve continua disponível. **Q/R** ou botão do meio gira; **Ctrl+roda / PgUp / PgDn** dá zoom; **Home** centraliza. [Guia do visual](../docs/visual-hd2d.md).
+
 [Guia do editor](../docs/editor-de-mapas.md) · [Ver o ateliê](../docs/editor-mapa.png) · [Mapa de exemplo](../docs/mapa-exemplo.json)
 
 **E** interage, **I** abre inventário e **B** escolhe terreno. A hotbar usa **1–4** para ferramentas, **5** para comer, **6** para mapa, **7** para diário e **8** para lanterna. A roda do mouse seleciona e o clique esquerdo usa o item. **Espaço** ataca. Nas estalagens, use caravanas para visitar outros povoados. O modo gráfico leve é o padrão.

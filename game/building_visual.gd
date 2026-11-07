@@ -12,6 +12,9 @@ const PALETTES := [
 	[Color("cbb9a1"),Color("88654c"),Color("59483a")],
 ]
 static var shared_material: ShaderMaterial
+static var shared_fade_material:ShaderMaterial
+var visual_mesh:MeshInstance3D
+var faded:=false
 var surface: SurfaceTool
 var building_kind := ""
 var style := 0
@@ -82,6 +85,7 @@ func setup(data: Dictionary) -> void:
 		_box(Vector3(0,h+1.2,0),Vector3(0.06,1.9,0.06),wood,1)
 		_box(Vector3(0.3,h+1.6,0),Vector3(0.60,0.38,0.04),KingdomData.REALMS[data.realm].color,0)
 	var mesh:=MeshInstance3D.new()
+	visual_mesh=mesh
 	mesh.name="Architecture"
 	mesh.mesh=surface.commit()
 	mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_ON
@@ -93,6 +97,34 @@ func setup(data: Dictionary) -> void:
 	set_meta("footprint",footprint)
 	set_meta("height",h+roof_h)
 	surface=null
+
+func update_occlusion(camera:Camera3D,hero:Vector3,screen:Vector2,extent:Vector2)->void:
+	var wanted:=false
+	if global_position.distance_squared_to(hero)<14*14:
+		var box:=visual_mesh.get_aabb()
+		var rect:=Rect2(camera.unproject_position(global_transform*box.position),Vector2.ZERO)
+		for i in 8:
+			var corner:=box.position+box.size*Vector3(i&1,(i>>1)&1,(i>>2)&1)
+			rect=rect.expand(camera.unproject_position(global_transform*corner))
+		wanted=rect.intersects(Rect2(screen-extent,extent*2))
+	if faded==wanted:return
+	faded=wanted
+	if wanted and shared_fade_material==null:
+		# Keep early depth testing on ordinary houses; only real occluders need
+		# the cutout pass. Both variants share the same architecture surface code.
+		shared_fade_material=shared_material.duplicate()
+		var shader:=Shader.new()
+		var cutout:="""
+ vec2 gap=(SCREEN_UV-hero_screen.xy)/hero_screen.zw;
+ float front=smoothstep(0.10,0.65,hero_depth+VERTEX.z);
+ float same_view=1.0-step(0.5,distance(INV_VIEW_MATRIX[3].xyz,main_camera));
+ float opacity=1.0-(1.0-smoothstep(0.60,1.0,length(gap)))*front*same_view*0.78;
+ float pattern=fract(dot(floor(FRAGCOORD.xy),vec2(0.5,0.25)))+0.125;
+ if(pattern>opacity)discard;
+"""
+		shader.code=shared_material.shader.code.replace("void fragment() {","void fragment() {\n"+cutout)
+		shared_fade_material.shader=shader
+	visual_mesh.material_override=shared_fade_material if wanted else shared_material
 
 func _box(at: Vector3, size: Vector3, color: Color, tag: float) -> void:
 	var box:=BoxMesh.new()

@@ -17,14 +17,18 @@ Espaço: atacar animais próximos
 1 a 4: equipar espada, machado, picareta ou martelo
 5: comer provisão | 6: mapa | 7: diário | 8: ligar/desligar lanterna
 Roda do mouse: selecionar espaço da hotbar | Clique esquerdo: usar o item
+Q/R ou botão do meio + arrastar: girar câmera (limite de 35 graus)
+Ctrl+roda ou PgUp/PgDn: zoom | Home: restaurar câmera
 I: inventário, ferramentas e provisões
 J: objetivos e registros
 B: escolher terreno; clique confirma, botão direito/Esc cancela
 M: mapa do continente
 F2: Ateliê de Mundos — crie ou edite seu mapa
-Esc: pausa e gráficos (leve / nítido)
+Esc: pausa e gráficos (leve / HD-2D), shaders e clima
 
 O modo leve é o padrão. Som ambiente é opcional.
+HD-2D ativa foco suave, bloom e sombras do sol. A interface fica nítida.
+Clima pode ser automático ou fixado no menu Esc.
 Seu progresso é salvo automaticamente neste computador.
 
 CRIE SEU PRÓPRIO MAPA
@@ -83,6 +87,10 @@ para acompanhar a carteira, as ferramentas e o objetivo de cada um.
 
 DESEMPENHO E SALVAMENTO
 O cenário 2.5D tem ciclo de luz, neblina, postes e lanterna noturna.
+Sprites acompanham a câmera sem esticar e projetam sombras no chão.
+Chuva tem partículas e respingos; vento move árvores e grama.
+A grama se curva com a passagem do jogador. A água reflete a cena.
+Casas e árvores que encobrem o personagem ficam parcialmente transparentes.
 O modo leve reduz a resolução do cenário, mantendo a interface nítida.
 O mundo carrega no máximo 25 regiões próximas, liberando as que ficam longe.
 Árvores usam grupos de instâncias, com vento e sombras leves.
@@ -136,7 +144,8 @@ def package(system: str, output: Path) -> Path:
     )
     shutil.copy2(ROOT / "docs" / "editor-mapa.png", stage / "editor-mapa.png")
     shutil.copy2(ROOT / "docs" / "coleta-e-ferramentas.md", stage / "GUIA-DA-COLETA.md")
-    for image_name in ["coleta-queda.png", "coleta-toco.png"]:
+    shutil.copy2(ROOT / "docs" / "visual-hd2d.md", stage / "GUIA-DO-VISUAL.md")
+    for image_name in ["coleta-queda.png", "coleta-toco.png", "hd2d-aurelia.png", "hd2d-noite.png", "hd2d-ponte.png", "hd2d-chuva.png"]:
         shutil.copy2(ROOT / "docs" / image_name, stage / image_name)
     (stage / "FONTES-ARVORES.json").unlink(missing_ok=True)
     (stage / "CREDITOS.txt").write_text(

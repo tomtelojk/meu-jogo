@@ -39,7 +39,7 @@ func hit(entry:Dictionary,damage:int,finished:bool)->void:
 	if entry.has("sprite") and finished:
 		var pivot:=Node3D.new();pivot.position=hybrid._point(entry.resource.position);pivot.basis=hybrid.camera.global_basis;add_child(pivot)
 		var card:=hybrid._card(entry.sprite);card.reparent(pivot,false);card.material_override.set_shader_parameter("face_camera",false)
-		var daylight:Color=game.world.daylight.color;card.material_override.set_shader_parameter("day_color",Vector3(daylight.r,daylight.g,daylight.b))
+		var daylight:Color=hybrid.lighting_color;card.material_override.set_shader_parameter("day_color",Vector3(daylight.r,daylight.g,daylight.b))
 		falls.append({"id":id,"node":pivot,"basis":pivot.basis,"time":0.0,"direction":-1 if game.player.position.x>entry.resource.position.x else 1})
 	elif hybrid.landscape.resource_instances.has(id):
 		var ref:Dictionary=hybrid.landscape.resource_instances[id]

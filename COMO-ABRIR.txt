@@ -16,6 +16,9 @@ B: escolher terreno | M: mapa | Espaço: atacar | Esc: pausar
 Hotbar 1-4: ferramentas | 5: comer | 6: mapa | 7: diário | 8: lanterna
 Roda do mouse: selecionar | Clique esquerdo: usar o item selecionado
 F2: criar / editar o mapa | Esc > Shaders: ligar ou desligar efeitos
+Q/R ou botão do meio: girar câmera | Ctrl+roda / PgUp / PgDn: zoom | Home: centralizar
+Esc > Gráficos: HD-2D ativa foco suave, bloom e sombras. Leve é o padrão.
+Esc > Clima: automático, céu limpo, chuva, neblina ou ventania.
 
 Compre ferramentas na ferraria; recolha madeira e pedra; negocie ou construa.
 Use vários golpes. Materiais caem no chão e são atraídos ao chegar perto.

@@ -10,6 +10,15 @@ static func icon(kind:String)->Texture2D:
 	image.fill(Color.TRANSPARENT)
 	var wood:=Color("a37746");var metal:=Color("cbd9db");var gold:=Color("e3bb66")
 	match kind:
+		"torch_post","torch_0","torch_1","torch_2":
+			for y in range(8,16):image.set_pixel(7,y,wood);image.set_pixel(8,y,Color("64432b"))
+			for x in range(5,11):image.set_pixel(x,9,Color("49413a"))
+			if kind!="torch_post":
+				var phase:=int(kind.right(1))
+				for y in range(2,9):
+					var half:=1 if y<4 else (3 if y>5 else 2)
+					for x in range(8-half,8+half):image.set_pixel(x+(phase-1 if y<5 else 0),y,Color("ffb44f") if x%3 else Color("e96932"))
+				for y in range(5,9):image.set_pixel(7,y,Color("ffe9a3"));image.set_pixel(8,y,Color("ffe9a3"))
 		"sword":
 			for i in 10:
 				for j in 3:image.set_pixel(11-i,1+i+j,metal if j<2 else Color("7d919d"))

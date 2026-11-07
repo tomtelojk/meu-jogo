@@ -18,7 +18,12 @@ uniform bool face_camera = true;
 uniform float swim_amount = 0.0;
 void vertex() {
  pixel_world=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;
- if(face_camera) MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
+ if(face_camera){
+  vec3 scale=vec3(length(MODEL_MATRIX[0].xyz),length(MODEL_MATRIX[1].xyz),length(MODEL_MATRIX[2].xyz));
+  mat4 facing=mat4(MAIN_CAM_INV_VIEW_MATRIX[0]*scale.x,MAIN_CAM_INV_VIEW_MATRIX[1]*scale.y,MAIN_CAM_INV_VIEW_MATRIX[2]*scale.z,MODEL_MATRIX[3]);
+  pixel_world=(facing*vec4(VERTEX,1.0)).xyz;
+  MODELVIEW_MATRIX=VIEW_MATRIX*facing;
+ }
 }
 void fragment() {
  vec2 local = (UV-frame_uv.xy)/frame_uv.zw;
@@ -46,6 +51,7 @@ uniform vec4 tint : source_color = vec4(1.0);
 uniform vec3 day_color : source_color = vec3(1.0);
 uniform vec2 hero_position = vec2(-100.0);
 uniform float wind = 0.125;
+uniform float wind_strength=0.55;
 uniform float vitality = 1.0;
 uniform float foliage_height = 0.0;
 varying float opacity;
@@ -54,12 +60,15 @@ void vertex() {
  vec3 root = MODEL_MATRIX[3].xyz;
  vec3 scale = vec3(length(MODEL_MATRIX[0].xyz),length(MODEL_MATRIX[1].xyz),length(MODEL_MATRIX[2].xyz));
  float height = foliage_height > 0.0 ? foliage_height : tex_size.y/64.0*scale.y;
- vec2 d = root.xz-hero_position;
+ vec3 d=(VIEW_MATRIX*vec4(root-vec3(hero_position.x,0.0,hero_position.y),0.0)).xyz;
  float side = 1.0-smoothstep(height*0.3,height*0.42,abs(d.x));
- float front = smoothstep(0.0,0.25,d.y)*(1.0-smoothstep(height*1.25,height*1.5,d.y));
+ float front = smoothstep(0.0,0.25,d.z)*(1.0-smoothstep(height*1.25,height*1.5,d.z));
  opacity = mix(1.0,0.25,side*front);
- VERTEX.x += sin(TIME*0.68+root.x*0.17+root.z*0.11)*wind*(1.0-smoothstep(0.43,0.77,UV.y));
- MODELVIEW_MATRIX = VIEW_MATRIX*mat4(INV_VIEW_MATRIX[0]*scale.x,INV_VIEW_MATRIX[1]*scale.y,INV_VIEW_MATRIX[2]*scale.z,MODEL_MATRIX[3]);
+ if(distance(INV_VIEW_MATRIX[3].xyz,MAIN_CAM_INV_VIEW_MATRIX[3].xyz)>0.1)opacity=1.0;
+ VERTEX.x += (sin(TIME*0.68+root.x*0.17+root.z*0.11)+sin(TIME*0.31+root.z*0.23)*0.3)*wind*wind_strength*(1.0-smoothstep(0.43,0.77,UV.y));
+ mat4 facing=mat4(MAIN_CAM_INV_VIEW_MATRIX[0]*scale.x,MAIN_CAM_INV_VIEW_MATRIX[1]*scale.y,MAIN_CAM_INV_VIEW_MATRIX[2]*scale.z,MODEL_MATRIX[3]);
+ pixel_world=(facing*vec4(VERTEX,1.0)).xyz;
+ MODELVIEW_MATRIX = VIEW_MATRIX*facing;
 }
 void fragment() {
  vec4 c = texture(art,UV);
@@ -93,6 +102,7 @@ var tree_batches: Array[MultiMeshInstance3D] = []
 var mother_card: Sprite3D
 var swim_ripple: MeshInstance3D
 var last_daylight := Color(-1,-1,-1)
+var lighting_color:=Color.WHITE
 var landscape:StreamedLandscape
 var build_ghost:MeshInstance3D
 var grade:CanvasLayer
@@ -106,6 +116,16 @@ var held_tool:Sprite3D
 var light_timer:=0.0
 var pixel_light_timer:=0.0
 var resource_fx:ResourceEffects
+var grass:ReactiveGrass
+var climate:HD2DAtmosphere
+var reflection:PlanarReflection
+const MIN_ZOOM:=8.0
+const MAX_ZOOM:=18.0
+const MAX_YAW:=PI*0.1944444444
+var target_zoom:=13.0
+var target_yaw:=0.0
+var view_yaw:=0.0
+var dragging_camera:=false
 
 func setup(source: ForestGame) -> void:
 	game=source
@@ -134,6 +154,7 @@ func setup(source: ForestGame) -> void:
 			label.pixel_size=0.007
 			label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 			label.no_depth_test=true
+			label.layers=32
 			add_child(label)
 			actors.append({"label":label,"body":body})
 		_shadow(body)
@@ -144,6 +165,7 @@ func setup(source: ForestGame) -> void:
 	camera.far=120.0
 	add_child(camera)
 	camera.current=true
+	restore_view(game.camera_settings)
 	_follow(true)
 	game.camera.enabled=false
 	game.world.visible=false
@@ -151,7 +173,12 @@ func setup(source: ForestGame) -> void:
 	get_viewport().canvas_transform=Transform2D.IDENTITY
 	set_light_graphics(game.light_graphics)
 	_color_grade()
+	grass=ReactiveGrass.new();add_child(grass);grass.setup(self)
+	foliage_materials.append(grass.material)
+	climate=HD2DAtmosphere.new();add_child(climate);climate.setup(self)
+	reflection=PlanarReflection.new();add_child(reflection);reflection.setup(self)
 	set_shaders(game.shaders_enabled)
+	_update_light()
 	game.world.clock.minute_changed.connect(_update_light)
 
 func set_light_graphics(enabled:bool)->void:
@@ -159,6 +186,8 @@ func set_light_graphics(enabled:bool)->void:
 	get_viewport().scaling_3d_scale=0.65 if enabled else 1.0
 	if grade_rect!=null:grade_rect.visible=shaders_enabled and not enabled
 	if sunlight!=null:sunlight.shadow_enabled=not enabled and shaders_enabled
+	if climate!=null:climate.rain.amount=160 if enabled else 300
+	if climate!=null:_update_light()
 
 func _point(p:Vector2)->Vector3:
 	return Vector3(p.x/UNIT,0,p.y/UNIT)
@@ -286,6 +315,7 @@ func _water()->void:
 	var node:=MeshInstance3D.new()
 	node.mesh=surface.commit()
 	node.material_override=river_material
+	node.layers=2
 	node.name="River3D"
 	add_child(node)
 
@@ -321,7 +351,7 @@ func _build_forest()->void:
 
 func _card(source:AnimatedSprite2D)->Sprite3D:
 	var card:=Sprite3D.new()
-	card.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	card.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	card.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 	card.texture=_bake(source.sprite_frames.get_frame_texture(source.animation,source.frame))
 	card.material_override=_material(card.texture)
@@ -335,34 +365,37 @@ func _sync(card:Sprite3D,source:AnimatedSprite2D)->void:
 		card.texture=tex
 		card.material_override.set_shader_parameter("art",tex)
 		card.material_override.set_shader_parameter("tex_size",tex.get_size())
-	card.pixel_size=source.scale.x/UNIT
-	card.offset=source.position/source.scale+source.offset
-	card.offset.y=-card.offset.y
-	if not source.centered:
-		card.offset.y-=tex.get_height()
-	card.centered=source.centered
-	card.flip_h=source.flip_h
+	_sprite_geometry(card,source)
 	var mat:=card.material_override as ShaderMaterial
 	mat.set_shader_parameter("tint",source.modulate)
 	if source.material is ShaderMaterial:
 		mat.set_shader_parameter("clothing_tint",source.material.get_shader_parameter("clothing_tint"))
 	else:mat.set_shader_parameter("clothing_tint",Color.WHITE)
 
+func _sprite_geometry(card:Sprite3D,source:AnimatedSprite2D)->void:
+	card.pixel_size=source.scale.x/UNIT
+	card.offset=source.position/source.scale+source.offset
+	card.offset.y=-card.offset.y
+	if not source.centered:
+		card.offset.y-=card.texture.get_height()
+	card.centered=source.centered
+	card.flip_h=source.flip_h
+
 func _shadow(body:Node2D)->void:
-	var shadow:=MeshInstance3D.new()
+	var shadow:=Sprite3D.new()
 	shadow.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var mesh:=PlaneMesh.new()
-	mesh.size=Vector2(0.45,0.24)
-	shadow.mesh=mesh
-	var mat:=StandardMaterial3D.new()
-	mat.albedo_color=Color(0.08,0.12,0.08,0.3)
-	mat.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
+	shadow.layers=4
+	shadow.extra_cull_margin=4.0
+	shadow.texture=_bake(body.sprite.sprite_frames.get_frame_texture(body.sprite.animation,body.sprite.frame))
+	_sprite_geometry(shadow,body.sprite)
+	var mat:=ShaderMaterial.new();mat.shader=load("res://game/shaders/projected_shadow.gdshader");mat.set_shader_parameter("art",shadow.texture)
 	shadow.material_override=mat
 	add_child(shadow)
 	actors.append({"shadow":shadow,"body":body})
 
 func _process(delta:float)->void:
 	if game==null: return
+	climate.update(delta)
 	_update_local_lights(delta)
 	var interaction:=game.current_interaction()
 	for actor in actors:
@@ -377,8 +410,13 @@ func _process(delta:float)->void:
 			actor.label.position=_point(actor.body.position)+Vector3(0,_body_height(actor.body)+1.5,0)
 			actor.label.visible=actor.body.visible and interaction.get("kind")=="npc" and interaction.get("id")==actor.body.definition.id
 		elif actor.has("shadow"):
+			actor.shadow.texture=_bake(actor.body.sprite.sprite_frames.get_frame_texture(actor.body.sprite.animation,actor.body.sprite.frame))
+			_sprite_geometry(actor.shadow,actor.body.sprite)
+			actor.shadow.material_override.set_shader_parameter("art",actor.shadow.texture)
+			actor.shadow.material_override.set_shader_parameter("light_direction",-sunlight.global_basis.z)
+			actor.shadow.material_override.set_shader_parameter("opacity",0.26 if game.world.clock.minute>6*60 and game.world.clock.minute<19*60 else 0.10)
 			actor.shadow.position=_point(actor.body.position)+Vector3(0,_body_height(actor.body)+0.005,0)
-			actor.shadow.visible=actor.body.visible and not (actor.body==game.player and game.player.swimming)
+			actor.shadow.visible=actor.body.visible and not sunlight.shadow_enabled and not (actor.body==game.player and game.player.swimming)
 		else:
 			_sync(actor.card,actor.body.sprite)
 			actor.card.position=_point(actor.body.position)+Vector3(0,_body_height(actor.body),0)
@@ -390,7 +428,8 @@ func _process(delta:float)->void:
 	mother_card.material_override.set_shader_parameter("vitality",game.world.mother_material.get_shader_parameter("vitality"))
 	var hero:=Vector2(game.player.position.x,game.player.position.y)/UNIT
 	for material in foliage_materials:
-		material.set_shader_parameter("hero_position",hero)
+		if material!=grass.material:material.set_shader_parameter("hero_position",hero)
+	grass.material.set_shader_parameter("hero",_point(game.player.position)+Vector3(0,game.player.surface_height()/64,0))
 	swim_ripple.visible=game.player.swimming
 	swim_ripple.position=_point(game.player.position)+Vector3(0,0.015,-0.25)
 	swim_ripple.scale=Vector3.ONE*(1.0+sin(game.player.swim_phase)*0.12)
@@ -401,6 +440,8 @@ func _process(delta:float)->void:
 		_update_light()
 
 	_follow(false,delta)
+	_update_occlusion()
+	reflection.update(delta)
 
 func _body_height(body:Node2D)->float:
 	if body==game.player:
@@ -409,35 +450,95 @@ func _body_height(body:Node2D)->float:
 
 func _update_light()->void:
 	last_daylight=game.world.daylight.color
+	var clouds:float=climate.cloud if climate!=null else 0.0
+	var daylight_color:=last_daylight.lerp(Color("718b9a"),clouds*0.3)
+	lighting_color=daylight_color
 	light_timer=0
 	_update_local_lights(0)
-	sunlight.light_color=last_daylight
-	atmosphere.environment.ambient_light_color=last_daylight
+	sunlight.light_color=daylight_color
+	atmosphere.environment.ambient_light_color=daylight_color
 	var hour:=game.world.clock.minute/60.0
 	var daylight:=smoothstep(5.0,8.0,hour)*(1.0-smoothstep(17.0,21.0,hour))
-	sunlight.light_energy=lerpf(0.08,0.72,daylight)
+	if grade_rect!=null:grade_rect.material.set_shader_parameter("bloom_strength",lerpf(0.28,0.05,daylight))
+	# Keep sunlit terrain within the same palette when enabling the shadow pass.
+	sunlight.light_energy=lerpf(0.08,0.72,daylight)*(1.0-clouds*0.7)*(0.4 if sunlight.shadow_enabled else 1.0)
 	sunlight.rotation_degrees=Vector3(-25-sin(clampf((hour-6)/12,0,1)*PI)*40,-70+clampf((hour-6)/12,0,1)*115,0)
 	atmosphere.environment.ambient_light_energy=lerpf(0.42,0.48,daylight)
 	atmosphere.environment.fog_light_color=Color("24364d").lerp(Color("93a6ac"),daylight)
-	atmosphere.environment.fog_density=lerpf(0.50,0.42,daylight)
-	var color:=Vector3(last_daylight.r,last_daylight.g,last_daylight.b)
+	var mist:float=climate.mist if climate!=null else 0.0
+	atmosphere.environment.fog_density=lerpf(0.50,0.42,daylight)+mist*0.25
+	atmosphere.environment.fog_depth_begin=lerpf(18.0,10.0,mist)
+	atmosphere.environment.fog_depth_end=lerpf(30.0,25.0,mist)
+	var sky:Color=atmosphere.environment.fog_light_color
+	atmosphere.environment.background_color=sky.darkened(0.15)
+	river_material.set_shader_parameter("sky_color",Vector3(sky.r,sky.g,sky.b))
+	var color:=Vector3(daylight_color.r,daylight_color.g,daylight_color.b)
 	for material in foliage_materials+facade_materials:
 		material.set_shader_parameter("day_color",color)
 	river_material.set_shader_parameter("day_color",color)
-	if BuildingVisual.shared_material!=null:BuildingVisual.shared_material.set_shader_parameter("day_color",color)
+	_architecture_parameter("day_color",color)
+	_architecture_parameter("night",1.0-daylight)
 	for actor in actors:
 		if actor.has("card"):
 			actor.card.material_override.set_shader_parameter("day_color",color)
 
 func _follow(snap:bool,delta:float=0.016)->void:
+	var weight:=1.0 if snap else 1.0-exp(-7.0*delta)
+	view_yaw=lerp_angle(view_yaw,target_yaw,weight)
+	camera.size=lerpf(camera.size,target_zoom,weight)
+	game.player.view_yaw=view_yaw
 	var target:=_point(game.player.position)
 	target.y=game.player.surface_height()/UNIT
-	var desired:=target+Vector3(0,12,14)
+	var desired:=target+Vector3(0,12,14).rotated(Vector3.UP,view_yaw)
 	if resource_fx!=null and resource_fx.shake>0:
 		var phase:=Time.get_ticks_msec()*0.08
 		desired+=Vector3(sin(phase),cos(phase*1.3),0)*resource_fx.shake
 	camera.position=desired if snap else camera.position.lerp(desired,1.0-exp(-9.0*delta))
 	camera.look_at(target+Vector3(0,0.3,0))
+	if game.mode!="playing" or dragging_camera and not Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):dragging_camera=false
+
+func restore_view(settings:Dictionary)->void:
+	target_zoom=clampf(float(settings.get("zoom",13)),MIN_ZOOM,MAX_ZOOM) if ResourceProgress.number(settings.get("zoom",13)) else 13.0
+	target_yaw=clampf(float(settings.get("yaw",0)),-MAX_YAW,MAX_YAW) if ResourceProgress.number(settings.get("yaw",0)) else 0.0
+	game.camera_settings={"zoom":target_zoom,"yaw":target_yaw}
+
+func camera_input(event:InputEvent)->bool:
+	var handled:=false
+	if event is InputEventKey and event.pressed:
+		var code:Key=event.physical_keycode
+		if not code in [KEY_Q,KEY_R,KEY_PAGEUP,KEY_PAGEDOWN,KEY_HOME]:code=event.keycode
+		match code:
+			KEY_Q:target_yaw-=deg_to_rad(8);handled=true
+			KEY_R:target_yaw+=deg_to_rad(8);handled=true
+			KEY_PAGEUP:target_zoom/=1.12;handled=true
+			KEY_PAGEDOWN:target_zoom*=1.12;handled=true
+			KEY_HOME:target_zoom=13;target_yaw=0;handled=true
+	elif event is InputEventMouseButton:
+		if event.button_index==MOUSE_BUTTON_MIDDLE:dragging_camera=event.pressed;handled=true
+		elif event.pressed and event.ctrl_pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:target_zoom*=0.9 if event.button_index==MOUSE_BUTTON_WHEEL_UP else 1.1;handled=true
+	elif event is InputEventMouseMotion and dragging_camera:target_yaw-=event.relative.x*0.004;handled=true
+	if handled:restore_view({"zoom":target_zoom,"yaw":target_yaw})
+	return handled
+
+func _update_occlusion()->void:
+	var hero:=_point(game.player.position)+Vector3(0,0.55+_body_height(game.player),0)
+	var screen:=camera.unproject_position(hero)
+	var size:=get_viewport().get_visible_rect().size
+	var extent:=Vector2(size.x*0.065,size.y*0.14)*13/camera.size
+	for model in architecture.get_children():model.update_occlusion(camera,hero,screen,extent)
+	for parent in landscape.house_models.values():
+		for model in parent.get_children():
+			if model is BuildingVisual:model.update_occlusion(camera,hero,screen,extent)
+	_architecture_parameter("hero_screen",Vector4(screen.x/size.x,screen.y/size.y,extent.x/size.x,extent.y/size.y))
+	_architecture_parameter("hero_depth",-camera.to_local(hero).z)
+	_architecture_parameter("main_camera",camera.global_position)
+	if grade_rect!=null:
+		grade_rect.material.set_shader_parameter("focus_y",screen.y/size.y)
+		grade_rect.material.set_shader_parameter("pixel_size",Vector2.ONE/size)
+
+func _architecture_parameter(key:String,value:Variant)->void:
+	for material in [BuildingVisual.shared_material,BuildingVisual.shared_fade_material]:
+		if material!=null:material.set_shader_parameter(key,value)
 
 func snap_camera()->void:
 	_follow(true)
@@ -509,6 +610,7 @@ func _landmarks()->void:
 	mother.position=_point(WorldData.MOTHER)+Vector3(0,3.5,0)
 	mother.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 	mother.no_depth_test=true
+	mother.layers=32
 	mother.font_size=40
 	mother.pixel_size=0.008
 	add_child(mother)
@@ -544,6 +646,7 @@ func _settlement_labels()->void:
 			if not KingdomData.service_exists(town,kind):continue
 			var label:=Label3D.new()
 			label.font=load(PixelArt.FONT)
+			label.layers=32
 			label.text="FERRARIA" if kind=="shop" else "ESTALAGEM"
 			label.position=_point(KingdomData.point(town.id+"_"+kind))+Vector3(0,1.6,0)
 			label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
@@ -568,16 +671,17 @@ func set_shaders(enabled:bool)->void:
 	shaders_enabled=enabled
 	if grade_rect!=null:grade_rect.visible=enabled and not game.light_graphics
 	if river_material!=null:river_material.set_shader_parameter("effects",1.0 if enabled else 0.0)
-	if BuildingVisual.shared_material!=null:BuildingVisual.shared_material.set_shader_parameter("effects",1.0 if enabled else 0.0)
+	_architecture_parameter("effects",1.0 if enabled else 0.0)
 	if atmosphere!=null:atmosphere.environment.fog_enabled=enabled
 	if sunlight!=null:sunlight.shadow_enabled=enabled and not game.light_graphics
+	if climate!=null:_update_light()
 
 func _local_lights()->void:
 	lantern=OmniLight3D.new();lantern.name="PlayerLantern";lantern.light_color=Color("ffd397");lantern.omni_range=4.5;lantern.light_energy=2.2;lantern.shadow_enabled=false;add_child(lantern)
 	held_tool=Sprite3D.new();held_tool.pixel_size=0.022;held_tool.billboard=BaseMaterial3D.BILLBOARD_ENABLED;held_tool.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST;add_child(held_tool)
 	for i in 4:
 		var light:=OmniLight3D.new();light.light_color=Color("ffbf7f");light.omni_range=4.2;light.light_energy=1.7;light.shadow_enabled=false;add_child(light);street_lamps.append(light)
-		var post:=Sprite3D.new();post.texture=PixelArt.icon("lantern");post.pixel_size=0.018;post.billboard=BaseMaterial3D.BILLBOARD_ENABLED;post.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST;add_child(post);lamp_posts.append(post)
+		var post:=Sprite3D.new();post.texture=PixelArt.icon("torch_post");post.pixel_size=0.032;post.billboard=BaseMaterial3D.BILLBOARD_ENABLED;post.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST;add_child(post);lamp_posts.append(post)
 
 func _update_local_lights(delta:float)->void:
 	lantern.visible=game.lantern_enabled
@@ -592,6 +696,7 @@ func _update_local_lights(delta:float)->void:
 		pixel_light_timer=0.05
 		var materials:Array=foliage_materials.duplicate()
 		if BuildingVisual.shared_material!=null:materials.append(BuildingVisual.shared_material)
+		if BuildingVisual.shared_fade_material!=null:materials.append(BuildingVisual.shared_fade_material)
 		for actor in actors:
 			if actor.has("card") and actor.body.position.distance_squared_to(game.player.position)<1600*1600:materials.append(actor.card.material_override)
 		var positions:=PackedVector3Array()
@@ -604,6 +709,10 @@ func _update_local_lights(delta:float)->void:
 			material.set_shader_parameter("pixel_lantern_strength",1.1 if game.lantern_enabled else 0.0)
 			material.set_shader_parameter("pixel_streets",positions)
 			material.set_shader_parameter("pixel_street_strength",0.9 if lit else 0.0)
+	for i in street_lamps.size():
+		if street_lamps[i].visible:
+			lamp_posts[i].texture=PixelArt.icon("torch_"+str(posmod(floori(Time.get_ticks_msec()/160.0)+i,3)))
+			street_lamps[i].light_energy=1.7*(0.96+sin(Time.get_ticks_msec()*0.004+i*2.1)*0.04)
 	light_timer-=delta
 	if light_timer>0:return
 	light_timer=0.5
@@ -619,6 +728,7 @@ func _update_local_lights(delta:float)->void:
 		var present:=i<sites.size()
 		street_lamps[i].visible=present and night
 		lamp_posts[i].visible=present
+		lamp_posts[i].texture=PixelArt.icon("torch_"+str(posmod(floori(Time.get_ticks_msec()/160.0)+i,3)) if night else "torch_post")
 		if present:
 			street_lamps[i].position=_point(sites[i])+Vector3(0,1.1,0)
 			lamp_posts[i].position=_point(sites[i])+Vector3(0,0.9,0)

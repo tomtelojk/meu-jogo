@@ -103,6 +103,7 @@ func _ground(parent:Node3D,content:Dictionary)->void:
 	node.mesh=plane
 	node.position=Vector3(region.get_center().x/64,-0.025,region.get_center().y/64)
 	node.material_override=mat
+	node.layers=4
 	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(node)
 
@@ -138,7 +139,7 @@ func _trees(parent:Node3D,content:Dictionary)->void:
 		var node:=MultiMeshInstance3D.new()
 		node.multimesh=multi
 		node.material_override=materials[row]
-		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		parent.add_child(node)
 
 func _rocks(parent:Node3D,content:Dictionary)->void:
@@ -295,4 +296,5 @@ func _painted_water(parent:Node3D,content:Dictionary)->void:
 	water.mesh=surface.commit()
 	water.material_override=hybrid.river_material
 	water.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	water.layers=2
 	parent.add_child(water)

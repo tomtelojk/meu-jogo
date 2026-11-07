@@ -14,6 +14,7 @@ const DIRECTIONS := ["down", "up", "right", "left"]
 var active: bool = false
 var stamina: float = 1.0
 var exertion_delay:=0.0
+var view_yaw:=0.0
 var touch_vector := Vector2.ZERO
 var facing: String = "down"
 var running: bool = false
@@ -67,13 +68,14 @@ func _physics_process(delta: float) -> void:
 		sprite.play("idle_" + facing)
 		return
 	exertion_delay=maxf(0,exertion_delay-delta)
-	var direction := (Input.get_vector("move_left", "move_right", "move_up", "move_down") + touch_vector).limit_length(1.0)
+	var screen_direction := (Input.get_vector("move_left", "move_right", "move_up", "move_down") + touch_vector).limit_length(1.0)
+	var direction:=screen_direction.rotated(-view_yaw)
 	running = direction.length_squared() > 0.01 and Input.is_action_pressed("run") and stamina > 0.02
 	if direction.length_squared() > 0.01:
-		if absf(direction.x) > absf(direction.y):
-			facing = "right" if direction.x > 0 else "left"
+		if absf(screen_direction.x) > absf(screen_direction.y):
+			facing = "right" if screen_direction.x > 0 else "left"
 		else:
-			facing = "down" if direction.y > 0 else "up"
+			facing = "down" if screen_direction.y > 0 else "up"
 	if swimming:
 		var target := direction * (FAST_SWIM_SPEED if running else SWIM_SPEED) + RIVER_CURRENT
 		velocity = velocity.move_toward(target, SWIM_ACCELERATION * delta)

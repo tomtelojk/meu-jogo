@@ -23,6 +23,8 @@ var victory_delay: float = 0.0
 var hybrid: HybridWorld
 var light_graphics := true
 var shaders_enabled := true
+var weather_mode:="auto"
+var camera_settings:Dictionary={"zoom":13.0,"yaw":0.0}
 var map_editor: WorldEditor
 var equipped_slot:=0
 var lantern_enabled:=false
@@ -356,12 +358,13 @@ func show_pause() -> void:
 	if mode != "playing" and not (mode=="dialog" and hud.modal_kind=="pause"):
 		return
 	save_journey()
-	_open_dialog("UMA PEQUENA PAUSA", "A aventura espera por você.", "Não é preciso ter pressa. Sua jornada é salva automaticamente neste dispositivo.", [
+	_open_dialog("UMA PEQUENA PAUSA", "A aventura espera por você.", "Q/R · Girar a câmera\nCtrl+roda ou PgUp/PgDn · Zoom\nHome · Centralizar\nClima atual: "+WeatherState.sample(world.clock.day,world.clock.minute,weather_mode).label+"\n\nHD-2D ativa foco suave, bloom e sombras. O modo leve economiza desempenho. Sua jornada é salva automaticamente.", [
 		{"label": "Continuar a jornada", "callback": close_dialog},
 		{"label": "Escolher personagem", "callback": show_characters},
 		{"label": "Criar / editar mapa · F2", "callback": show_map_editor},
-		{"label": "Gráficos: " + ("leve" if light_graphics else "nítido"), "callback": toggle_graphics},
+		{"label": "Gráficos: " + ("leve" if light_graphics else "HD-2D"), "callback": toggle_graphics},
 		{"label": "Shaders: " + ("ligados" if shaders_enabled else "desligados"), "callback": toggle_shaders},
+		{"label": "Clima: "+WeatherState.NAMES[weather_mode], "callback": cycle_weather},
 		{"label": "Como jogar", "callback": show_help},
 		{"label": "Começar de novo", "callback": confirm_reset},
 	], "pause")
@@ -371,6 +374,10 @@ func toggle_graphics() -> void:
 	if hybrid != null:
 		hybrid.set_light_graphics(light_graphics)
 	show_pause()
+
+func cycle_weather()->void:
+	weather_mode=WeatherState.MODES[(WeatherState.MODES.find(weather_mode)+1)%WeatherState.MODES.size()]
+	save_journey();show_pause()
 
 func toggle_shaders() -> void:
 	shaders_enabled=not shaders_enabled
@@ -424,7 +431,7 @@ func apply_map(document:Dictionary) -> bool:
 	return true
 
 func show_help()->void:
-	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e colher\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Escolher terreno para sua casa\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nEsc · Pausar\n\nCompre machado, picareta e martelo no comércio. Dê vários golpes nos recursos; materiais caem no chão e são atraídos ao chegar perto. Golpes gastam energia e treinam lenhador/mineiro. Melhore ferramentas para pedra e ferro na ferraria. Madeira e pedra servem para construir ou podem ser vendidas. A casa cresce em três etapas. Vilarejos têm estalagens, caravanas e encomendas. Alguns moradores também compram ferramentas e constroem casas. Javalis podem atacar; provisões e descanso recuperam vida.",[{"label":"Continuar","callback":close_dialog}],"help")
+	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e colher\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Escolher terreno para sua casa\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nQ/R · Girar câmera / Home · Centralizar\nCtrl+roda / PgUp / PgDn · Zoom\nEsc · Pausar, clima e modo HD-2D\n\nCompre machado, picareta e martelo no comércio. Dê vários golpes nos recursos; materiais caem no chão e são atraídos ao chegar perto. Golpes gastam energia e treinam lenhador/mineiro. Melhore ferramentas para pedra e ferro na ferraria. Madeira e pedra servem para construir ou podem ser vendidas. A casa cresce em três etapas. Vilarejos têm estalagens, caravanas e encomendas. Alguns moradores também compram ferramentas e constroem casas. Javalis podem atacar; provisões e descanso recuperam vida.",[{"label":"Continuar","callback":close_dialog}],"help")
 
 func show_map() -> void:
 	if mode == "dialog" and hud.modal_kind == "map":
@@ -526,7 +533,7 @@ func _use_default_character() -> void:
 	close_dialog()
 
 func journey_data() -> Dictionary:
-	return {"version": 2,"rpg":rpg.save_data(), "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled,"stamina":player.stamina, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
+	return {"version": 2,"rpg":rpg.save_data(), "x": player.position.x, "y": player.position.y, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled,"stamina":player.stamina,"visual":{"zoom":camera_settings.zoom,"yaw":camera_settings.yaw,"weather":weather_mode}, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
 
 func apply_journey(data: Dictionary) -> bool:
 	if (data.get("version")!=1 and data.get("version")!=2) or not data.get("seeds",[]) is Array:
@@ -556,6 +563,11 @@ func apply_journey(data: Dictionary) -> bool:
 	equipped_slot=clampi(int(data.get("equipped_slot",0)),0,7)
 	lantern_enabled=data.get("lantern",false)==true
 	hud.hotbar.slot=equipped_slot;hud.hotbar.lantern=lantern_enabled
+	var visual:Variant=data.get("visual",{})
+	if visual is Dictionary:
+		camera_settings={"zoom":clampf(float(visual.get("zoom",13)),HybridWorld.MIN_ZOOM,HybridWorld.MAX_ZOOM) if ResourceProgress.number(visual.get("zoom",13)) else 13.0,"yaw":clampf(float(visual.get("yaw",0)),-HybridWorld.MAX_YAW,HybridWorld.MAX_YAW) if ResourceProgress.number(visual.get("yaw",0)) else 0.0}
+		weather_mode=visual.get("weather","auto") if visual.get("weather","auto") in WeatherState.MODES else "auto"
+	if hybrid!=null:hybrid.restore_view(camera_settings)
 	shaders_enabled=data.get("shaders",true)!=false
 	light_graphics = data.get("light_graphics", true) != false
 	if hybrid != null:
@@ -604,10 +616,16 @@ func save_journey() -> void:
 		return
 	file.store_string(JSON.stringify(journey_data()))
 
+func _input(event:InputEvent)->void:
+	# Camera keys remain usable when a HUD button still owns keyboard focus.
+	if mode=="playing" and hybrid!=null and event is InputEventKey and event.pressed and not event.is_echo():
+		if hybrid.camera_input(event):get_viewport().set_input_as_handled()
+
 func _unhandled_input(event:InputEvent)->void:
 	if event.is_echo():return
 	if mode=="editor":return
 	if event.is_action_pressed("editor"):show_map_editor();get_viewport().set_input_as_handled();return
+	if mode=="playing" and hybrid!=null and hybrid.camera_input(event):get_viewport().set_input_as_handled();return
 	if mode=="playing" and event is InputEventKey and event.pressed and event.physical_keycode>=KEY_1 and event.physical_keycode<=KEY_8:
 		select_hotbar(int(event.physical_keycode-KEY_1));get_viewport().set_input_as_handled();return
 	if mode=="playing" and event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:

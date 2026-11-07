@@ -3,6 +3,10 @@ render_mode unshaded, cull_disabled;
 #include "res://game/shaders/pixel_lighting.gdshaderinc"
 uniform vec3 day_color : source_color = vec3(1.0);
 uniform float effects = 1.0;
+uniform vec4 hero_screen=vec4(-10.0,-10.0,0.08,0.18);
+uniform float hero_depth=0.0;
+uniform vec3 main_camera=vec3(0.0);
+uniform float night=0.0;
 varying vec3 local_pos;
 varying vec3 local_normal;
 void vertex() {
@@ -33,5 +37,5 @@ void fragment() {
  }
  float light=0.76+0.24*max(0.0,dot(local_normal,vec3(-0.441,0.735,0.515)));
  ALBEDO=color*(day_color*light+pixel_local_light(pixel_world));
- if(UV2.x>3.5) ALBEDO=mix(ALBEDO,color*vec3(1.0,0.73,0.36),clamp(1.0-day_color.r,0.0,0.8)*effects);
+ if(UV2.x>3.5) ALBEDO=mix(vec3(0.24,0.34,0.38)*day_color+pixel_local_light(pixel_world)*0.08,color*vec3(1.35,0.98,0.48),night*effects);
 }

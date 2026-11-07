@@ -12,7 +12,13 @@ O continente agora combina ruas curvas, lotes irregulares, bosques em grupos e t
 
 Personagens em pixel art continuam em um cenário 3D com câmera inclinada: **2.5D**. O sol acompanha o horário, a distância ganha neblina e, à noite, postes, janelas e a lanterna criam pontos de luz. Título, diálogos, inventário, mapa e hotbar usam uma fonte bitmap própria e molduras no estilo de RPG de PC.
 
-![Noite, neblina e lanterna](docs/rpg-noite.png)
+O visual agora tem **billboards que preservam as proporções**, sombras da silhueta dos personagens no chão, grama 3D que se curva à passagem e reflexos da cena na água. Casas e árvores que encobrem o personagem ficam parcialmente transparentes. Chuva, neblina e vento variam ao longo dos dias; nuvens alteram a iluminação, tochas tremulam e janelas acendem à noite.
+
+Em **Esc → Gráficos: HD-2D**, ative desfoque por faixa de foco, bloom e sombras do sol. O **modo leve** permanece como padrão. Use **Q/R** ou arraste com o botão do meio para girar até 35°; **Ctrl+roda / PgUp / PgDn** ajusta o zoom; **Home** centraliza. A roda sem Ctrl continua selecionando itens. Câmera e preferência de clima são salvas.
+
+[Guia do visual e da câmera](docs/visual-hd2d.md)
+
+![Visual HD-2D à noite](docs/hd2d-noite.png)
 
 ## Crie seu próprio mapa
 
@@ -128,6 +134,9 @@ Vacas e galinhas vivem nas fazendas e fornecem provisões ao ajudar com **E**. A
 | B | Escolher terreno / consultar sua obra |
 | M | Mapa do continente |
 | F2 | Criar / editar seu mapa |
+| Q / R ou arrastar com botão do meio | Girar a câmera com limite |
+| Ctrl + roda / PgUp / PgDn | Zoom da câmera |
+| Home | Restaurar câmera |
 | Esc | Cancelar prévia, fechar menu ou pausar |
 
 Nas estalagens, caravanas de cinco moedas ligam os seis povoados. O mapa mostra cidades, posição do jogador e seu lar.
@@ -138,7 +147,7 @@ O mundo mantém **no máximo 25 regiões próximas de 512 × 512**. Terreno, ár
 
 Árvores e rochas usam `MultiMesh`; animais usam uma instância de partes geométricas por modelo. O vento atua nos vértices, sombras de árvores ficam no terreno e personagens distantes deixam de executar física a cada quadro. A navegação considera cidades, rio, pontes e recursos das regiões ativas.
 
-O modo **leve** usa 65% da resolução por eixo no cenário 3D; a interface fica na resolução integral. Isso reduz o custo da neblina e das luzes e mantém o aspecto pixelizado. Em **Esc → Gráficos**, alterne para **nítido**, com resolução integral e sombras do sol. Em **Esc → Shaders**, ligue ou desligue os efeitos adicionais e a neblina. As preferências são salvas.
+O modo **leve** usa 65% da resolução por eixo no cenário 3D; a interface fica na resolução integral. Em **Esc → Gráficos**, alterne para **HD-2D**, com resolução integral, foco suave, bloom e sombras do sol. Chuva e reflexos usam quantidades e resoluções reduzidas no modo leve; a reflexão só é atualizada perto da água. Em **Esc → Shaders**, ligue ou desligue os efeitos adicionais. Em **Esc → Clima**, escolha automático ou uma condição para explorar e testar seu mapa. As preferências são salvas.
 
 O save versão 2 preserva posição, saúde, inventário, ferramentas, dinheiro, XP, exploração, recursos esgotados, casas, contas e equipamentos dos NPCs, vida dos recursos, drops no chão, energia, habilidades e tiers, produção das fazendas, encomendas e relógio. Saves antigos migram para a entrada de Aurélia e preservam aparência e a atividade antiga. O diretório de usuário `EntreFolhas` foi mantido para localizar esses dados.
 
@@ -158,6 +167,7 @@ Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambien
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/world_life_tests.gd -- --test --hybrid
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/resources_tests.gd -- --test
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/resources_tests.gd -- --test --hybrid
+./scripts/godot.sh --audio-driver Dummy --script res://tests/hd2d_tests.gd -- --test --hybrid
 ```
 
 A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.
