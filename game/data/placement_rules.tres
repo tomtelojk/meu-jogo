@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PlacementRules" load_steps=2 format=3]
+[ext_resource type="Script" path="res://game/placement_rules.gd" id="1"]
+[resource]
+script = ExtResource("1")
+road_margin = 0.5
+water_margin = 0.5
+rock_margin = 0.25
+building_margin = 0.25
+village_setback = 1.0
+relocation_radius = 32.0
+protect_decorations = true

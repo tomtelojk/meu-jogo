@@ -68,6 +68,7 @@ func show_catalog(which:String="walls")->void:
 		actions.append({"label":definition.name+"\n"+ConstructionCatalog.cost_text(definition.cost),"name":"piece_"+id,"callback":begin_piece.bind(id)})
 	actions.append({"label":"Casas completas · 5 kits modulares","name":"house_kit","callback":game.housing.show_catalog})
 	actions.append({"label":"Validar grid e modelos","name":"construction_audit","callback":show_audit.bind(0)})
+	actions.append({"label":"Validar estradas e terrenos","name":"placement_audit","callback":game.placement.show_audit})
 	if not game.rpg.construction.pieces.is_empty():actions.append({"label":"Minhas construções e moradores","callback":show_owned.bind(0)})
 	actions.append({"label":"Voltar à aventura","callback":game.close_dialog})
 	var body:="Células de 1 m. Pivô no canto do chão. Paredes e portas encaixam nas bordas; pisos, móveis e estações ocupam células inteiras. T gira 90°. As linhas-guia mostram os encaixes e o ponto dourado marca o pivô.\n\n"+inventory_text()
@@ -118,21 +119,11 @@ func can_place(kind:String,point:Vector2,rotation:int=0)->Dictionary:
 	if not valid.ok:return valid
 	var definition:=ConstructionCatalog.piece(kind)
 	var rect:=ConstructionCatalog.footprint(entry)
-	# World solids include modular walls: use the immutable village footprints and
-	# legacy houses here, allowing floors/roofs underneath a modular object.
-	for building in KingdomData.buildings():
-		if rect.intersects(KingdomData.building_rect(building).grow(8)):return invalid("Há uma construção muito perto.")
-	for house in game.rpg.houses.values():
-		if rect.intersects(game.rpg.home_rect(house).grow(8)):return invalid("O terreno desta casa já está reservado.")
-	for town in KingdomData.towns():
-		if not town.capital and rect.intersects(Rect2(KingdomData.point(town.id+"_plot")-Vector2(96,128),Vector2(192,128)).grow(8)):return invalid("Este lote pertence a um morador.")
-	for resource in game.world.data.colliders:
-		if resource.get("active",true) and WorldData.circle_hits_rect(resource.position,float(resource.radius)+8,rect):return invalid("Retire as árvores e pedras deste local.")
-	for y in range(ceili(rect.size.y/16)+1):
-		for x in range(ceili(rect.size.x/16)+1):
-			var sample:=rect.position+Vector2(minf(x*16,rect.size.x),minf(y*16,rect.size.y))
-			if WorldData.in_river(sample) or WorldData.bridge_at(sample).has_area():return invalid("Construa em terra firme, fora do rio e das pontes.")
-			if WorldData.path_distance(sample)<50:return invalid("Deixe as ruas e estradas livres.")
+	# Internal grid layers and connected walls are handled by ConstructionState;
+	# public roads, shorelines, rocks and separate buildings share one validator.
+	var context:=PlacementValidator.runtime_context(game.rpg,game.world.data.colliders,false)
+	var checked:=PlacementValidator.validate(rect,context)
+	if not checked.ok:return checked
 	var collider:=ConstructionCatalog.collision(entry)
 	if collider.has_area():
 		if collider.grow(13).has_point(game.player.position):return invalid("Você está ocupando este espaço.")

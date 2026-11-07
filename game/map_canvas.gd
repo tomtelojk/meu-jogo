@@ -82,6 +82,7 @@ func _draw()->void:
 		for path in KingdomData.paths(int(editor.draft.get("generation",2))):
 			var points:=PackedVector2Array()
 			for p in path:points.append(to_screen(p))
+			if not editor.placement_report.is_empty():draw_polyline(points,Color(0.33,0.76,0.91,0.24),maxf(1,2*(RoadManager.HALF_WIDTH+RoadManager.BORDER_WIDTH+PlacementRules.defaults().units("road_margin"))*zoom),true)
 			draw_polyline(points,Color("b99b6b"),maxf(1.0,88*zoom),true)
 		var river:=PackedVector2Array()
 		for i in 201:
@@ -98,16 +99,23 @@ func _draw()->void:
 			if kind.is_empty():continue
 			draw_rect(Rect2(to_screen(Vector2(cell)*64),Vector2.ONE*(64*zoom+0.5)),COLORS[kind])
 	if editor.draft.base=="reinos":
-		for i in KingdomData.base_buildings(int(editor.draft.get("generation",2))).size():
-			if editor.draft.removed.has("base_building_"+str(i)):continue
-			var data:Dictionary=KingdomData.base_buildings(int(editor.draft.get("generation",2)))[i]
+		for data in editor._buildings_in_draft():
+			if not String(data.id).begins_with("base_building_"):continue
 			var rect:=KingdomData.building_rect(data)
-			_building(rect,data.kind,posmod(String(data.name).hash(),6),"base_building_"+str(i))
+			_building(rect,data.kind,posmod(String(data.name).hash(),6),data.id)
 		for id in editor.base_npcs:
 			if editor.draft.removed.has(id):continue
 			var obj:Dictionary=editor.draft.npcs.get(id,editor.base_npcs[id])
 			_object(obj)
 	for obj in editor.draft.objects:_object(obj)
+	if not editor.placement_report.is_empty():
+		var flagged:Dictionary={}
+		for issue in editor.placement_report.issues:flagged[issue.id]=true
+		for data in editor._buildings_in_draft():
+			if not flagged.has(data.id):continue
+			var rect:=KingdomData.building_rect(data)
+			draw_rect(Rect2(to_screen(rect.position),rect.size*zoom),Color(0.95,0.22,0.18,0.36))
+			draw_rect(Rect2(to_screen(rect.position),rect.size*zoom),Color("ff8473"),false,2)
 	if zoom>0.18:
 		for x in range(start.x,end.x+2):draw_line(to_screen(Vector2(x*64,start.y*64)),to_screen(Vector2(x*64,(end.y+1)*64)),Color(0.05,0.15,0.12,0.18))
 		for y in range(start.y,end.y+2):draw_line(to_screen(Vector2(start.x*64,y*64)),to_screen(Vector2((end.x+1)*64,y*64)),Color(0.05,0.15,0.12,0.18))

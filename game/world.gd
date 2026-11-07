@@ -41,6 +41,7 @@ var refreshing_construction:=false
 
 func _ready()->void:
 	rpg=get_parent().rpg
+	rpg.placement_provider=placement_context
 	data=WorldData.generate()
 	entities=$Entities
 	player=$Entities/Player
@@ -389,7 +390,7 @@ func sync_house(id:String)->void:
 		var house:Dictionary=rpg.houses[id]
 		if house.stage==3 and npcs.has(house.owner):
 			var npc:ForestNPC=npcs[house.owner]
-			npc.home_override=Vector2(house.x,house.y+64)
+			npc.home_override=HouseKit.approach(HouseKit.from_home(id,house,rpg))
 			npc.refresh_presence()
 			npc.plan_route()
 		var node:=StaticBody2D.new()
@@ -427,6 +428,16 @@ func _rebuild_solids()->void:
 		if definition.layer=="floor":floor_cells[WorldGrid.cell_at(ConstructionCatalog.footprint(entry).get_center())]=float(definition.height)
 		data.solid_rects.append_array(ConstructionCatalog.collision_parts(entry,rpg.construction.joints))
 	WorldData.reindex_solids(data)
+
+func placement_context(rect:Rect2)->Dictionary:
+	var resources:Array=data.colliders.duplicate()
+	for y in range(floori(rect.position.y/WorldData.CHUNK),floori(rect.end.y/WorldData.CHUNK)+1):
+		for x in range(floori(rect.position.x/WorldData.CHUNK),floori(rect.end.x/WorldData.CHUNK)+1):
+			var coord:=Vector2i(x,y)
+			if chunks.has(coord):continue
+			var generated:=WorldData.generate_chunk(coord,data)
+			resources.append_array(generated.trees);resources.append_array(generated.rocks)
+	return PlacementValidator.runtime_context(rpg,resources)
 
 func floor_height(point:Vector2)->float:return float(floor_cells.get(ConstructionCatalog.cell(point),0.0))
 

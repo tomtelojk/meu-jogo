@@ -135,6 +135,8 @@ var cinematic_focus:=Vector2(INF,INF)
 
 func setup(source: ForestGame) -> void:
 	game=source
+	RoadManager.current().make_paths(self)
+	RoadManager.current().changed.connect(_roads_changed)
 	shader=Shader.new()
 	shader.code=BILLBOARD_SHADER
 	foliage_shader=Shader.new()
@@ -197,6 +199,10 @@ func set_light_graphics(enabled:bool)->void:
 
 func _point(p:Vector2)->Vector3:
 	return Vector3(p.x/UNIT,0,p.y/UNIT)
+
+func _roads_changed()->void:
+	RoadManager.current().make_paths(self)
+	if landscape!=null:landscape.refresh_ground()
 
 func _ground()->void:
 	landscape=StreamedLandscape.new()

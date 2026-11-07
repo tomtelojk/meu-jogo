@@ -15,6 +15,7 @@ const SETTLEMENTS: Array[Dictionary] = [
 ]
 static var PLACES: Dictionary = _make_places()
 static var LEGACY_BUILDINGS: Array[Dictionary] = _make_buildings()
+static var NATURAL_V2:Dictionary=SettlementLayout.legacy_v2()
 static var NATURAL:Dictionary=SettlementLayout.generate(SETTLEMENTS,PLACES)
 static var BUILDINGS:Array[Dictionary]=NATURAL.buildings
 static var PEOPLE: Array[Dictionary] = _make_people()
@@ -22,9 +23,79 @@ static var _roads: Array[PackedVector2Array] = []
 static var _map_revision := -1
 static var _map_buildings: Array[Dictionary] = []
 static var _map_people: Array[Dictionary] = []
+static var _map_places:Dictionary={}
 
 static func base_buildings(generation:int=-1)->Array[Dictionary]:
-	return LEGACY_BUILDINGS if (MapDocument.current.get("generation",2) if generation<0 else generation)==1 else BUILDINGS
+	var version:int=MapDocument.current.get("generation",2) if generation<0 else generation
+	if version==1:return LEGACY_BUILDINGS
+	if version==2:
+		var legacy:Array[Dictionary]=[];legacy.assign(NATURAL_V2.buildings);return legacy
+	return BUILDINGS
+
+static func buildings_for_document(document:Dictionary)->Array[Dictionary]:
+	var result:Array[Dictionary]=[]
+	if document.get("base")=="reinos":
+		var base:=base_buildings(int(document.get("generation",2)))
+		for i in base.size():
+			var id:="base_building_"+str(i)
+			if document.get("removed",{}).has(id):continue
+			var entry:Dictionary=base[i].duplicate(true);entry.id=id
+			var override:Dictionary=document.get("building_overrides",{}).get(id,{})
+			if not override.is_empty():
+				entry.tile=Vector2(override.x,override.y)/WorldGrid.UNITS_PER_METRE
+				if override.has("house_turn"):entry.house_turn=override.house_turn
+				if entry.has("house_style"):entry.size=HouseKit.size_for(entry.house_style,entry.house_seed,entry.house_turn)
+			result.append(entry)
+	for obj in document.get("objects",[]):
+		if obj.kind in MapDocument.BUILDINGS:result.append(MapDocument.object_building(obj))
+	return result
+
+static func layout_places(generation:int)->Dictionary:
+	return PLACES if generation==1 else (NATURAL_V2.places if generation==2 else NATURAL.places)
+
+static func service_building(town:String,kind:String,document:Dictionary={},entries:Array=[])->Dictionary:
+	var doc:Dictionary=MapDocument.current if document.is_empty() else document
+	var places:=layout_places(int(doc.get("generation",2)))
+	var at:Vector2=places.get(town+("_shop" if kind=="shop" else "_inn"),Vector2(-9999,-9999))-Vector2(0,96)
+	var base:=base_buildings(int(doc.get("generation",2)))
+	for entry in (buildings_for_document(doc) if entries.is_empty() else entries):
+		if entry.kind!=("forge" if kind=="shop" else "tavern"):continue
+		if entry.get("service_town","")==town:return entry
+		if String(entry.id).begins_with("base_building_"):
+			var index:=String(entry.id).trim_prefix("base_building_").to_int()
+			if index<base.size() and building_rect(base[index]).has_point(at):return entry
+		elif building_rect(entry).has_point(at):return entry
+	return {}
+
+static func service_town(id:String)->String:
+	for town in towns():
+		for kind in ["shop","inn"]:
+			if service_building(town.id,kind).get("id")==id:return town.id
+	return ""
+
+static func places_for_document(document:Dictionary,entries:Array=[])->Dictionary:
+	var places:=layout_places(int(document.get("generation",2))).duplicate(true)
+	if document.get("base")!="reinos":return places
+	var effective:Array=buildings_for_document(document) if entries.is_empty() else entries
+	for town in SETTLEMENTS:
+		for kind in ["shop","inn"]:
+			var service:=service_building(town.id,kind,document,effective)
+			if service.is_empty():continue
+			var at:=HouseKit.approach(service);var prefix:String=town.id+"_"+("shop" if kind=="shop" else "inn")
+			places[prefix]=at
+			for i in 6:places[prefix+"_"+str(i)]=at+Vector2((i%3-1)*24,24+(i/3)*24)
+	var base:=base_buildings(int(document.get("generation",2)))
+	for key in places.keys():
+		if not (String(key).contains("_home") or key in ["forge","archives","barracks"]):continue
+		var nearest:="";var best:=190.0
+		for i in base.size():
+			var rect:=building_rect(base[i])
+			var distance:float=places[key].distance_to(Vector2(rect.get_center().x,rect.end.y+52))
+			if distance<best:best=distance;nearest="base_building_"+str(i)
+		if not document.get("building_overrides",{}).has(nearest):continue
+		for entry in effective:
+			if entry.id==nearest:places[key]=HouseKit.approach(entry);break
+	return places
 
 static func towns() -> Array[Dictionary]:
 	if MapDocument.base_enabled():return SETTLEMENTS
@@ -39,25 +110,18 @@ static func people() -> Array[Dictionary]:
 	return _map_people
 
 static func service_exists(town:Dictionary,kind:String)->bool:
-	var at:=point(town.id+"_"+kind)-Vector2(0,96)
-	for building in buildings():
-		if building.kind==("forge" if kind=="shop" else "tavern") and building_rect(building).has_point(at):return true
-	return false
+	return not service_building(town.id,kind).is_empty()
 
 static func _refresh_map() -> void:
 	if _map_revision==MapDocument.revision:return
 	_map_revision=MapDocument.revision
-	_map_buildings=[];_map_people=[]
+	_map_buildings=buildings_for_document(MapDocument.current);_map_people=[]
 	if MapDocument.base_enabled():
-		for i in base_buildings().size():
-			var entry: Dictionary=base_buildings()[i].duplicate(true)
-			entry.id="base_building_"+str(i)
-			if not MapDocument.removed(entry.id):_map_buildings.append(entry)
 		for profile in PEOPLE:
 			if MapDocument.removed(profile.id):continue
 			if MapDocument.current.npcs.has(profile.id):_map_people.append(_editor_person(MapDocument.current.npcs[profile.id],profile))
 			else:_map_people.append(profile)
-	_map_buildings.append_array(MapDocument.custom_buildings())
+	_map_places=places_for_document(MapDocument.current,_map_buildings)
 	for obj in MapDocument.current.objects:
 		if obj.kind=="npc":_map_people.append(_editor_person(obj,{}))
 
@@ -147,8 +211,8 @@ static func _make_people() -> Array[Dictionary]:
 
 static func point(id:String)->Vector2:
 	if MapDocument.points.has(id):return MapDocument.points[id]
-	if MapDocument.current.get("generation",2)==2 and NATURAL.places.has(id):return NATURAL.places[id]
-	return PLACES.get(id,REALMS.aurelia.capital)
+	_refresh_map()
+	return _map_places.get(id,PLACES.get(id,REALMS.aurelia.capital))
 
 static func person(id:String)->Dictionary:
 	for entry in people():
@@ -167,9 +231,10 @@ static func routine_text(profile:Dictionary)->String:
 	return "Minha rotina:\n\n"+"\n".join(lines)
 
 static func paths(generation:int=-1)->Array[PackedVector2Array]:
-	if (MapDocument.current.get("generation",2) if generation<0 else generation)==2:
+	var version:int=MapDocument.current.get("generation",2) if generation<0 else generation
+	if version>=2:
 		var result:Array[PackedVector2Array]=[]
-		result.assign(NATURAL.roads)
+		result.assign(NATURAL_V2.roads if version==2 else NATURAL.roads)
 		return result
 	if not _roads.is_empty():return _roads
 	for town in SETTLEMENTS:

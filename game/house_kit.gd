@@ -33,7 +33,7 @@ static func clean_options(data: Dictionary) -> Dictionary:
 	return result
 
 static func from_home(id: String, home: Dictionary, rpg: RPGState) -> Dictionary:
-	var data := {"id":id, "name":id, "kind":"timber" if home.owner == "player" else "cottage", "realm":KingdomData.realm_at(Vector2(home.x, home.y)), "tile":Vector2(home.x, home.y)/WorldGrid.CELL, "size":rpg.home_rect(home).size,"house_turn":0}
+	var data := {"id":id, "name":id, "kind":"timber" if home.owner == "player" else "cottage", "realm":KingdomData.realm_at(Vector2(home.x, home.y)), "tile":Vector2(home.x, home.y)/WorldGrid.CELL, "size":rpg.home_rect(home).size,"house_turn":posmod(int(home.get("house_turn",0)),4)}
 	data.merge(clean_options(home), true)
 	return data
 

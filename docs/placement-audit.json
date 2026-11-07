@@ -1,0 +1,15 @@
+{
+  "checked": 131,
+  "generation": 3,
+  "issues": [],
+  "margins_metres": {
+    "building": 0.25,
+    "decorations": true,
+    "road": 0.5,
+    "rock": 0.25,
+    "water": 0.5
+  },
+  "ok": true,
+  "painted_road_cells": 0,
+  "road_curves": 87
+}

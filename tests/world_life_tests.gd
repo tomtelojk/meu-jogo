@@ -31,7 +31,14 @@ func run()->void:
 	var xs:Dictionary={};var ys:Dictionary={}
 	for building in KingdomData.BUILDINGS:
 		xs[roundi(building.tile.x*64)]=true;ys[roundi(building.tile.y*64)]=true
-	verify(xs.size()>KingdomData.BUILDINGS.size()*0.75 and ys.size()>KingdomData.BUILDINGS.size()*0.75,"lotes deixam de repetir uma grade de coordenadas")
+	var aligned:=true;var curved:=false
+	for building in KingdomData.BUILDINGS:
+		var corner:=KingdomData.building_rect(building).position
+		aligned=aligned and corner.snapped(Vector2.ONE*WorldGrid.CELL).is_equal_approx(corner)
+	for path in KingdomData.NATURAL.roads:
+		for i in range(2,path.size()):
+			if absf((path[i]-path[i-1]).cross(path[i-1]-path[i-2]))>0.1:curved=true
+	verify(aligned and curved and xs.size()>KingdomData.BUILDINGS.size()*0.4 and ys.size()>KingdomData.BUILDINGS.size()*0.4,"lotes variados seguem vias curvas e preservam o grid de 1 metro")
 	var rebuilt:=SettlementLayout.generate(KingdomData.SETTLEMENTS,KingdomData.PLACES)
 	verify(rebuilt.buildings==KingdomData.BUILDINGS,"bairros irregulares são reproduzíveis com a mesma semente")
 	var grove:=NaturalLandscape.grove(KingdomData.point("aurelia_wood"),"wood")

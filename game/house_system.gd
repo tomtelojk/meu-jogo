@@ -60,15 +60,15 @@ func building(id: String) -> Dictionary:
 
 func service_building(service: String, kind: String) -> String:
 	if inside():return ""
-	var point:=KingdomData.point(service+("_shop" if kind=="shop" else "_inn"))-Vector2(0,96)
+	var entry:=KingdomData.service_building(service,kind)
+	if not entry.is_empty():return entry.id
 	for data in KingdomData.buildings():
-		if data.kind==("forge" if kind=="shop" else "tavern") and (data.id==service or KingdomData.building_rect(data).has_point(point)):return data.id
+		if data.kind==("forge" if kind=="shop" else "tavern") and data.id==service:return data.id
 	return ""
 
 func service_for(data: Dictionary) -> String:
-	for town in KingdomData.towns():
-		var suffix:="_shop" if data.kind=="forge" else "_inn"
-		if KingdomData.building_rect(data).has_point(KingdomData.point(town.id+suffix)-Vector2(0,96)):return town.id
+	var town:=KingdomData.service_town(data.get("id",""))
+	if not town.is_empty():return town
 	return data.get("id", "")
 
 func enter(id: String, restored: bool = false) -> bool:

@@ -42,6 +42,7 @@ var construction:ConstructionSystem
 var social:RelationshipSystem
 var politics:FactionSystem
 var housing:HouseSystem
+var placement:PlacementSystem
 var saved_house_location:Dictionary={}
 var loading_journey:=false
 var building_preview:=false
@@ -53,7 +54,13 @@ func _enter_tree() -> void:
 	persistence=not ("--test" in OS.get_cmdline_user_args() or "--capture" in OS.get_cmdline_user_args())
 	if persistence:
 		var result:=MapDocument.read_file(MapDocument.ACTIVE_PATH)
-		MapDocument.activate(result.document if result.ok else MapDocument.original())
+		var document:Dictionary=result.document if result.ok else MapDocument.original()
+		if not result.ok and FileAccess.file_exists(SAVE_PATH):
+			var saved:Variant=JSON.parse_string(FileAccess.get_file_as_string(SAVE_PATH))
+			if saved is Dictionary:
+				var version:Variant=saved.get("world_generation",2)
+				document.generation=clampi(int(version),1,3) if ResourceProgress.number(version) else 2
+		MapDocument.activate(document)
 	save_path=_map_save_path()
 
 func _map_save_path() -> String:
@@ -99,6 +106,7 @@ func _ready() -> void:
 	social=RelationshipSystem.new();add_child(social);social.setup(self)
 	politics=FactionSystem.new();add_child(politics);politics.setup(self)
 	housing=HouseSystem.new();add_child(housing);housing.setup(self);housing.restore_location(saved_house_location)
+	placement=PlacementSystem.new();add_child(placement);placement.setup(self)
 	camera.reset_smoothing()
 	if not "--test" in OS.get_cmdline_user_args() or "--hybrid" in OS.get_cmdline_user_args():
 		hybrid = HybridWorld.new()
@@ -452,6 +460,7 @@ func apply_map(document:Dictionary) -> bool:
 	MapDocument.activate(checked.document)
 	save_path=_map_save_path()
 	rpg=RPGState.new()
+	if economy!=null:economy.builder_sites.clear()
 	collected.clear();met_npcs.clear();royal_seals.clear();complete=false
 	var template:Node=load("res://scenes/main.tscn").instantiate()
 	world=template.get_node("World")
@@ -596,7 +605,7 @@ func _use_default_character() -> void:
 func journey_data() -> Dictionary:
 	if construction!=null and not loading_journey:construction._time_changed()
 	var outside:=housing.return_point if housing!=null and housing.inside() else player.position
-	return {"version": 2,"rpg":rpg.save_data(), "x": outside.x, "y": outside.y,"interior":housing.location_data() if housing!=null else saved_house_location, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled,"stamina":player.stamina,"visual":{"zoom":camera_settings.zoom,"yaw":camera_settings.yaw,"weather":weather_mode}, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
+	return {"version": 2,"world_generation":MapDocument.current.generation,"rpg":rpg.save_data(), "x": outside.x, "y": outside.y,"interior":housing.location_data() if housing!=null else saved_house_location, "swimming": player.swimming, "light_graphics": light_graphics,"shaders":shaders_enabled,"map_id":MapDocument.current.id,"equipped_slot":equipped_slot,"lantern":lantern_enabled,"stamina":player.stamina,"visual":{"zoom":camera_settings.zoom,"yaw":camera_settings.yaw,"weather":weather_mode}, "seeds": collected.keys(), "complete": complete, "custom_character": custom_character, "clock": world.clock.save_data(), "npcs": world.population_data(), "met_npcs": met_npcs.keys(), "royal_seals": royal_seals.keys()}
 
 func apply_journey(data: Dictionary) -> bool:
 	if (data.get("version")!=1 and data.get("version")!=2) or not data.get("seeds",[]) is Array:
@@ -701,6 +710,7 @@ func save_journey() -> void:
 		if not save_warning_shown:save_warning_shown=true;hud.toast("Não foi possível atualizar o save. O salvamento anterior foi preservado.",6)
 
 func _input(event:InputEvent)->void:
+	if placement!=null and placement.busy or map_editor!=null and map_editor.placement_busy:get_viewport().set_input_as_handled();return
 	if building_preview and housing!=null and housing.plan_enabled and (construction==null or construction.selected.is_empty()) and event is InputEventKey and event.pressed and not event.is_echo():
 		if event.physical_keycode==KEY_T:housing.chosen_turn=posmod(housing.chosen_turn+1,4);_update_build_preview();get_viewport().set_input_as_handled();return
 		if event.physical_keycode==KEY_V:housing.chosen_seed+=1;_update_build_preview();get_viewport().set_input_as_handled();return
@@ -876,22 +886,9 @@ func can_build_at(point:Vector2)->Dictionary:
 	point=housing.snap(point) if housing!=null else RPGState.snap_home(point)
 	if not point.is_finite() or point.distance_to(player.position)>500:return {"ok":false,"message":"Escolha um terreno perto de você."}
 	var rect:=housing.footprint_at(point) if housing!=null else Rect2(point-Vector2(96,128),Vector2(192,128))
-	if not Rect2(Vector2.ONE*64,WorldData.SIZE-Vector2.ONE*128).encloses(rect.grow(24)):return {"ok":false,"message":"Terreno fora dos limites do continente."}
-	for entry in rpg.construction.pieces.values():
-		if rect.intersects(ConstructionCatalog.footprint(entry)):return {"ok":false,"message":"Há uma peça construída neste terreno."}
-	for wall in world.data.solid_rects:
-		if rect.grow(24).intersects(wall):return {"ok":false,"message":"Há uma construção muito perto."}
-	for entry in world.resources.values():
-		if entry.resource.get("active",true) and WorldData.circle_hits_rect(entry.resource.position,entry.resource.radius+16,rect):return {"ok":false,"message":"Retire árvores e pedras antes de reservar este terreno."}
-	for town in KingdomData.towns():
-		if town.capital:continue
-		var reserved:=Rect2(KingdomData.point(town.id+"_plot")-Vector2(96,128),Vector2(192,128))
-		if rect.grow(24).intersects(reserved):return {"ok":false,"message":"Este terreno está reservado para um morador."}
-	for y in [0.0,0.5,1.0]:
-		for x in [0.0,0.5,1.0]:
-			var sample:=rect.position+rect.size*Vector2(x,y)
-			if not WorldData.can_stand(sample,world.data,16):return {"ok":false,"message":"O terreno precisa estar livre de água, árvores e pedras."}
-			if WorldData.path_distance(sample)<70:return {"ok":false,"message":"Deixe as ruas e estradas livres."}
+	var context:=world.placement_context(rect.grow(PlacementValidator.DECORATION_MARGIN))
+	var checked:=PlacementValidator.validate(rect,context,{"decoration":true})
+	if not checked.ok:return checked
 	return {"ok":true,"message":"Terreno livre · 20 moedas"}
 
 func start_building()->void:

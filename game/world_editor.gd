@@ -29,6 +29,12 @@ var terrain_after: Dictionary = {}
 var gesture_snapshot: Dictionary = {}
 var dirty := false
 var previous_mode := "playing"
+var placement_stamp:=0
+var placement_cached_stamp:=-1
+var placement_context:Dictionary={}
+var placement_chunks:Dictionary={}
+var placement_report:Dictionary={}
+var placement_busy:=false
 
 func setup(source: ForestGame) -> void:
 	game=source;layer=40
@@ -36,6 +42,7 @@ func setup(source: ForestGame) -> void:
 	visible=false
 
 func open() -> void:
+	invalidate_placement()
 	if game.social!=null:game.social.reset_cinematic()
 	previous_mode=game.mode if game.mode in ["playing","intro"] else "playing"
 	game.save_journey()
@@ -125,6 +132,8 @@ func _build_ui() -> void:
 	left.add_child(_button("Abrir base dos reinos",confirm_new.bind("reinos")))
 	left.add_child(_button("Recuperar rascunho",recover_draft))
 	left.add_child(_button("Voltar à aventura original",restore_original))
+	left.add_child(_button("Validar estradas e terrenos",show_placement_audit))
+	left.add_child(_button("Realocar casas em conflito",repair_placement))
 	left.add_child(_button("Ver continente",func():canvas.center=MapDocument.LIMIT/2;canvas.zoom=0.04;canvas.queue_redraw()))
 	left.add_child(_button("Ir ao início",func():canvas.center=Vector2(draft.spawn[0],draft.spawn[1]);canvas.zoom=0.30;canvas.queue_redraw()))
 	inspector=VBoxContainer.new();left.add_child(inspector)
@@ -158,7 +167,51 @@ func message(value:String) -> void:
 	if status!=null:status.text=value
 
 func _fork() -> void:
+	invalidate_placement()
 	if draft.id=="reinos":draft.id=MapDocument.new_id()
+
+func invalidate_placement()->void:
+	placement_stamp+=1;placement_report={}
+
+func get_placement_context(rect:Rect2)->Dictionary:
+	if placement_stamp!=placement_cached_stamp:
+		var resources:Array=[]
+		for resource in game.world.data.colliders:
+			if draft.base!="reinos" or int(draft.get("generation",2))!=int(MapDocument.current.get("generation",2)):continue
+			var id:String=resource.get("id","")
+			if id.begins_with("obj_") or draft.removed.has(id) or draft.terrain.has(MapDocument.cell_key(WorldGrid.cell_at(resource.position))):continue
+			resources.append(resource)
+		placement_context=PlacementValidator.map_context(draft,resources)
+		placement_cached_stamp=placement_stamp;placement_chunks.clear()
+	var result:=placement_context.duplicate()
+	result.resources=placement_context.resources+PlacementValidator.nearby_resources(draft,rect.grow(64),placement_context,placement_chunks)
+	return result
+
+func show_placement_audit()->void:
+	canvas.finish_stroke()
+	placement_report=PlacementAudit.scan(draft)
+	var path:String="user://reports/"+draft.id+"-placement.json"
+	ConstructionAudit.write_report(path,placement_report)
+	message("%d casas · %d conflitos. Relatório: %s. Os lotes em conflito ficam vermelhos; Realocar corrige e pode ser desfeito."%[placement_report.checked,placement_report.issues.size(),ProjectSettings.globalize_path(path)])
+	canvas.queue_redraw()
+
+func repair_placement()->void:
+	if placement_busy:return
+	placement_busy=true
+	canvas.finish_stroke();begin_stroke();_snapshot()
+	message("Procurando terrenos livres próximos...")
+	await get_tree().process_frame
+	var state:=PlacementAudit.begin_repair(draft)
+	while not PlacementAudit.repair_step(state,2):
+		message("Verificando casa %d de %d..."%[state.cursor,state.before.issues.size()])
+		await get_tree().process_frame
+	var repaired:=PlacementAudit.finish_repair(state)
+	placement_busy=false
+	draft=repaired.document;dirty=true;invalidate_placement();end_stroke()
+	placement_report=repaired.after
+	message("%d casas realocadas · %d conflitos restantes. Desfazer restaura as posições anteriores. Testar mapa aplica as correções."%[repaired.moved.size(),repaired.after.issues.size()])
+	ConstructionAudit.write_report("user://reports/"+draft.id+"-relocation.json",{"moved":repaired.moved,"unresolved":repaired.unresolved,"after":repaired.after})
+	canvas.queue_redraw()
 
 func begin_stroke() -> void:
 	terrain_before.clear();terrain_after.clear()
@@ -231,20 +284,25 @@ func valid_at(point:Vector2,ignore_id:String="") -> bool:
 	var at:=point.snapped(Vector2.ONE*32)
 	if at.x<64 or at.y<64 or at.x>15936 or at.y>12736:return false
 	if tool in MapDocument.TERRAIN or tool in ["select","erase"]:return true
-	var kind: String=draft.terrain.get(MapDocument.cell_key(MapDocument.cell_at(at)),"")
-	if tool!="bridge" and (kind=="water" or kind.is_empty() and draft.base=="reinos" and absf(at.x-WorldData.river_x(at.y))<180):return false
+	if tool=="spawn":
+		var on_bridge:=false
+		for bridge in WorldData.bridges_for_document(draft):
+			if bridge.encloses(Rect2(at-Vector2.ONE*12,Vector2.ONE*24)):on_bridge=true;break
+		if not on_bridge and PlacementValidator.water_at(at,draft):return false
+		var ctx:=get_placement_context(Rect2(at-Vector2.ONE*12,Vector2.ONE*24))
+		for entry in ctx.buildings:
+			if not entry.get("bridge",false) and WorldData.circle_hits_rect(at,12,entry.rect):return false
+		for resource in ctx.resources:
+			if resource.get("active",true) and resource.position.distance_to(at)<12+float(resource.get("radius",14)):return false
+		return true
+	if not tool in MapDocument.STRUCTURES and tool!="spawn" and PlacementValidator.water_at(at,draft):return false
 	if tool in MapDocument.STRUCTURES or tool=="spawn":
 		var dim:Vector2=preview_building(point,selected_object() if not ignore_id.is_empty() else {}).size if tool in HouseKit.KINDS else (MapDocument.building_size(tool) if tool in MapDocument.STRUCTURES else Vector2(24,24))
 		var rect:=Rect2(at-Vector2(dim.x/2,dim.y),dim)
 		if tool in HouseKit.KINDS:rect=KingdomData.building_rect(preview_building(point,selected_object() if not ignore_id.is_empty() else {}))
 		if tool=="bridge":rect=Rect2(at-dim/2,dim)
-		if not Rect2(Vector2.ONE*32,MapDocument.LIMIT-Vector2.ONE*64).encloses(rect):return false
-		for sample in [rect.position,rect.end,Vector2(rect.position.x,rect.end.y),Vector2(rect.end.x,rect.position.y),rect.get_center()]:
-			var ground:String=draft.terrain.get(MapDocument.cell_key(MapDocument.cell_at(sample)),"")
-			if tool!="bridge" and (ground=="water" or ground.is_empty() and draft.base=="reinos" and absf(sample.x-WorldData.river_x(sample.y))<180):return false
-		for building in _buildings_in_draft():
-			if building.id==ignore_id:continue
-			if rect.grow(8).intersects(KingdomData.building_rect(building)):return false
+		var checked:=PlacementValidator.validate(rect,get_placement_context(rect),{"ignore_id":ignore_id,"decoration":tool in MapDocument.BUILDINGS,"bridge":tool=="bridge","allow_roads":tool=="spawn"})
+		if not checked.ok:message(checked.message);return false
 	else:
 		for building in _buildings_in_draft():
 			if building.id!=ignore_id and KingdomData.building_rect(building).grow(16).has_point(at):return false
@@ -261,14 +319,7 @@ func preview_building(point: Vector2, existing: Dictionary = {}) -> Dictionary:
 	return data
 
 func _buildings_in_draft() -> Array[Dictionary]:
-	var result:Array[Dictionary]=[]
-	if draft.base=="reinos":
-		for i in KingdomData.base_buildings(int(draft.get("generation",2))).size():
-			var id:="base_building_"+str(i)
-			if not draft.removed.has(id):result.append(KingdomData.base_buildings(int(draft.get("generation",2)))[i].merged({"id":id}))
-	for obj in draft.objects:
-		if obj.kind in MapDocument.BUILDINGS:result.append(MapDocument.object_building(obj))
-	return result
+	return KingdomData.buildings_for_document(draft)
 
 func hit_test(point:Vector2) -> String:
 	for i in range(draft.objects.size()-1,-1,-1):
@@ -361,6 +412,7 @@ func _commit(change:Dictionary) -> void:
 	_history_buttons()
 
 func _apply_change(change:Dictionary,field:String) -> void:
+	invalidate_placement()
 	if change.type=="terrain":
 		for key in change[field]:
 			if change[field][key]==null:draft.terrain.erase(key)
@@ -396,6 +448,7 @@ func confirm_new(base:String) -> void:
 	dialog.canceled.connect(dialog.queue_free);dialog.popup_centered()
 
 func replace_document(doc:Dictionary) -> void:
+	invalidate_placement()
 	draft=doc.duplicate(true);_fork();selection="";undo_stack.clear();redo_stack.clear();dirty=true
 	title.text=draft.name;canvas.center=Vector2(draft.spawn[0],draft.spawn[1]);canvas.zoom=0.30;_collect_base_npcs();_history_buttons();_show_inspector();canvas.queue_redraw()
 	message("Mapa aberto no ateliê. As mudanças entram no jogo quando você clicar em Testar mapa.")

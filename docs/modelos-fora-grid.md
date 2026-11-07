@@ -18,7 +18,7 @@ Os lotes herdados abaixo mantêm as medidas antigas. Cabana, casa de madeira, ca
 | `library` | 2,75 × 2,00 m | 3,49 × 2,67 m |
 | `barracks` | 2,75 × 2,00 m | 3,26 × 2,66 m |
 
-A tabela mede exemplares reproduzíveis com o nome do tipo, semente derivada do ID e estilo 0. Os campos `mesh_size_metres` e `source` do JSON registram as medidas e o gerador de cada exemplar. Na base original, **124 dos 126 terrenos têm uma dimensão fracionária em metros**. A adaptação preserva esses lotes e as ruas; as casas novas do ateliê e do catálogo usam os kits com dimensões inteiras.
+A tabela mede exemplares reproduzíveis com o nome do tipo, semente derivada do ID e estilo 0. Os campos `mesh_size_metres` e `source` do JSON registram as medidas e o gerador de cada exemplar. Na base herdada da geração 2, **124 dos 126 terrenos têm uma dimensão fracionária em metros**. Esses lotes continuam nos saves antigos. A geração 3 usa **131 lotes com dimensões inteiras**, assim como as casas novas do ateliê e do catálogo. Beirais, degraus, castelos e torres continuam sendo detalhes ou prédios completos, distintos das peças modulares de encaixe. [Estradas e realocação](estradas-e-posicionamento.md).
 
 **`forge` aqui é o prédio completo da loja/oficina.** A estação de forja do catálogo avulso é outro modelo, ocupa 2 × 1 células e continua validada em `game/construction_visual.gd`.
 

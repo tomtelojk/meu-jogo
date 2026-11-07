@@ -5,6 +5,7 @@ var game:ForestGame
 var elapsed:=0.0
 var work_timers:Dictionary={}
 var food_timers:Dictionary={}
+var builder_sites:Dictionary={}
 
 func setup(source:ForestGame)->void:
 	game=source
@@ -95,11 +96,18 @@ func advance_builder(npc:ForestNPC,delta:float)->void:
 	var home_id:="home_"+id
 	var site:=KingdomData.point(town+"_plot")
 	if not game.rpg.houses.has(home_id):
+		if not builder_sites.has(id):
+			var draft:={"id":home_id,"name":"Casa do morador","kind":"cottage","owner":id,"tile":site/64,"size":Vector2(192,128)}
+			var context:=game.world.placement_context(Rect2(site-Vector2(96,128),Vector2(192,128)).grow(512))
+			var found:=PlacementValidator.find_site(draft,context,512,false)
+			if found.ok:builder_sites[id]=found.building.tile*64
+		if builder_sites.has(id):site=builder_sites[id]
 		account.job="Reservando terreno para minha casa"
 		npc.set_economic_goal(site,account.job)
 		if npc.position.distance_to(site)<95:game.rpg.claim(site,id)
 		return
 	var house:Dictionary=game.rpg.houses[home_id]
+	site=Vector2(house.x,house.y)
 	if house.stage>=3:
 		account.job="Minha casa está pronta"
 		if npc.economic_target.is_finite():

@@ -18,7 +18,7 @@ static var _mask: Texture2D
 static var revision := 0
 
 static func original() -> Dictionary:
-	return {"version":1,"id":"reinos","name":"Entre os dois reinos","base":"reinos","generation":2,"spawn":[4608,4480],"terrain":{},"objects":[],"removed":{},"npcs":{}}
+	return {"version":1,"id":"reinos","name":"Entre os dois reinos","base":"reinos","generation":3,"spawn":[4608,4480],"terrain":{},"objects":[],"removed":{},"npcs":{},"building_overrides":{}}
 
 static func blank() -> Dictionary:
 	var doc := original()
@@ -76,7 +76,9 @@ static func custom_buildings() -> Array[Dictionary]:
 static func object_building(obj: Dictionary) -> Dictionary:
 	var options:=HouseKit.clean_options(obj)
 	var size:=HouseKit.size_for(options.house_style,options.house_seed,options.house_turn) if not options.is_empty() else building_size(obj.kind)
-	return {"id":obj.id,"name":obj.get("name","Casa"),"kind":obj.kind,"style":obj.get("style",0),"realm":obj.get("realm","aurelia"),"tile":Vector2(obj.x,obj.y)/64,"size":size,"editor":true}.merged(options)
+	var data:={"id":obj.id,"name":obj.get("name","Casa"),"kind":obj.kind,"style":obj.get("style",0),"realm":obj.get("realm","aurelia"),"tile":Vector2(obj.x,obj.y)/64,"size":size,"editor":true}.merged(options)
+	if obj.has("house_turn"):data.house_turn=obj.house_turn
+	return data
 
 static func building_size(kind: String) -> Vector2:
 	match kind:
@@ -96,14 +98,16 @@ static func objects_in(region: Rect2) -> Array[Dictionary]:
 		if region.has_point(Vector2(obj.x,obj.y)):result.append(obj)
 	return result
 
-static func filter_chunk(content: Dictionary) -> Dictionary:
+static func filter_chunk(content: Dictionary,document:Dictionary={}) -> Dictionary:
+	var source:Dictionary=current if document.is_empty() else document
 	for group in ["trees","rocks","animals"]:
 		var kept: Array = []
-		if base_enabled():
+		if source.base=="reinos":
 			for obj in content[group]:
-				if not removed(obj.id) and terrain_at(obj.position).is_empty():kept.append(obj)
+				if not source.removed.has(obj.id) and source.terrain.get(cell_key(cell_at(obj.position)),"").is_empty():kept.append(obj)
 		content[group] = kept
-	for obj in objects_in(content.rect):
+	for obj in source.objects:
+		if not content.rect.has_point(Vector2(obj.x,obj.y)):continue
 		var at := Vector2(obj.x,obj.y)
 		if obj.kind in NATURE:
 			var wood: bool = obj.kind in ["tree","autumn_tree"]
@@ -173,7 +177,17 @@ static func validate(raw: Variant) -> Dictionary:
 	if not raw.get("objects") is Array or raw.objects.size()>5000:return fail
 	var clean := original()
 	clean.id=id;clean.name=raw.name;clean.base=raw.base;clean.spawn=spawn.duplicate()
-	clean.generation=2 if raw.get("generation",2 if id=="reinos" else 1)==2 else 1
+	var generation:Variant=raw.get("generation",2 if id=="reinos" else 1)
+	if not _number(generation) or not int(generation) in [1,2,3]:return fail
+	clean.generation=int(generation)
+	var overrides:Variant=raw.get("building_overrides",{})
+	if not overrides is Dictionary or overrides.size()>10000:return fail
+	for key in overrides:
+		var value:Variant=overrides[key]
+		if not key is String or not key.begins_with("base_building_") or not key.trim_prefix("base_building_").is_valid_int() or not value is Dictionary or not _position(value.get("x"),value.get("y")):return fail
+		if value.has("house_turn") and not _number(value.house_turn):return fail
+		clean.building_overrides[key]={"x":float(value.x),"y":float(value.y)}
+		if value.has("house_turn"):clean.building_overrides[key].house_turn=posmod(int(value.house_turn),4)
 	clean.terrain=raw.terrain.duplicate()
 	var ids: Dictionary = {}
 	for entry in raw.objects:
@@ -208,6 +222,9 @@ static func clean_object(entry: Dictionary) -> Dictionary:
 	obj.size=clampf(float(size),32,220)
 	obj.realm="valverde" if entry.get("realm")=="valverde" else "aurelia"
 	obj.appearance=entry.get("appearance","farmer") if entry.get("appearance","farmer") in FACES else "farmer"
+	if entry.has("house_turn"):
+		if not _number(entry.house_turn):return {}
+		obj.house_turn=posmod(int(entry.house_turn),4)
 	if entry.has("house_style"):
 		var options:=HouseKit.clean_options(entry)
 		if options.is_empty() or not obj.kind in HouseKit.KINDS:return {}

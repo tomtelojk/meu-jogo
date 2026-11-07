@@ -4,6 +4,8 @@ Um **RPG de mundo aberto 2.5D para Windows e Linux**. Personagens em pixel art v
 
 [Baixar o jogo pronto](downloads/README.md)
 
+**Casas fora das estradas:** novas vilas geram primeiro as ruas e depois os lotes, com fachadas voltadas para elas. Construções verificam a área inteira e as margens de ruas, água, rochas e outros prédios. **B → Validar estradas e terrenos → Realocar casas em conflito** corrige mapas existentes, guarda cópia e permite desfazer. F2 também destaca e corrige lotes inválidos. [Guia e script de verificação](docs/estradas-e-posicionamento.md).
+
 **Casas modulares:** cinco kits em `HouseData` — humilde, comum, rica, taverna e loja — com fundações, fachadas, janelas, portas, coberturas, chaminés e varandas. **B → Casas completas** escolhe o kit; **T** gira e **V** muda a variação na prévia. As casas têm interiores mobiliados, entrada e saída por E, janelas acesas à noite e fumaça lenta. F2 permite colocar e variar os kits no seu mapa. [Guia das casas](docs/casas-modulares.md).
 
 ![Kits de casas](docs/casas-kits.png)
@@ -43,7 +45,7 @@ Os NPCs agora misturam **nove bases visuais diferentes**, incluindo os oito pers
 - **16.000 × 12.800 unidades**, 250 × 200 tiles: cinco vezes maior em cada eixo e **25 vezes a área** do mapa anterior.
 - Dois reinos com capitais maiores: **Aurélia e Valverde**.
 - Quatro vilarejos: **Pedra Alta, Ponte Velha, Porto Claro e Cedro**.
-- **126 construções** nas capitais e povoados, com ruas, ferrarias, estalagens, castelos e fazendas.
+- **131 construções** na nova geração das capitais e povoados, com ruas, ferrarias, estalagens, castelos e fazendas. Saves anteriores conservam a disposição antiga até uma correção explícita.
 - **44 NPCs**, com trabalho, comércio, encontros e descanso em horários próprios.
 - Planícies, campos, pedreiras do norte, costa, rio com quatro pontes e pequenos bosques regionais.
 
@@ -213,6 +215,9 @@ Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambien
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/faction_tests.gd -- --test --hybrid
 ./scripts/godot.sh --headless --script res://tests/grid_tests.gd -- --test
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/grid_tests.gd -- --test --hybrid
+./scripts/godot.sh --headless --script res://tests/placement_tests.gd -- --test
+./scripts/godot.sh --audio-driver Dummy --script res://tests/placement_tests.gd -- --test --hybrid
+./scripts/godot.sh --headless --script scripts/validate_placement.gd -- --report /tmp/posicionamento.json
 ```
 
 A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.

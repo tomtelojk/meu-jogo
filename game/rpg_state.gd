@@ -37,6 +37,7 @@ var npc_accounts:Dictionary = {}
 var contracts:Dictionary = {}
 var last_event := ""
 var produce_times:Dictionary={}
+var placement_provider:Callable
 
 func level()->int:
 	return 1+xp/100
@@ -137,6 +138,10 @@ func claim(position:Vector2,owner:String="player",options:Dictionary={})->Dictio
 	var id:="home_"+owner
 	if not position.is_finite() or position.x<192 or position.y<192 or position.x>WorldData.SIZE.x-192 or position.y>WorldData.SIZE.y-192:return result(false,"Terreno fora dos limites do continente.")
 	if houses.has(id):return result(false,"Você já tem um terreno. Conclua sua casa primeiro.")
+	var footprint:=Rect2(corner,size)
+	var context:Dictionary=placement_provider.call(footprint.grow(PlacementValidator.DECORATION_MARGIN)) if placement_provider.is_valid() else PlacementValidator.runtime_context(self)
+	var valid:=PlacementValidator.validate(footprint,context,{"decoration":true,"owner":owner})
+	if not valid.ok:return result(false,valid.message)
 	if owner=="player":
 		if gold<20:return result(false,"O terreno custa 20 moedas.")
 		gold-=20
@@ -251,6 +256,7 @@ func restore(data:Dictionary)->void:
 					var hp:int=clampi(int(h.get("hp",HOUSE_HP[stage])),1,HOUSE_HP[stage]) if ResourceProgress.number(h.get("hp",HOUSE_HP[stage])) else HOUSE_HP[stage]
 					houses[id]={"owner":h.owner,"x":p.x,"y":p.y,"stage":stage,"hp":hp}
 					houses[id].merge(HouseKit.clean_options(h))
+					if ResourceProgress.number(h.get("house_turn")):houses[id].house_turn=posmod(int(h.house_turn),4)
 	var accounts=data.get("npc_accounts",{})
 	if accounts is Dictionary:
 		for id in accounts:

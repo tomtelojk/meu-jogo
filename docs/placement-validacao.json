@@ -1,0 +1,267 @@
+{
+  "godot": "4.6.3.stable",
+  "ok": true,
+  "checks": 2462,
+  "runs": [
+    {
+      "name": "houses",
+      "checks": 395,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "house-portals",
+      "checks": 33,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "grid",
+      "checks": 119,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "grid-graph",
+      "checks": 121,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "core",
+      "checks": 240,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "appearance",
+      "checks": 46,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "placement-final",
+      "checks": 280,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "editor-final",
+      "checks": 40,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "life",
+      "checks": 22,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "resources",
+      "checks": 32,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "construction",
+      "checks": 76,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "relationships",
+      "checks": 158,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "factions",
+      "checks": 103,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "hybrid",
+      "checks": 24,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "editor-graph",
+      "checks": 48,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "life-graph",
+      "checks": 26,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "resources-graph",
+      "checks": 34,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "hd2d",
+      "checks": 33,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "construction-graph",
+      "checks": 83,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "relationships-graph",
+      "checks": 161,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "factions-graph",
+      "checks": 105,
+      "ok": true,
+      "exit_code": 0
+    },
+    {
+      "name": "placement-graph",
+      "checks": 283,
+      "ok": true,
+      "exit_code": 0
+    }
+  ],
+  "placement": {
+    "headless": 280,
+    "graphical": 283,
+    "final_async_repair_rechecked": true,
+    "curve_edits_update_renderer_and_validation": true
+  },
+  "cli_safety": [
+    {
+      "name": "relative_alias",
+      "ok": true,
+      "exit_code": 2
+    },
+    {
+      "name": "bad_radius",
+      "ok": true,
+      "exit_code": 2
+    },
+    {
+      "name": "report_alias",
+      "ok": true,
+      "exit_code": 2
+    }
+  ],
+  "new_world": {
+    "checked": 131,
+    "generation": 3,
+    "issues": [],
+    "margins_metres": {
+      "building": 0.25,
+      "decorations": true,
+      "road": 0.5,
+      "rock": 0.25,
+      "water": 0.5
+    },
+    "ok": true,
+    "painted_road_cells": 0,
+    "road_curves": 87
+  },
+  "legacy_generation_2": {
+    "before_conflicts": 126,
+    "moved": 124,
+    "remaining": 2,
+    "radius_metres": 32,
+    "unresolved_ids": [
+      "base_building_0",
+      "base_building_38"
+    ]
+  },
+  "native_linux": {
+    "ok": true,
+    "platform": "Linux x86_64 release",
+    "checks": [
+      "B/Tab/Enter exports one road conflict",
+      "repair moves only invalid house and snaps grid",
+      "active map and journey written",
+      "map and journey backups preserved",
+      "gold and materials unchanged",
+      "restart preserves repaired lot"
+    ],
+    "logs": [
+      "/tmp/placement-native.log",
+      "/tmp/placement-native-reload.log"
+    ]
+  },
+  "exports": [
+    {
+      "platform": "linux",
+      "ok": true,
+      "pck_version": 3,
+      "packed_files": 216,
+      "new_resources_embedded": true,
+      "five_house_resources": true,
+      "excluded_tests_docs_downloads": true,
+      "bytes": 96353024
+    },
+    {
+      "platform": "windows",
+      "ok": true,
+      "pck_version": 3,
+      "packed_files": 216,
+      "new_resources_embedded": true,
+      "five_house_resources": true,
+      "excluded_tests_docs_downloads": true,
+      "bytes": 129936624
+    }
+  ],
+  "native_windows_tested": false,
+  "performance": {
+    "buildings": 131,
+    "loaded_regions": 25,
+    "npcs": 44,
+    "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "results": [
+      {
+        "cpu_ms": 34.727,
+        "draw_calls": 65,
+        "fps": 38.3156442775585,
+        "median_ms": 26.099,
+        "p95_ms": 30.312,
+        "scene": "capital"
+      },
+      {
+        "cpu_ms": 35.594,
+        "draw_calls": 75,
+        "fps": 34.3867129741068,
+        "median_ms": 29.081,
+        "p95_ms": 33.728,
+        "scene": "ferraria"
+      },
+      {
+        "cpu_ms": 39.79,
+        "draw_calls": 76,
+        "fps": 34.0495079846096,
+        "median_ms": 29.369,
+        "p95_ms": 36.036,
+        "scene": "ponte"
+      }
+    ],
+    "scale_3d": 0.649999976158142,
+    "window_size": [
+      1280,
+      800
+    ],
+    "world_size": [
+      16000.0,
+      12800.0
+    ]
+  }
+}

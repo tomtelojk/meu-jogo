@@ -71,7 +71,7 @@ func run()->void:
 	editor.select_tool("dirt")
 	await click_world(Vector2(7872,6400))
 	verify(editor.draft.terrain.values().has("dirt"),"estradas usam o mesmo pincel de terreno")
-	for item in [{"kind":"cottage","at":Vector2(7872,6144),"style":0},{"kind":"forge","at":Vector2(7520,6208),"style":2},{"kind":"tower","at":Vector2(8320,6112),"style":4},{"kind":"tavern","at":Vector2(8640,6208),"style":1},{"kind":"tree","at":Vector2(7744,6720),"style":0},{"kind":"cow","at":Vector2(8448,6720),"style":0}]:
+	for item in [{"kind":"cottage","at":Vector2(7872,6144),"style":0},{"kind":"forge","at":Vector2(7360,6208),"style":2},{"kind":"tower","at":Vector2(8320,6112),"style":4},{"kind":"tavern","at":Vector2(8896,6208),"style":1},{"kind":"tree","at":Vector2(7744,6720),"style":0},{"kind":"cow","at":Vector2(8448,6720),"style":0}]:
 		editor.select_tool(item.kind);editor.chosen_style=item.style
 		await click_world(item.at)
 	verify(editor.draft.objects.size()==6,"paleta coloca casas, comércio, torre, árvore e animal")
@@ -149,7 +149,7 @@ func run()->void:
 		verify(game.hybrid.river_material.shader.resource_path.ends_with("water.gdshader"),"shader de água está ativo")
 		game.hybrid.snap_camera()
 		await capture("mundo-criado")
-	game.player.position=Vector2(7520,6256);game.player.restore_surface()
+	game.player.position=Vector2(7360,6256);game.player.restore_surface()
 	await frames(4)
 	verify(game.current_interaction().get("kind")=="shop","ferraria colocada pelo usuário tem interação de comércio")
 	game.interact()

@@ -58,6 +58,16 @@ func update_piece(id:String)->void:
 	var model:=ConstructionVisual.new();model.setup_piece(entry,game.rpg.construction.joints);model.set_meta("coord",coord)
 	add_child(model);piece_models[id]=model
 
+func refresh_ground()->void:
+	for coord in regions:
+		var parent:Node3D=regions[coord]
+		for child in parent.get_children():
+			if child.name in ["GroundTexture","GroundSurface"]:
+				if child is MeshInstance3D:child.hide()
+				if child is SubViewport:child.render_target_update_mode=SubViewport.UPDATE_DISABLED
+				child.name="OldGround_"+str(child.get_instance_id());child.queue_free()
+		_ground(parent,game.world.chunks[coord])
+
 func _ground(parent:Node3D,content:Dictionary)->void:
 	var view:=SubViewport.new()
 	view.name="GroundTexture"
@@ -69,7 +79,7 @@ func _ground(parent:Node3D,content:Dictionary)->void:
 	var region:Rect2=content.rect
 	var terrain:=WorldData.biome(region.get_center())
 	var row:=3 if terrain=="mountains" else (2 if terrain=="coast" else 0)
-	if MapDocument.base_enabled() and MapDocument.current.get("generation",2)==2:
+	if MapDocument.base_enabled() and MapDocument.current.get("generation",2)>=2:
 		var tile:=ColorRect.new()
 		tile.size=Vector2.ONE*512
 		var blend:=ShaderMaterial.new()
@@ -118,6 +128,7 @@ func _ground(parent:Node3D,content:Dictionary)->void:
 	mat.roughness=1.0
 	var node:=MeshInstance3D.new()
 	node.mesh=plane
+	node.name="GroundSurface"
 	node.position=Vector3(region.get_center().x/64,-0.025,region.get_center().y/64)
 	node.material_override=mat
 	node.layers=4

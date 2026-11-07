@@ -59,12 +59,14 @@ func run()->void:
 		if not data.kind in HouseKit.KINDS:continue
 		var plan:=HouseKit.generate(data)
 		verify(plan.footprint==KingdomData.building_rect(data),"terreno preservado: "+data.id)
+	var saved_map:=MapDocument.current.duplicate(true);MapDocument.activate(MapDocument.blank())
 	var rpg:=RPGState.new();var options:={"house_style":"rich","house_seed":123,"house_turn":1}
 	verify(rpg.claim(Vector2(6000,6000),"player",options).ok,"terreno aceita kit persistente")
 	var rect:=rpg.home_rect(rpg.houses.home_player)
 	var saved:Dictionary=JSON.parse_string(JSON.stringify(rpg.save_data()));var restored:=RPGState.new();restored.restore(saved)
 	verify(restored.home_rect(restored.houses.home_player)==rect and restored.houses.home_player.house_turn==1,"save conserva estilo, semente, tamanho e giro")
 	verify(not HouseKit.clean_options({"house_style":"rich","house_seed":"script"}).has("house_style"),"opções inválidas rejeitadas")
+	MapDocument.activate(saved_map)
 	var obj:=MapDocument.clean_object({"id":"obj_test_house","kind":"timber","x":8000,"y":6500,"house_style":"rich","house_seed":42,"house_turn":3})
 	var document:=MapDocument.blank();document.objects=[obj]
 	var checked:=MapDocument.validate(JSON.parse_string(JSON.stringify(document)))

@@ -2,7 +2,9 @@
 
 RPG de mundo aberto 2.5D para PC de 64 bits. Não é necessário instalar o Godot.
 
-**Novas casas:** cinco kits modulares, portas com interiores mobiliados, varandas, beirais, degraus, janelas iluminadas à noite e chaminés com fumaça lenta. Use **B → Casas completas**, **T** para girar e **V** para variar. F2 também permite colocar e variar os kits. O ZIP inclui `GUIA-DAS-CASAS.md`. [Ver casas e controles](../docs/casas-modulares.md).
+**Estradas e casas:** a nova geração coloca as ruas antes dos lotes e verifica margens de estrada, água, rochas e outras construções. Para mundos existentes, use **B → Validar estradas e terrenos → Realocar casas em conflito**. Há backup, relatório e opção de desfazer; conflitos sem espaço seguro continuam listados. F2 também valida e corrige. O ZIP inclui `GUIA-DO-POSICIONAMENTO.md`. [Guia](../docs/estradas-e-posicionamento.md).
+
+**Casas modulares:** cinco kits, portas com interiores mobiliados, varandas, beirais, degraus, janelas iluminadas à noite e chaminés com fumaça lenta. Use **B → Casas completas**, **T** para girar e **V** para variar. F2 também permite colocar e variar os kits. O ZIP inclui `GUIA-DAS-CASAS.md`. [Ver casas e controles](../docs/casas-modulares.md).
 
 **Construção com grid de 1 m:** pivôs no canto, paredes nas bordas, junções sem frestas, pisos e coberturas com medidas exatas e linhas-guia na prévia. **B → Validar grid e modelos** aponta desalinhamentos e exporta JSON. O ZIP inclui o guia e a lista dos modelos fora do padrão modular. Saves antigos com peças ganham cópia antes da migração. [Guia do grid](../docs/construcao-grid.md).
 
@@ -13,7 +15,7 @@ Esta versão inclui **facções e três guildas**: reputação com consequência
 
 Extraia o ZIP inteiro. No Windows, abra **EntreReinos.exe**. No Linux, abra **Jogar.sh**; se necessário, dê permissão de execução aos dois arquivos.
 
-O mapa tem **25 vezes a área anterior**, dois reinos maiores, quatro vilarejos, 126 construções, 44 NPCs e animais. Ruas curvas, bairros irregulares, bosques em grupos e um rio de largura variável tornam o continente menos repetitivo. Compre ferramentas, recolha materiais, negocie, suba de nível e construa sua casa.
+O mapa tem **25 vezes a área anterior**, dois reinos maiores, quatro vilarejos, 131 construções na nova geração, 44 NPCs e animais. Ruas curvas, bairros irregulares, bosques em grupos e um rio de largura variável tornam o continente menos repetitivo. Compre ferramentas, recolha materiais, negocie, suba de nível e construa sua casa. Mundos anteriores preservam seus lotes até a correção explícita.
 
 **F2 abre o Ateliê de Mundos**, incluído no jogo. Comece com um mapa vazio ou edite os reinos: pinte terreno e água, coloque casas, pontes, árvores, animais e NPCs e marque suas rotinas. Salve, exporte ou importe mapas em JSON e use **Testar mapa** para jogar. O ZIP inclui um mapa de exemplo e o guia do editor.
 

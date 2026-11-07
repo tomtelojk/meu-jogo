@@ -1,0 +1,3731 @@
+{
+  "before": {
+    "checked": 126,
+    "generation": 2,
+    "issues": [
+      {
+        "code": "road",
+        "id": "base_building_0",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Castelo de Aurélia",
+        "obstacle": "road_19",
+        "position_world": [
+          4608.0,
+          3584.0
+        ],
+        "size_metres": [
+          8.0,
+          5.0
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_1",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Ferraria e comércio de Aurélia",
+        "obstacle": "road_17",
+        "position_world": [
+          4416.0,
+          4224.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_2",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Estalagem de Aurélia",
+        "obstacle": "road_6",
+        "position_world": [
+          4800.0,
+          4224.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "building",
+        "id": "base_building_3",
+        "message": "Há outra construção muito perto.",
+        "name": "Forja de Bento",
+        "obstacle": "base_building_1",
+        "position_world": [
+          4224.0,
+          4224.0
+        ],
+        "size_metres": [
+          2.75,
+          2.0
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_4",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Arquivo dos Reinos",
+        "obstacle": "road_6",
+        "position_world": [
+          4992.0,
+          3840.0
+        ],
+        "size_metres": [
+          2.75,
+          2.0
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_5",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 1",
+        "obstacle": "road_18",
+        "position_world": [
+          3382.0869140625,
+          3116.79296875
+        ],
+        "size_metres": [
+          2.6875,
+          2.375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_6",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 2",
+        "obstacle": "road_20",
+        "position_world": [
+          3510.8916015625,
+          3709.99560546875
+        ],
+        "size_metres": [
+          2.40625,
+          2.09375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_7",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 3",
+        "obstacle": "road_22",
+        "position_world": [
+          3385.29248046875,
+          4520.7158203125
+        ],
+        "size_metres": [
+          3.140625,
+          2.15625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_8",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 4",
+        "obstacle": "road_24",
+        "position_world": [
+          3583.06640625,
+          4938.6953125
+        ],
+        "size_metres": [
+          3.078125,
+          1.984375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_9",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 5",
+        "obstacle": "road_20",
+        "position_world": [
+          4021.07250976562,
+          3636.2880859375
+        ],
+        "size_metres": [
+          3.203125,
+          2.125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_10",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 6",
+        "obstacle": "road_22",
+        "position_world": [
+          3791.10375976562,
+          4509.76611328125
+        ],
+        "size_metres": [
+          2.625,
+          2.375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_11",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 7",
+        "obstacle": "road_23",
+        "position_world": [
+          6250.9873046875,
+          4419.43505859375
+        ],
+        "size_metres": [
+          2.40625,
+          2.25
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_12",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 8",
+        "obstacle": "road_24",
+        "position_world": [
+          3146.53466796875,
+          5018.12939453125
+        ],
+        "size_metres": [
+          2.96875,
+          1.984375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_13",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 9",
+        "obstacle": "road_21",
+        "position_world": [
+          5914.49853515625,
+          3783.99877929688
+        ],
+        "size_metres": [
+          3.046875,
+          2.109375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_14",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 10",
+        "obstacle": "road_23",
+        "position_world": [
+          5814.59228515625,
+          4374.669921875
+        ],
+        "size_metres": [
+          3.203125,
+          1.828125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_15",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 11",
+        "obstacle": "road_18",
+        "position_world": [
+          2917.8427734375,
+          3127.24755859375
+        ],
+        "size_metres": [
+          3.15625,
+          1.75
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_16",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 12",
+        "obstacle": "road_121",
+        "position_world": [
+          5627.41357421875,
+          3132.96704101562
+        ],
+        "size_metres": [
+          3.0,
+          1.9375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_17",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 13",
+        "obstacle": "road_24",
+        "position_world": [
+          4174.77490234375,
+          4882.1474609375
+        ],
+        "size_metres": [
+          2.609375,
+          2.03125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_18",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 14",
+        "obstacle": "road_9",
+        "position_world": [
+          6161.861328125,
+          5250.23681640625
+        ],
+        "size_metres": [
+          3.03125,
+          2.25
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_19",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 15",
+        "obstacle": "road_20",
+        "position_world": [
+          2952.1982421875,
+          3652.14086914062
+        ],
+        "size_metres": [
+          2.421875,
+          2.0
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_20",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 16",
+        "obstacle": "road_22",
+        "position_world": [
+          4185.05322265625,
+          4457.4599609375
+        ],
+        "size_metres": [
+          2.5625,
+          1.765625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_21",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 17",
+        "obstacle": "road_23",
+        "position_world": [
+          5528.28369140625,
+          4301.87255859375
+        ],
+        "size_metres": [
+          3.09375,
+          2.203125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_22",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 18",
+        "obstacle": "road_43",
+        "position_world": [
+          5195.3818359375,
+          5095.818359375
+        ],
+        "size_metres": [
+          2.734375,
+          2.328125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_23",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 19",
+        "obstacle": "road_102",
+        "position_world": [
+          5919.95947265625,
+          3198.046875
+        ],
+        "size_metres": [
+          2.890625,
+          1.90625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_24",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 20",
+        "obstacle": "road_20",
+        "position_world": [
+          3185.42016601562,
+          3706.62719726562
+        ],
+        "size_metres": [
+          3.078125,
+          2.234375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_25",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 21",
+        "obstacle": "road_18",
+        "position_world": [
+          3916.9912109375,
+          3105.33837890625
+        ],
+        "size_metres": [
+          2.421875,
+          1.765625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_26",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 22",
+        "obstacle": "road_21",
+        "position_world": [
+          6267.5595703125,
+          3714.61962890625
+        ],
+        "size_metres": [
+          2.90625,
+          2.140625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_27",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 23",
+        "obstacle": "road_0",
+        "position_world": [
+          4179.1357421875,
+          3060.76708984375
+        ],
+        "size_metres": [
+          2.6875,
+          1.9375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_28",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 24",
+        "obstacle": "road_49",
+        "position_world": [
+          5292.30029296875,
+          4259.72412109375
+        ],
+        "size_metres": [
+          2.671875,
+          1.9375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_29",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 25",
+        "obstacle": "road_21",
+        "position_world": [
+          5420.2509765625,
+          3689.67138671875
+        ],
+        "size_metres": [
+          2.796875,
+          1.75
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_30",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 26",
+        "obstacle": "road_17",
+        "position_world": [
+          5064.13671875,
+          3074.73608398438
+        ],
+        "size_metres": [
+          2.6875,
+          2.109375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_31",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 27",
+        "obstacle": "road_18",
+        "position_world": [
+          3155.81518554688,
+          3138.66772460938
+        ],
+        "size_metres": [
+          2.3125,
+          2.078125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_32",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 28",
+        "obstacle": "road_19",
+        "position_world": [
+          6296.23291015625,
+          3089.64282226562
+        ],
+        "size_metres": [
+          2.4375,
+          2.296875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_33",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 29",
+        "obstacle": "road_24",
+        "position_world": [
+          3900.78344726562,
+          4874.49462890625
+        ],
+        "size_metres": [
+          3.203125,
+          1.953125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_34",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 30",
+        "obstacle": "road_22",
+        "position_world": [
+          3042.44213867188,
+          4506.96044921875
+        ],
+        "size_metres": [
+          2.875,
+          2.375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_35",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 31",
+        "obstacle": "road_18",
+        "position_world": [
+          3692.87890625,
+          3108.67431640625
+        ],
+        "size_metres": [
+          2.578125,
+          1.75
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_36",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 32",
+        "obstacle": "road_23",
+        "position_world": [
+          6046.1865234375,
+          4410.2783203125
+        ],
+        "size_metres": [
+          2.4375,
+          2.078125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_37",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Aurélia 33",
+        "obstacle": "road_21",
+        "position_world": [
+          5646.01904296875,
+          3721.62817382812
+        ],
+        "size_metres": [
+          2.71875,
+          1.84375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_38",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Castelo de Valverde",
+        "obstacle": "road_62",
+        "position_world": [
+          11264.0,
+          4864.0
+        ],
+        "size_metres": [
+          8.0,
+          5.0
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_39",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Ferraria e comércio de Valverde",
+        "obstacle": "road_7",
+        "position_world": [
+          11072.0,
+          5504.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_40",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Estalagem de Valverde",
+        "obstacle": "road_61",
+        "position_world": [
+          11456.0,
+          5504.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_41",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 1",
+        "obstacle": "road_62",
+        "position_world": [
+          10266.0087890625,
+          4432.41796875
+        ],
+        "size_metres": [
+          2.265625,
+          1.90625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_42",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 2",
+        "obstacle": "road_63",
+        "position_world": [
+          12678.115234375,
+          4588.8759765625
+        ],
+        "size_metres": [
+          2.5625,
+          2.265625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_43",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 3",
+        "obstacle": "road_66",
+        "position_world": [
+          9596.1640625,
+          5552.07763671875
+        ],
+        "size_metres": [
+          3.140625,
+          2.140625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_44",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 4",
+        "obstacle": "road_67",
+        "position_world": [
+          12366.2041015625,
+          5702.90869140625
+        ],
+        "size_metres": [
+          2.3125,
+          2.015625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_45",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 5",
+        "obstacle": "road_68",
+        "position_world": [
+          10352.4931640625,
+          6302.79638671875
+        ],
+        "size_metres": [
+          2.953125,
+          2.140625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_46",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 6",
+        "obstacle": "road_69",
+        "position_world": [
+          12369.8212890625,
+          6354.9716796875
+        ],
+        "size_metres": [
+          2.5,
+          2.25
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_47",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 7",
+        "obstacle": "road_10",
+        "position_world": [
+          10327.015625,
+          4805.15966796875
+        ],
+        "size_metres": [
+          3.140625,
+          1.90625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_48",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 8",
+        "obstacle": "road_65",
+        "position_world": [
+          12502.015625,
+          5245.3466796875
+        ],
+        "size_metres": [
+          3.0625,
+          2.25
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_49",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 9",
+        "obstacle": "road_66",
+        "position_world": [
+          9956.48046875,
+          5709.04248046875
+        ],
+        "size_metres": [
+          2.25,
+          1.953125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_50",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 10",
+        "obstacle": "road_69",
+        "position_world": [
+          11816.53125,
+          6272.3603515625
+        ],
+        "size_metres": [
+          2.84375,
+          2.140625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_51",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 11",
+        "obstacle": "road_64",
+        "position_world": [
+          9814.6572265625,
+          4939.87109375
+        ],
+        "size_metres": [
+          2.359375,
+          1.984375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_52",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 12",
+        "obstacle": "road_62",
+        "position_world": [
+          10045.072265625,
+          4473.0078125
+        ],
+        "size_metres": [
+          2.4375,
+          2.03125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_53",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 13",
+        "obstacle": "road_67",
+        "position_world": [
+          12565.4873046875,
+          5720.43359375
+        ],
+        "size_metres": [
+          2.46875,
+          2.015625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_54",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 14",
+        "obstacle": "road_68",
+        "position_world": [
+          10663.7490234375,
+          6281.06591796875
+        ],
+        "size_metres": [
+          2.609375,
+          1.9375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_55",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 15",
+        "obstacle": "road_68",
+        "position_world": [
+          9726.0458984375,
+          6383.267578125
+        ],
+        "size_metres": [
+          3.03125,
+          2.078125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_56",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 16",
+        "obstacle": "road_69",
+        "position_world": [
+          12827.7197265625,
+          6416.16162109375
+        ],
+        "size_metres": [
+          2.640625,
+          1.96875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_57",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 17",
+        "obstacle": "road_65",
+        "position_world": [
+          12172.9306640625,
+          5188.6533203125
+        ],
+        "size_metres": [
+          3.09375,
+          1.984375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_58",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 18",
+        "obstacle": "road_67",
+        "position_world": [
+          11972.1689453125,
+          5663.82666015625
+        ],
+        "size_metres": [
+          2.75,
+          2.15625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_59",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 19",
+        "obstacle": "road_7",
+        "position_world": [
+          10565.9375,
+          4755.9443359375
+        ],
+        "size_metres": [
+          2.84375,
+          2.015625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_60",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 20",
+        "obstacle": "road_68",
+        "position_world": [
+          10033.177734375,
+          6353.76220703125
+        ],
+        "size_metres": [
+          3.125,
+          2.03125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_61",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 21",
+        "obstacle": "road_62",
+        "position_world": [
+          10979.7392578125,
+          4376.0224609375
+        ],
+        "size_metres": [
+          2.859375,
+          1.96875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_62",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 22",
+        "obstacle": "road_66",
+        "position_world": [
+          10326.2939453125,
+          5711.95361328125
+        ],
+        "size_metres": [
+          2.375,
+          2.25
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_63",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 23",
+        "obstacle": "road_2",
+        "position_world": [
+          12824.369140625,
+          5700.126953125
+        ],
+        "size_metres": [
+          3.203125,
+          1.875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_64",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 24",
+        "obstacle": "road_69",
+        "position_world": [
+          12084.7109375,
+          6288.4345703125
+        ],
+        "size_metres": [
+          2.625,
+          2.046875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_65",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 25",
+        "obstacle": "road_69",
+        "position_world": [
+          12593.515625,
+          6391.919921875
+        ],
+        "size_metres": [
+          2.984375,
+          1.90625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_66",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 26",
+        "obstacle": "road_63",
+        "position_world": [
+          12914.033203125,
+          4516.1572265625
+        ],
+        "size_metres": [
+          2.4375,
+          1.90625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_67",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 27",
+        "obstacle": "road_64",
+        "position_world": [
+          9599.2392578125,
+          4905.9794921875
+        ],
+        "size_metres": [
+          2.6875,
+          2.328125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_68",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 28",
+        "obstacle": "road_7",
+        "position_world": [
+          10474.53125,
+          4429.517578125
+        ],
+        "size_metres": [
+          2.734375,
+          2.375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_69",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 29",
+        "obstacle": "road_65",
+        "position_world": [
+          11816.60546875,
+          5158.9443359375
+        ],
+        "size_metres": [
+          2.265625,
+          1.96875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_70",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Valverde 30",
+        "obstacle": "road_99",
+        "position_world": [
+          11717.1259765625,
+          5632.701171875
+        ],
+        "size_metres": [
+          2.65625,
+          2.21875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_71",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Ferraria e comércio de Pedra Alta",
+        "obstacle": "road_0",
+        "position_world": [
+          5568.0,
+          1792.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_72",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Estalagem de Pedra Alta",
+        "obstacle": "road_0",
+        "position_world": [
+          5952.0,
+          1792.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_73",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 1",
+        "obstacle": "road_103",
+        "position_world": [
+          4798.546875,
+          1326.72192382812
+        ],
+        "size_metres": [
+          2.453125,
+          2.21875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_74",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 2",
+        "obstacle": "road_107",
+        "position_world": [
+          5324.0771484375,
+          2217.12353515625
+        ],
+        "size_metres": [
+          2.796875,
+          2.265625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_75",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 3",
+        "obstacle": "road_0",
+        "position_world": [
+          4942.65087890625,
+          1818.00268554688
+        ],
+        "size_metres": [
+          2.734375,
+          2.265625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_76",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 4",
+        "obstacle": "road_106",
+        "position_world": [
+          6718.9677734375,
+          1702.91284179688
+        ],
+        "size_metres": [
+          2.609375,
+          2.328125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_77",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 5",
+        "obstacle": "road_107",
+        "position_world": [
+          4834.73583984375,
+          2324.85620117188
+        ],
+        "size_metres": [
+          2.515625,
+          2.109375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_78",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 6",
+        "obstacle": "road_103",
+        "position_world": [
+          5214.32080078125,
+          1315.64855957031
+        ],
+        "size_metres": [
+          2.515625,
+          2.0625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_79",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 7",
+        "obstacle": "road_108",
+        "position_world": [
+          6082.4697265625,
+          2241.669921875
+        ],
+        "size_metres": [
+          2.390625,
+          1.921875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_80",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 8",
+        "obstacle": "road_116",
+        "position_world": [
+          6759.36572265625,
+          1030.64270019531
+        ],
+        "size_metres": [
+          2.296875,
+          1.9375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_81",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 9",
+        "obstacle": "road_106",
+        "position_world": [
+          6398.5751953125,
+          1607.70202636719
+        ],
+        "size_metres": [
+          2.703125,
+          1.765625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_82",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 10",
+        "obstacle": "road_108",
+        "position_world": [
+          6301.1298828125,
+          2218.2890625
+        ],
+        "size_metres": [
+          2.65625,
+          2.265625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_83",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 11",
+        "obstacle": "road_108",
+        "position_world": [
+          6790.25,
+          2452.36303710938
+        ],
+        "size_metres": [
+          2.484375,
+          1.96875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_84",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Pedra Alta 12",
+        "obstacle": "road_102",
+        "position_world": [
+          6303.2021484375,
+          1045.78332519531
+        ],
+        "size_metres": [
+          2.609375,
+          2.046875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_85",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Ferraria e comércio de Ponte Velha",
+        "obstacle": "road_123",
+        "position_world": [
+          3008.0,
+          8320.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_86",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Estalagem de Ponte Velha",
+        "obstacle": "road_123",
+        "position_world": [
+          3392.0,
+          8320.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_87",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 1",
+        "obstacle": "road_124",
+        "position_world": [
+          2757.15454101562,
+          7860.06787109375
+        ],
+        "size_metres": [
+          2.75,
+          2.375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_88",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 2",
+        "obstacle": "road_123",
+        "position_world": [
+          3714.3125,
+          8057.275390625
+        ],
+        "size_metres": [
+          2.78125,
+          2.15625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_89",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 3",
+        "obstacle": "road_124",
+        "position_world": [
+          2426.16845703125,
+          7903.6845703125
+        ],
+        "size_metres": [
+          2.484375,
+          2.25
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_90",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 4",
+        "obstacle": "road_126",
+        "position_world": [
+          2494.11206054688,
+          8280.2138671875
+        ],
+        "size_metres": [
+          3.140625,
+          1.9375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_91",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 5",
+        "obstacle": "road_128",
+        "position_world": [
+          2511.3046875,
+          8991.904296875
+        ],
+        "size_metres": [
+          2.859375,
+          2.125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_92",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 6",
+        "obstacle": "road_125",
+        "position_world": [
+          4132.22705078125,
+          7705.25927734375
+        ],
+        "size_metres": [
+          2.859375,
+          2.015625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_93",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 7",
+        "obstacle": "road_15",
+        "position_world": [
+          3926.98559570312,
+          9012.82421875
+        ],
+        "size_metres": [
+          2.546875,
+          1.765625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_94",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 8",
+        "obstacle": "road_127",
+        "position_world": [
+          4069.91088867188,
+          8205.0927734375
+        ],
+        "size_metres": [
+          2.953125,
+          2.171875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_95",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 9",
+        "obstacle": "road_129",
+        "position_world": [
+          4230.4775390625,
+          8859.0732421875
+        ],
+        "size_metres": [
+          2.484375,
+          2.375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_96",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 10",
+        "obstacle": "road_124",
+        "position_world": [
+          2206.99096679688,
+          8218.806640625
+        ],
+        "size_metres": [
+          3.0,
+          1.890625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_97",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 11",
+        "obstacle": "road_124",
+        "position_world": [
+          2183.7490234375,
+          7862.92822265625
+        ],
+        "size_metres": [
+          3.09375,
+          1.890625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_98",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Ponte Velha 12",
+        "obstacle": "road_128",
+        "position_world": [
+          2160.474609375,
+          8780.65625
+        ],
+        "size_metres": [
+          2.8125,
+          2.109375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_99",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Ferraria e comércio de Porto Claro",
+        "obstacle": "road_13",
+        "position_world": [
+          10688.0,
+          10368.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_100",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Estalagem de Porto Claro",
+        "obstacle": "road_3",
+        "position_world": [
+          11072.0,
+          10368.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_101",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Porto Claro 1",
+        "obstacle": "road_148",
+        "position_world": [
+          11616.2509765625,
+          10414.283203125
+        ],
+        "size_metres": [
+          2.796875,
+          1.78125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_102",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Porto Claro 2",
+        "obstacle": "road_150",
+        "position_world": [
+          11880.0185546875,
+          10911.04296875
+        ],
+        "size_metres": [
+          3.125,
+          1.953125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_103",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Porto Claro 3",
+        "obstacle": "road_146",
+        "position_world": [
+          11742.365234375,
+          9858.1240234375
+        ],
+        "size_metres": [
+          2.78125,
+          2.3125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_104",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Porto Claro 4",
+        "obstacle": "road_145",
+        "position_world": [
+          9917.4931640625,
+          9821.3740234375
+        ],
+        "size_metres": [
+          3.09375,
+          1.84375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_105",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Porto Claro 5",
+        "obstacle": "road_147",
+        "position_world": [
+          10256.2158203125,
+          10300.7197265625
+        ],
+        "size_metres": [
+          2.34375,
+          2.328125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_106",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Porto Claro 6",
+        "obstacle": "road_148",
+        "position_world": [
+          11887.375,
+          10275.951171875
+        ],
+        "size_metres": [
+          3.15625,
+          2.078125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_107",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Porto Claro 7",
+        "obstacle": "road_147",
+        "position_world": [
+          9905.806640625,
+          10415.818359375
+        ],
+        "size_metres": [
+          2.375,
+          2.28125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_108",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Porto Claro 8",
+        "obstacle": "road_150",
+        "position_world": [
+          11183.14453125,
+          10864.7646484375
+        ],
+        "size_metres": [
+          2.765625,
+          2.0625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_109",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Porto Claro 9",
+        "obstacle": "road_145",
+        "position_world": [
+          10149.3046875,
+          9769.275390625
+        ],
+        "size_metres": [
+          2.3125,
+          2.09375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_110",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Porto Claro 10",
+        "obstacle": "road_144",
+        "position_world": [
+          11426.1142578125,
+          9743.9189453125
+        ],
+        "size_metres": [
+          2.3125,
+          1.890625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_111",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Ferraria e comércio de Cedro",
+        "obstacle": "road_166",
+        "position_world": [
+          13376.0,
+          8320.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_112",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Estalagem de Cedro",
+        "obstacle": "road_163",
+        "position_world": [
+          13760.0,
+          8320.0
+        ],
+        "size_metres": [
+          3.25,
+          2.5
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_113",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 1",
+        "obstacle": "road_168",
+        "position_world": [
+          13147.0634765625,
+          8754.2236328125
+        ],
+        "size_metres": [
+          2.890625,
+          2.21875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_114",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 2",
+        "obstacle": "road_169",
+        "position_world": [
+          14171.6201171875,
+          8933.3740234375
+        ],
+        "size_metres": [
+          2.296875,
+          2.140625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_115",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 3",
+        "obstacle": "road_164",
+        "position_world": [
+          13271.443359375,
+          7618.60205078125
+        ],
+        "size_metres": [
+          2.53125,
+          2.03125
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_116",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 4",
+        "obstacle": "road_168",
+        "position_world": [
+          12568.66796875,
+          8846.314453125
+        ],
+        "size_metres": [
+          2.34375,
+          2.34375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_117",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 5",
+        "obstacle": "road_169",
+        "position_world": [
+          14584.5859375,
+          9009.40234375
+        ],
+        "size_metres": [
+          2.296875,
+          1.984375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_118",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 6",
+        "obstacle": "road_165",
+        "position_world": [
+          14540.9765625,
+          7522.400390625
+        ],
+        "size_metres": [
+          2.640625,
+          2.046875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_119",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 7",
+        "obstacle": "road_166",
+        "position_world": [
+          12546.0048828125,
+          8165.73046875
+        ],
+        "size_metres": [
+          2.5625,
+          2.015625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_120",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 8",
+        "obstacle": "road_164",
+        "position_world": [
+          12564.197265625,
+          7516.77294921875
+        ],
+        "size_metres": [
+          2.96875,
+          2.171875
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_121",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 9",
+        "obstacle": "road_164",
+        "position_world": [
+          12875.416015625,
+          7689.44677734375
+        ],
+        "size_metres": [
+          3.015625,
+          2.0
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_122",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 10",
+        "obstacle": "road_179",
+        "position_world": [
+          13123.9873046875,
+          8047.78955078125
+        ],
+        "size_metres": [
+          2.484375,
+          2.09375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_123",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 11",
+        "obstacle": "road_167",
+        "position_world": [
+          14077.90234375,
+          8108.1064453125
+        ],
+        "size_metres": [
+          2.484375,
+          2.109375
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_124",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Casa de Cedro 12",
+        "obstacle": "road_167",
+        "position_world": [
+          14505.8125,
+          8168.36474609375
+        ],
+        "size_metres": [
+          2.59375,
+          1.765625
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_125",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Quartel da Travessia",
+        "obstacle": "road_10",
+        "position_world": [
+          8312.6298828125,
+          4736.0
+        ],
+        "size_metres": [
+          2.75,
+          2.0
+        ],
+        "source": "map"
+      }
+    ],
+    "margins_metres": {
+      "building": 0.25,
+      "decorations": true,
+      "road": 0.5,
+      "rock": 0.25,
+      "water": 0.5
+    },
+    "ok": false,
+    "painted_road_cells": 0,
+    "road_curves": 184
+  },
+  "after": {
+    "checked": 126,
+    "generation": 2,
+    "issues": [
+      {
+        "code": "road",
+        "id": "base_building_0",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Castelo de Aurélia",
+        "obstacle": "road_19",
+        "position_world": [
+          4608.0,
+          3584.0
+        ],
+        "size_metres": [
+          8.0,
+          5.0
+        ],
+        "source": "map"
+      },
+      {
+        "code": "road",
+        "id": "base_building_38",
+        "message": "Deixe a estrada e sua margem livres.",
+        "name": "Castelo de Valverde",
+        "obstacle": "road_62",
+        "position_world": [
+          11264.0,
+          4864.0
+        ],
+        "size_metres": [
+          8.0,
+          5.0
+        ],
+        "source": "map"
+      }
+    ],
+    "margins_metres": {
+      "building": 0.25,
+      "decorations": true,
+      "road": 0.5,
+      "rock": 0.25,
+      "water": 0.5
+    },
+    "ok": false,
+    "painted_road_cells": 0,
+    "road_curves": 184
+  },
+  "moved": [
+    {
+      "from": [
+        4416.0,
+        4224.0
+      ],
+      "id": "base_building_1",
+      "name": "Ferraria e comércio de Aurélia",
+      "rotation_degrees": 180,
+      "to": [
+        3944.0,
+        4128.0
+      ]
+    },
+    {
+      "from": [
+        4800.0,
+        4224.0
+      ],
+      "id": "base_building_2",
+      "name": "Estalagem de Aurélia",
+      "rotation_degrees": 180,
+      "to": [
+        5160.0,
+        4704.0
+      ]
+    },
+    {
+      "from": [
+        4224.0,
+        4224.0
+      ],
+      "id": "base_building_3",
+      "name": "Forja de Bento",
+      "rotation_degrees": 0,
+      "to": [
+        4248.0,
+        4224.0
+      ]
+    },
+    {
+      "from": [
+        4992.0,
+        3840.0
+      ],
+      "id": "base_building_4",
+      "name": "Arquivo dos Reinos",
+      "rotation_degrees": 180,
+      "to": [
+        5848.0,
+        4160.0
+      ]
+    },
+    {
+      "from": [
+        3382.0869140625,
+        3116.79296875
+      ],
+      "id": "base_building_5",
+      "name": "Casa de Aurélia 1",
+      "rotation_degrees": 0,
+      "to": [
+        3478.0,
+        2904.0
+      ]
+    },
+    {
+      "from": [
+        3510.8916015625,
+        3709.99560546875
+      ],
+      "id": "base_building_6",
+      "name": "Casa de Aurélia 2",
+      "rotation_degrees": 0,
+      "to": [
+        3661.0,
+        3590.0
+      ]
+    },
+    {
+      "from": [
+        3385.29248046875,
+        4520.7158203125
+      ],
+      "id": "base_building_7",
+      "name": "Casa de Aurélia 3",
+      "rotation_degrees": 180,
+      "to": [
+        3364.5,
+        4106.0
+      ]
+    },
+    {
+      "from": [
+        3583.06640625,
+        4938.6953125
+      ],
+      "id": "base_building_8",
+      "name": "Casa de Aurélia 4",
+      "rotation_degrees": 180,
+      "to": [
+        3938.5,
+        5311.0
+      ]
+    },
+    {
+      "from": [
+        4021.07250976562,
+        3636.2880859375
+      ],
+      "id": "base_building_9",
+      "name": "Casa de Aurélia 5",
+      "rotation_degrees": 180,
+      "to": [
+        4774.5,
+        2760.0
+      ]
+    },
+    {
+      "from": [
+        3791.10375976562,
+        4509.76611328125
+      ],
+      "id": "base_building_10",
+      "name": "Casa de Aurélia 6",
+      "rotation_degrees": 0,
+      "to": [
+        3924.0,
+        4376.0
+      ]
+    },
+    {
+      "from": [
+        6250.9873046875,
+        4419.43505859375
+      ],
+      "id": "base_building_11",
+      "name": "Casa de Aurélia 7",
+      "rotation_degrees": 0,
+      "to": [
+        6413.0,
+        4240.0
+      ]
+    },
+    {
+      "from": [
+        3146.53466796875,
+        5018.12939453125
+      ],
+      "id": "base_building_12",
+      "name": "Casa de Aurélia 8",
+      "rotation_degrees": 0,
+      "to": [
+        3295.0,
+        4927.0
+      ]
+    },
+    {
+      "from": [
+        5914.49853515625,
+        3783.99877929688
+      ],
+      "id": "base_building_13",
+      "name": "Casa de Aurélia 9",
+      "rotation_degrees": 180,
+      "to": [
+        6753.5,
+        3015.0
+      ]
+    },
+    {
+      "from": [
+        5814.59228515625,
+        4374.669921875
+      ],
+      "id": "base_building_14",
+      "name": "Casa de Aurélia 10",
+      "rotation_degrees": 180,
+      "to": [
+        6630.5,
+        5173.0
+      ]
+    },
+    {
+      "from": [
+        2917.8427734375,
+        3127.24755859375
+      ],
+      "id": "base_building_15",
+      "name": "Casa de Aurélia 11",
+      "rotation_degrees": 90,
+      "to": [
+        2597.0,
+        3312.0
+      ]
+    },
+    {
+      "from": [
+        5627.41357421875,
+        3132.96704101562
+      ],
+      "id": "base_building_16",
+      "name": "Casa de Aurélia 12",
+      "rotation_degrees": 180,
+      "to": [
+        6048.0,
+        2684.0
+      ]
+    },
+    {
+      "from": [
+        4174.77490234375,
+        4882.1474609375
+      ],
+      "id": "base_building_17",
+      "name": "Casa de Aurélia 13",
+      "rotation_degrees": 0,
+      "to": [
+        3667.5,
+        4418.0
+      ]
+    },
+    {
+      "from": [
+        6161.861328125,
+        5250.23681640625
+      ],
+      "id": "base_building_18",
+      "name": "Casa de Aurélia 14",
+      "rotation_degrees": 180,
+      "to": [
+        5729.0,
+        5648.0
+      ]
+    },
+    {
+      "from": [
+        2952.1982421875,
+        3652.14086914062
+      ],
+      "id": "base_building_19",
+      "name": "Casa de Aurélia 15",
+      "rotation_degrees": 90,
+      "to": [
+        2381.5,
+        3648.0
+      ]
+    },
+    {
+      "from": [
+        4185.05322265625,
+        4457.4599609375
+      ],
+      "id": "base_building_20",
+      "name": "Casa de Aurélia 16",
+      "rotation_degrees": 0,
+      "to": [
+        4242.0,
+        5297.0
+      ]
+    },
+    {
+      "from": [
+        5528.28369140625,
+        4301.87255859375
+      ],
+      "id": "base_building_21",
+      "name": "Casa de Aurélia 17",
+      "rotation_degrees": 270,
+      "to": [
+        6947.0,
+        3789.0
+      ]
+    },
+    {
+      "from": [
+        5195.3818359375,
+        5095.818359375
+      ],
+      "id": "base_building_22",
+      "name": "Casa de Aurélia 18",
+      "rotation_degrees": 0,
+      "to": [
+        5143.5,
+        5013.0
+      ]
+    },
+    {
+      "from": [
+        5919.95947265625,
+        3198.046875
+      ],
+      "id": "base_building_23",
+      "name": "Casa de Aurélia 19",
+      "rotation_degrees": 0,
+      "to": [
+        6044.5,
+        3066.0
+      ]
+    },
+    {
+      "from": [
+        3185.42016601562,
+        3706.62719726562
+      ],
+      "id": "base_building_24",
+      "name": "Casa de Aurélia 20",
+      "rotation_degrees": 0,
+      "to": [
+        3170.5,
+        3599.0
+      ]
+    },
+    {
+      "from": [
+        3916.9912109375,
+        3105.33837890625
+      ],
+      "id": "base_building_25",
+      "name": "Casa de Aurélia 21",
+      "rotation_degrees": 180,
+      "to": [
+        3917.5,
+        3505.0
+      ]
+    },
+    {
+      "from": [
+        6267.5595703125,
+        3714.61962890625
+      ],
+      "id": "base_building_26",
+      "name": "Casa de Aurélia 22",
+      "rotation_degrees": 0,
+      "to": [
+        6301.0,
+        3593.0
+      ]
+    },
+    {
+      "from": [
+        4179.1357421875,
+        3060.76708984375
+      ],
+      "id": "base_building_27",
+      "name": "Casa de Aurélia 23",
+      "rotation_degrees": 0,
+      "to": [
+        3670.0,
+        2172.0
+      ]
+    },
+    {
+      "from": [
+        5292.30029296875,
+        4259.72412109375
+      ],
+      "id": "base_building_28",
+      "name": "Casa de Aurélia 24",
+      "rotation_degrees": 0,
+      "to": [
+        5525.5,
+        4220.0
+      ]
+    },
+    {
+      "from": [
+        5420.2509765625,
+        3689.67138671875
+      ],
+      "id": "base_building_29",
+      "name": "Casa de Aurélia 25",
+      "rotation_degrees": 180,
+      "to": [
+        5529.5,
+        3504.0
+      ]
+    },
+    {
+      "from": [
+        5064.13671875,
+        3074.73608398438
+      ],
+      "id": "base_building_30",
+      "name": "Casa de Aurélia 26",
+      "rotation_degrees": 0,
+      "to": [
+        5078.0,
+        2951.0
+      ]
+    },
+    {
+      "from": [
+        3155.81518554688,
+        3138.66772460938
+      ],
+      "id": "base_building_31",
+      "name": "Casa de Aurélia 27",
+      "rotation_degrees": 0,
+      "to": [
+        2890.0,
+        2757.0
+      ]
+    },
+    {
+      "from": [
+        6296.23291015625,
+        3089.64282226562
+      ],
+      "id": "base_building_32",
+      "name": "Casa de Aurélia 28",
+      "rotation_degrees": 0,
+      "to": [
+        6350.0,
+        2963.0
+      ]
+    },
+    {
+      "from": [
+        3900.78344726562,
+        4874.49462890625
+      ],
+      "id": "base_building_33",
+      "name": "Casa de Aurélia 29",
+      "rotation_degrees": 180,
+      "to": [
+        3046.5,
+        5565.0
+      ]
+    },
+    {
+      "from": [
+        3042.44213867188,
+        4506.96044921875
+      ],
+      "id": "base_building_34",
+      "name": "Casa de Aurélia 30",
+      "rotation_degrees": 0,
+      "to": [
+        3100.0,
+        4376.0
+      ]
+    },
+    {
+      "from": [
+        3692.87890625,
+        3108.67431640625
+      ],
+      "id": "base_building_35",
+      "name": "Casa de Aurélia 31",
+      "rotation_degrees": 180,
+      "to": [
+        2578.5,
+        2288.0
+      ]
+    },
+    {
+      "from": [
+        6046.1865234375,
+        4410.2783203125
+      ],
+      "id": "base_building_36",
+      "name": "Casa de Aurélia 32",
+      "rotation_degrees": 270,
+      "to": [
+        6542.0,
+        3973.0
+      ]
+    },
+    {
+      "from": [
+        5646.01904296875,
+        3721.62817382812
+      ],
+      "id": "base_building_37",
+      "name": "Casa de Aurélia 33",
+      "rotation_degrees": 180,
+      "to": [
+        5847.0,
+        3574.0
+      ]
+    },
+    {
+      "from": [
+        11072.0,
+        5504.0
+      ],
+      "id": "base_building_39",
+      "name": "Ferraria e comércio de Valverde",
+      "rotation_degrees": 180,
+      "to": [
+        11816.0,
+        6048.0
+      ]
+    },
+    {
+      "from": [
+        11456.0,
+        5504.0
+      ],
+      "id": "base_building_40",
+      "name": "Estalagem de Valverde",
+      "rotation_degrees": 180,
+      "to": [
+        11944.0,
+        6752.0
+      ]
+    },
+    {
+      "from": [
+        10266.0087890625,
+        4432.41796875
+      ],
+      "id": "base_building_41",
+      "name": "Casa de Valverde 1",
+      "rotation_degrees": 0,
+      "to": [
+        10056.5,
+        4218.0
+      ]
+    },
+    {
+      "from": [
+        12678.115234375,
+        4588.8759765625
+      ],
+      "id": "base_building_42",
+      "name": "Casa de Valverde 2",
+      "rotation_degrees": 0,
+      "to": [
+        12626.0,
+        4497.0
+      ]
+    },
+    {
+      "from": [
+        9596.1640625,
+        5552.07763671875
+      ],
+      "id": "base_building_43",
+      "name": "Casa de Valverde 3",
+      "rotation_degrees": 0,
+      "to": [
+        9636.5,
+        5449.0
+      ]
+    },
+    {
+      "from": [
+        12366.2041015625,
+        5702.90869140625
+      ],
+      "id": "base_building_44",
+      "name": "Casa de Valverde 4",
+      "rotation_degrees": 270,
+      "to": [
+        13002.0,
+        5057.0
+      ]
+    },
+    {
+      "from": [
+        10352.4931640625,
+        6302.79638671875
+      ],
+      "id": "base_building_45",
+      "name": "Casa de Valverde 5",
+      "rotation_degrees": 0,
+      "to": [
+        10334.5,
+        6217.0
+      ]
+    },
+    {
+      "from": [
+        12369.8212890625,
+        6354.9716796875
+      ],
+      "id": "base_building_46",
+      "name": "Casa de Valverde 6",
+      "rotation_degrees": 180,
+      "to": [
+        12432.0,
+        6800.0
+      ]
+    },
+    {
+      "from": [
+        10327.015625,
+        4805.15966796875
+      ],
+      "id": "base_building_47",
+      "name": "Casa de Valverde 7",
+      "rotation_degrees": 270,
+      "to": [
+        10916.5,
+        4154.0
+      ]
+    },
+    {
+      "from": [
+        12502.015625,
+        5245.3466796875
+      ],
+      "id": "base_building_48",
+      "name": "Casa de Valverde 8",
+      "rotation_degrees": 270,
+      "to": [
+        13218.0,
+        5328.0
+      ]
+    },
+    {
+      "from": [
+        9956.48046875,
+        5709.04248046875
+      ],
+      "id": "base_building_49",
+      "name": "Casa de Valverde 9",
+      "rotation_degrees": 0,
+      "to": [
+        9928.0,
+        5629.0
+      ]
+    },
+    {
+      "from": [
+        11816.53125,
+        6272.3603515625
+      ],
+      "id": "base_building_50",
+      "name": "Casa de Valverde 10",
+      "rotation_degrees": 270,
+      "to": [
+        11483.0,
+        6089.0
+      ]
+    },
+    {
+      "from": [
+        9814.6572265625,
+        4939.87109375
+      ],
+      "id": "base_building_51",
+      "name": "Casa de Valverde 11",
+      "rotation_degrees": 0,
+      "to": [
+        9355.5,
+        4863.0
+      ]
+    },
+    {
+      "from": [
+        10045.072265625,
+        4473.0078125
+      ],
+      "id": "base_building_52",
+      "name": "Casa de Valverde 12",
+      "rotation_degrees": 90,
+      "to": [
+        10318.0,
+        3906.0
+      ]
+    },
+    {
+      "from": [
+        12565.4873046875,
+        5720.43359375
+      ],
+      "id": "base_building_53",
+      "name": "Casa de Valverde 13",
+      "rotation_degrees": 270,
+      "to": [
+        13455.0,
+        4801.0
+      ]
+    },
+    {
+      "from": [
+        10663.7490234375,
+        6281.06591796875
+      ],
+      "id": "base_building_54",
+      "name": "Casa de Valverde 14",
+      "rotation_degrees": 180,
+      "to": [
+        10707.5,
+        6652.0
+      ]
+    },
+    {
+      "from": [
+        9726.0458984375,
+        6383.267578125
+      ],
+      "id": "base_building_55",
+      "name": "Casa de Valverde 15",
+      "rotation_degrees": 0,
+      "to": [
+        9569.0,
+        6277.0
+      ]
+    },
+    {
+      "from": [
+        12827.7197265625,
+        6416.16162109375
+      ],
+      "id": "base_building_56",
+      "name": "Casa de Valverde 16",
+      "rotation_degrees": 270,
+      "to": [
+        13460.5,
+        5950.0
+      ]
+    },
+    {
+      "from": [
+        12172.9306640625,
+        5188.6533203125
+      ],
+      "id": "base_building_57",
+      "name": "Casa de Valverde 17",
+      "rotation_degrees": 0,
+      "to": [
+        12131.0,
+        5055.0
+      ]
+    },
+    {
+      "from": [
+        11972.1689453125,
+        5663.82666015625
+      ],
+      "id": "base_building_58",
+      "name": "Casa de Valverde 18",
+      "rotation_degrees": 0,
+      "to": [
+        11992.0,
+        5578.0
+      ]
+    },
+    {
+      "from": [
+        10565.9375,
+        4755.9443359375
+      ],
+      "id": "base_building_59",
+      "name": "Casa de Valverde 19",
+      "rotation_degrees": 0,
+      "to": [
+        11227.0,
+        4097.0
+      ]
+    },
+    {
+      "from": [
+        10033.177734375,
+        6353.76220703125
+      ],
+      "id": "base_building_60",
+      "name": "Casa de Valverde 20",
+      "rotation_degrees": 0,
+      "to": [
+        9956.0,
+        6274.0
+      ]
+    },
+    {
+      "from": [
+        10979.7392578125,
+        4376.0224609375
+      ],
+      "id": "base_building_61",
+      "name": "Casa de Valverde 21",
+      "rotation_degrees": 0,
+      "to": [
+        11739.5,
+        4030.0
+      ]
+    },
+    {
+      "from": [
+        10326.2939453125,
+        5711.95361328125
+      ],
+      "id": "base_building_62",
+      "name": "Casa de Valverde 22",
+      "rotation_degrees": 0,
+      "to": [
+        10188.0,
+        5584.0
+      ]
+    },
+    {
+      "from": [
+        12824.369140625,
+        5700.126953125
+      ],
+      "id": "base_building_63",
+      "name": "Casa de Valverde 23",
+      "rotation_degrees": 0,
+      "to": [
+        12390.5,
+        5624.0
+      ]
+    },
+    {
+      "from": [
+        12084.7109375,
+        6288.4345703125
+      ],
+      "id": "base_building_64",
+      "name": "Casa de Valverde 24",
+      "rotation_degrees": 0,
+      "to": [
+        12244.0,
+        6211.0
+      ]
+    },
+    {
+      "from": [
+        12593.515625,
+        6391.919921875
+      ],
+      "id": "base_building_65",
+      "name": "Casa de Valverde 25",
+      "rotation_degrees": 180,
+      "to": [
+        12959.5,
+        7098.0
+      ]
+    },
+    {
+      "from": [
+        12914.033203125,
+        4516.1572265625
+      ],
+      "id": "base_building_66",
+      "name": "Casa de Valverde 26",
+      "rotation_degrees": 0,
+      "to": [
+        12878.0,
+        4410.0
+      ]
+    },
+    {
+      "from": [
+        9599.2392578125,
+        4905.9794921875
+      ],
+      "id": "base_building_67",
+      "name": "Casa de Valverde 27",
+      "rotation_degrees": 0,
+      "to": [
+        9110.0,
+        4309.0
+      ]
+    },
+    {
+      "from": [
+        10474.53125,
+        4429.517578125
+      ],
+      "id": "base_building_68",
+      "name": "Casa de Valverde 28",
+      "rotation_degrees": 90,
+      "to": [
+        10007.5,
+        3608.0
+      ]
+    },
+    {
+      "from": [
+        11816.60546875,
+        5158.9443359375
+      ],
+      "id": "base_building_69",
+      "name": "Casa de Valverde 29",
+      "rotation_degrees": 270,
+      "to": [
+        11848.5,
+        5054.0
+      ]
+    },
+    {
+      "from": [
+        11717.1259765625,
+        5632.701171875
+      ],
+      "id": "base_building_70",
+      "name": "Casa de Valverde 30",
+      "rotation_degrees": 180,
+      "to": [
+        11605.0,
+        5518.0
+      ]
+    },
+    {
+      "from": [
+        5568.0,
+        1792.0
+      ],
+      "id": "base_building_71",
+      "name": "Ferraria e comércio de Pedra Alta",
+      "rotation_degrees": 90,
+      "to": [
+        5352.0,
+        992.0
+      ]
+    },
+    {
+      "from": [
+        5952.0,
+        1792.0
+      ],
+      "id": "base_building_72",
+      "name": "Estalagem de Pedra Alta",
+      "rotation_degrees": 270,
+      "to": [
+        7080.0,
+        1952.0
+      ]
+    },
+    {
+      "from": [
+        4798.546875,
+        1326.72192382812
+      ],
+      "id": "base_building_73",
+      "name": "Casa de Pedra Alta 1",
+      "rotation_degrees": 0,
+      "to": [
+        4686.5,
+        1230.0
+      ]
+    },
+    {
+      "from": [
+        5324.0771484375,
+        2217.12353515625
+      ],
+      "id": "base_building_74",
+      "name": "Casa de Pedra Alta 2",
+      "rotation_degrees": 90,
+      "to": [
+        5593.5,
+        657.0
+      ]
+    },
+    {
+      "from": [
+        4942.65087890625,
+        1818.00268554688
+      ],
+      "id": "base_building_75",
+      "name": "Casa de Pedra Alta 3",
+      "rotation_degrees": 90,
+      "to": [
+        3479.5,
+        593.0
+      ]
+    },
+    {
+      "from": [
+        6718.9677734375,
+        1702.91284179688
+      ],
+      "id": "base_building_76",
+      "name": "Casa de Pedra Alta 4",
+      "rotation_degrees": 0,
+      "to": [
+        6675.5,
+        1621.0
+      ]
+    },
+    {
+      "from": [
+        4834.73583984375,
+        2324.85620117188
+      ],
+      "id": "base_building_77",
+      "name": "Casa de Pedra Alta 5",
+      "rotation_degrees": 0,
+      "to": [
+        4816.5,
+        2247.0
+      ]
+    },
+    {
+      "from": [
+        5214.32080078125,
+        1315.64855957031
+      ],
+      "id": "base_building_78",
+      "name": "Casa de Pedra Alta 6",
+      "rotation_degrees": 270,
+      "to": [
+        6352.5,
+        388.0
+      ]
+    },
+    {
+      "from": [
+        6082.4697265625,
+        2241.669921875
+      ],
+      "id": "base_building_79",
+      "name": "Casa de Pedra Alta 7",
+      "rotation_degrees": 180,
+      "to": [
+        6668.5,
+        2107.0
+      ]
+    },
+    {
+      "from": [
+        6759.36572265625,
+        1030.64270019531
+      ],
+      "id": "base_building_80",
+      "name": "Casa de Pedra Alta 8",
+      "rotation_degrees": 0,
+      "to": [
+        6601.5,
+        892.0
+      ]
+    },
+    {
+      "from": [
+        6398.5751953125,
+        1607.70202636719
+      ],
+      "id": "base_building_81",
+      "name": "Casa de Pedra Alta 9",
+      "rotation_degrees": 0,
+      "to": [
+        6038.5,
+        2161.0
+      ]
+    },
+    {
+      "from": [
+        6301.1298828125,
+        2218.2890625
+      ],
+      "id": "base_building_82",
+      "name": "Casa de Pedra Alta 10",
+      "rotation_degrees": 180,
+      "to": [
+        7125.0,
+        2961.0
+      ]
+    },
+    {
+      "from": [
+        6790.25,
+        2452.36303710938
+      ],
+      "id": "base_building_83",
+      "name": "Casa de Pedra Alta 11",
+      "rotation_degrees": 0,
+      "to": [
+        6927.5,
+        2302.0
+      ]
+    },
+    {
+      "from": [
+        6303.2021484375,
+        1045.78332519531
+      ],
+      "id": "base_building_84",
+      "name": "Casa de Pedra Alta 12",
+      "rotation_degrees": 0,
+      "to": [
+        6995.5,
+        899.0
+      ]
+    },
+    {
+      "from": [
+        3008.0,
+        8320.0
+      ],
+      "id": "base_building_85",
+      "name": "Ferraria e comércio de Ponte Velha",
+      "rotation_degrees": 180,
+      "to": [
+        2600.0,
+        8672.0
+      ]
+    },
+    {
+      "from": [
+        3392.0,
+        8320.0
+      ],
+      "id": "base_building_86",
+      "name": "Estalagem de Ponte Velha",
+      "rotation_degrees": 180,
+      "to": [
+        2728.0,
+        7584.0
+      ]
+    },
+    {
+      "from": [
+        2757.15454101562,
+        7860.06787109375
+      ],
+      "id": "base_building_87",
+      "name": "Casa de Ponte Velha 1",
+      "rotation_degrees": 0,
+      "to": [
+        3096.0,
+        7512.0
+      ]
+    },
+    {
+      "from": [
+        3714.3125,
+        8057.275390625
+      ],
+      "id": "base_building_88",
+      "name": "Casa de Ponte Velha 2",
+      "rotation_degrees": 180,
+      "to": [
+        4377.0,
+        8074.0
+      ]
+    },
+    {
+      "from": [
+        2426.16845703125,
+        7903.6845703125
+      ],
+      "id": "base_building_89",
+      "name": "Casa de Ponte Velha 3",
+      "rotation_degrees": 0,
+      "to": [
+        2447.5,
+        7824.0
+      ]
+    },
+    {
+      "from": [
+        2494.11206054688,
+        8280.2138671875
+      ],
+      "id": "base_building_90",
+      "name": "Casa de Ponte Velha 4",
+      "rotation_degrees": 90,
+      "to": [
+        1892.5,
+        7676.0
+      ]
+    },
+    {
+      "from": [
+        2511.3046875,
+        8991.904296875
+      ],
+      "id": "base_building_91",
+      "name": "Casa de Ponte Velha 5",
+      "rotation_degrees": 180,
+      "to": [
+        2779.5,
+        9352.0
+      ]
+    },
+    {
+      "from": [
+        4132.22705078125,
+        7705.25927734375
+      ],
+      "id": "base_building_92",
+      "name": "Casa de Ponte Velha 6",
+      "rotation_degrees": 0,
+      "to": [
+        4059.5,
+        7617.0
+      ]
+    },
+    {
+      "from": [
+        3926.98559570312,
+        9012.82421875
+      ],
+      "id": "base_building_93",
+      "name": "Casa de Ponte Velha 7",
+      "rotation_degrees": 0,
+      "to": [
+        3857.5,
+        8881.0
+      ]
+    },
+    {
+      "from": [
+        4069.91088867188,
+        8205.0927734375
+      ],
+      "id": "base_building_94",
+      "name": "Casa de Ponte Velha 8",
+      "rotation_degrees": 180,
+      "to": [
+        3934.5,
+        8075.0
+      ]
+    },
+    {
+      "from": [
+        4230.4775390625,
+        8859.0732421875
+      ],
+      "id": "base_building_95",
+      "name": "Casa de Ponte Velha 9",
+      "rotation_degrees": 0,
+      "to": [
+        4687.5,
+        8280.0
+      ]
+    },
+    {
+      "from": [
+        2206.99096679688,
+        8218.806640625
+      ],
+      "id": "base_building_96",
+      "name": "Casa de Ponte Velha 10",
+      "rotation_degrees": 90,
+      "to": [
+        1888.0,
+        8377.0
+      ]
+    },
+    {
+      "from": [
+        2183.7490234375,
+        7862.92822265625
+      ],
+      "id": "base_building_97",
+      "name": "Casa de Ponte Velha 11",
+      "rotation_degrees": 0,
+      "to": [
+        1955.0,
+        7417.0
+      ]
+    },
+    {
+      "from": [
+        2160.474609375,
+        8780.65625
+      ],
+      "id": "base_building_98",
+      "name": "Casa de Ponte Velha 12",
+      "rotation_degrees": 90,
+      "to": [
+        1370.0,
+        9543.0
+      ]
+    },
+    {
+      "from": [
+        10688.0,
+        10368.0
+      ],
+      "id": "base_building_99",
+      "name": "Ferraria e comércio de Porto Claro",
+      "rotation_degrees": 90,
+      "to": [
+        10088.0,
+        9504.0
+      ]
+    },
+    {
+      "from": [
+        11072.0,
+        10368.0
+      ],
+      "id": "base_building_100",
+      "name": "Estalagem de Porto Claro",
+      "rotation_degrees": 0,
+      "to": [
+        11688.0,
+        9568.0
+      ]
+    },
+    {
+      "from": [
+        11616.2509765625,
+        10414.283203125
+      ],
+      "id": "base_building_101",
+      "name": "Casa de Porto Claro 1",
+      "rotation_degrees": 270,
+      "to": [
+        11481.5,
+        10226.0
+      ]
+    },
+    {
+      "from": [
+        11880.0185546875,
+        10911.04296875
+      ],
+      "id": "base_building_102",
+      "name": "Casa de Porto Claro 2",
+      "rotation_degrees": 180,
+      "to": [
+        12132.0,
+        10685.0
+      ]
+    },
+    {
+      "from": [
+        11742.365234375,
+        9858.1240234375
+      ],
+      "id": "base_building_103",
+      "name": "Casa de Porto Claro 3",
+      "rotation_degrees": 270,
+      "to": [
+        12185.0,
+        10004.0
+      ]
+    },
+    {
+      "from": [
+        9917.4931640625,
+        9821.3740234375
+      ],
+      "id": "base_building_104",
+      "name": "Casa de Porto Claro 4",
+      "rotation_degrees": 180,
+      "to": [
+        9763.0,
+        10166.0
+      ]
+    },
+    {
+      "from": [
+        10256.2158203125,
+        10300.7197265625
+      ],
+      "id": "base_building_105",
+      "name": "Casa de Porto Claro 5",
+      "rotation_degrees": 180,
+      "to": [
+        10187.0,
+        10197.0
+      ]
+    },
+    {
+      "from": [
+        11887.375,
+        10275.951171875
+      ],
+      "id": "base_building_106",
+      "name": "Casa de Porto Claro 6",
+      "rotation_degrees": 270,
+      "to": [
+        12133.0,
+        10245.0
+      ]
+    },
+    {
+      "from": [
+        9905.806640625,
+        10415.818359375
+      ],
+      "id": "base_building_107",
+      "name": "Casa de Porto Claro 7",
+      "rotation_degrees": 90,
+      "to": [
+        9484.0,
+        10322.0
+      ]
+    },
+    {
+      "from": [
+        11183.14453125,
+        10864.7646484375
+      ],
+      "id": "base_building_108",
+      "name": "Casa de Porto Claro 8",
+      "rotation_degrees": 180,
+      "to": [
+        11160.5,
+        11268.0
+      ]
+    },
+    {
+      "from": [
+        10149.3046875,
+        9769.275390625
+      ],
+      "id": "base_building_109",
+      "name": "Casa de Porto Claro 9",
+      "rotation_degrees": 90,
+      "to": [
+        10442.0,
+        10182.0
+      ]
+    },
+    {
+      "from": [
+        11426.1142578125,
+        9743.9189453125
+      ],
+      "id": "base_building_110",
+      "name": "Casa de Porto Claro 10",
+      "rotation_degrees": 270,
+      "to": [
+        11402.0,
+        9273.0
+      ]
+    },
+    {
+      "from": [
+        13376.0,
+        8320.0
+      ],
+      "id": "base_building_111",
+      "name": "Ferraria e comércio de Cedro",
+      "rotation_degrees": 270,
+      "to": [
+        13800.0,
+        8608.0
+      ]
+    },
+    {
+      "from": [
+        13760.0,
+        8320.0
+      ],
+      "id": "base_building_112",
+      "name": "Estalagem de Cedro",
+      "rotation_degrees": 180,
+      "to": [
+        14248.0,
+        8608.0
+      ]
+    },
+    {
+      "from": [
+        13147.0634765625,
+        8754.2236328125
+      ],
+      "id": "base_building_113",
+      "name": "Casa de Cedro 1",
+      "rotation_degrees": 0,
+      "to": [
+        13148.5,
+        8654.0
+      ]
+    },
+    {
+      "from": [
+        14171.6201171875,
+        8933.3740234375
+      ],
+      "id": "base_building_114",
+      "name": "Casa de Cedro 2",
+      "rotation_degrees": 0,
+      "to": [
+        14089.5,
+        8841.0
+      ]
+    },
+    {
+      "from": [
+        13271.443359375,
+        7618.60205078125
+      ],
+      "id": "base_building_115",
+      "name": "Casa de Cedro 3",
+      "rotation_degrees": 0,
+      "to": [
+        13457.0,
+        7426.0
+      ]
+    },
+    {
+      "from": [
+        12568.66796875,
+        8846.314453125
+      ],
+      "id": "base_building_116",
+      "name": "Casa de Cedro 4",
+      "rotation_degrees": 0,
+      "to": [
+        12555.0,
+        8726.0
+      ]
+    },
+    {
+      "from": [
+        14584.5859375,
+        9009.40234375
+      ],
+      "id": "base_building_117",
+      "name": "Casa de Cedro 5",
+      "rotation_degrees": 0,
+      "to": [
+        14473.5,
+        8895.0
+      ]
+    },
+    {
+      "from": [
+        14540.9765625,
+        7522.400390625
+      ],
+      "id": "base_building_118",
+      "name": "Casa de Cedro 6",
+      "rotation_degrees": 0,
+      "to": [
+        14484.5,
+        7427.0
+      ]
+    },
+    {
+      "from": [
+        12546.0048828125,
+        8165.73046875
+      ],
+      "id": "base_building_119",
+      "name": "Casa de Cedro 7",
+      "rotation_degrees": 90,
+      "to": [
+        12306.0,
+        8193.0
+      ]
+    },
+    {
+      "from": [
+        12564.197265625,
+        7516.77294921875
+      ],
+      "id": "base_building_120",
+      "name": "Casa de Cedro 8",
+      "rotation_degrees": 0,
+      "to": [
+        12575.0,
+        7435.0
+      ]
+    },
+    {
+      "from": [
+        12875.416015625,
+        7689.44677734375
+      ],
+      "id": "base_building_121",
+      "name": "Casa de Cedro 9",
+      "rotation_degrees": 90,
+      "to": [
+        13344.5,
+        7168.0
+      ]
+    },
+    {
+      "from": [
+        13123.9873046875,
+        8047.78955078125
+      ],
+      "id": "base_building_122",
+      "name": "Casa de Cedro 10",
+      "rotation_degrees": 90,
+      "to": [
+        13071.5,
+        7558.0
+      ]
+    },
+    {
+      "from": [
+        14077.90234375,
+        8108.1064453125
+      ],
+      "id": "base_building_123",
+      "name": "Casa de Cedro 11",
+      "rotation_degrees": 0,
+      "to": [
+        14159.5,
+        8007.0
+      ]
+    },
+    {
+      "from": [
+        14505.8125,
+        8168.36474609375
+      ],
+      "id": "base_building_124",
+      "name": "Casa de Cedro 12",
+      "rotation_degrees": 0,
+      "to": [
+        14419.0,
+        8049.0
+      ]
+    },
+    {
+      "from": [
+        8312.6298828125,
+        4736.0
+      ],
+      "id": "base_building_125",
+      "name": "Quartel da Travessia",
+      "rotation_degrees": 180,
+      "to": [
+        8792.0,
+        5184.0
+      ]
+    }
+  ],
+  "unresolved": [
+    {
+      "code": "road",
+      "id": "base_building_0",
+      "message": "Deixe a estrada e sua margem livres.",
+      "name": "Castelo de Aurélia",
+      "obstacle": "road_19",
+      "position_world": [
+        4608.0,
+        3584.0
+      ],
+      "size_metres": [
+        8.0,
+        5.0
+      ],
+      "source": "map"
+    },
+    {
+      "code": "road",
+      "id": "base_building_38",
+      "message": "Deixe a estrada e sua margem livres.",
+      "name": "Castelo de Valverde",
+      "obstacle": "road_62",
+      "position_world": [
+        11264.0,
+        4864.0
+      ],
+      "size_metres": [
+        8.0,
+        5.0
+      ],
+      "source": "map"
+    }
+  ],
+  "ok": false
+}

@@ -44,7 +44,7 @@ As janelas mudam do vidro diurno para luz quente ao anoitecer, seguindo o relóg
 
 `WorldGrid.CELL_SIZE` permanece em **1 m**, com **64 unidades 2D por metro**. Cada kit usa um pivô no canto do chão, escala unitária e a mesma transformação para fachada, telhado, porta e chaminé. Fundação e fachadas são módulos reutilizáveis; a casa é unida em **uma superfície** para reduzir chamadas de desenho. Beirais e degraus têm extensão decorativa; não são paredes de encaixe do catálogo avulso.
 
-Os **126 lotes das cidades existentes** são preservados: suas medidas irregulares mantêm ruas e serviços no lugar. Neles, a última peça da borda é recortada à medida do terreno. Casas novas colocadas pelo catálogo ou ateliê usam dimensões inteiras. O relatório de grid distingue os módulos avulsos, os kits novos e os lotes herdados.
+Os **126 lotes herdados da geração 2** são preservados nos saves anteriores. Neles, a última peça da borda é recortada à medida do terreno. A geração 3 cria **131 lotes** depois das ruas, com dimensões inteiras e margens validadas. Casas colocadas pelo catálogo ou ateliê também usam o grid. O relatório distingue módulos avulsos, kits e lotes herdados. [Validação e realocação de casas existentes](estradas-e-posicionamento.md).
 
 ## Verificação técnica
 
