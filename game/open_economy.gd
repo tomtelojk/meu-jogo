@@ -17,7 +17,7 @@ func _process(delta:float)->void:
 	elapsed=0
 	for id in game.world.npcs:
 		var npc:ForestNPC=game.world.npcs[id]
-		if npc.companion_mode:continue
+		if npc.companion_mode or npc.enforcement_target.is_finite():continue
 		if npc.sleeping or npc.wants_rest:continue
 		var account:=game.rpg.npc_account(id)
 		var minute:=game.world.clock.day*1440+floori(game.world.clock.minute)

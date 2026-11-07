@@ -319,6 +319,7 @@ func update_quest(_collected:Dictionary,_complete:bool,_peace:bool=false)->void:
 	pass
 
 func update_rpg(state:RPGState)->void:
+	minimap.rpg_state=state
 	quest_title.text="Viajante · Nível %d"%state.level()
 	seed_counter.text="%d moedas"%state.gold
 	life_bar.value=state.health

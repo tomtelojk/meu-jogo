@@ -125,6 +125,18 @@ Os horários variam por morador e profissão. Lenhadores e mineiros alternam pon
 
 ![Casa de um NPC](docs/rpg-casa-npc.png)
 
+## Facções, guildas e territórios
+
+**J → Facções, guildas e territórios** mostra reputação de **Hostil → Neutro → Aliado → Herói**, os compromissos das Coroas e as sedes das guildas. Aurélia defende obras e lei comum; Valverde, conselhos locais e autonomia. Apoiar uma delas pode reduzir a confiança da outra. Preços, acesso ao comércio, recepção dos moradores e patrulhas respondem à reputação; postos permitem reparar uma desavença com recursos reais.
+
+Entre na **Liga dos Artífices**, na **Companhia das Rotas** ou na **Vigília da Travessia**. Cada uma tem mestre, QG, uniforme, loja e três contratos com progressão de Aprendiz a Mestre. **E nas bandeiras** abre os serviços; contratos de combate e viagem contam ações feitas após aceitar.
+
+Os quatro vilarejos têm postos disputados. Apoio sustentado muda a administração, a bandeira e os preços locais; o mapa mostra controle e QGs. Três etapas de história levam à Carta das Oficinas, à Liga dos Conselhos ou ao Pacto dos Caminhos, com respostas diferentes dos reis. Toda a progressão fica salva por mapa. Mapas vazios do editor mantêm apenas seus próprios objetos e serviços.
+
+[Guia das facções, guildas e fronteiras](docs/faccoes-e-guildas.md)
+
+![Guildas e progressão](docs/faccoes-guilda.png)
+
 ## Animais, combate e rio
 
 Vacas e galinhas vivem nas fazendas e fornecem provisões ao ajudar com **E**. A produção tem intervalo persistente, inclusive ao trocar de região ou carregar o save. Cervos, coelhos e javalis aparecem nos campos; animais tímidos fogem e javalis podem perseguir e atacar.
@@ -191,6 +203,8 @@ Abra `project.godot` no **Godot 4.6.3 ou superior** e pressione F5. Neste ambien
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/construction_tests.gd -- --test --hybrid
 ./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/relationship_tests.gd -- --test
 ./scripts/godot.sh --audio-driver Dummy --script res://tests/relationship_tests.gd -- --test --hybrid
+./scripts/godot.sh --headless --audio-driver Dummy --script res://tests/faction_tests.gd -- --test
+./scripts/godot.sh --audio-driver Dummy --script res://tests/faction_tests.gd -- --test --hybrid
 ```
 
 A primeira suíte valida mundo, imagens, economia, construção, viagens, NPCs, combate e save. A segunda valida compras pela interface, prévia e modelos das obras, liberação de regiões, animais, mapa e natação em uma sessão gráfica. Os testes do protótipo anterior permanecem como referência histórica; as suítes acima representam o RPG atual.

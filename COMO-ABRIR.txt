@@ -18,6 +18,9 @@ E em camas e bancadas: descansar, produzir, reparar e designar NPCs.
 Construções, filas e moradores são salvos automaticamente por mapa.
 E em NPCs: conversas, presentes, memórias, missões, romance e companhia.
 J > Relações, missões e identidade: vínculos, classe e facção.
+J > Facções, guildas e territórios: reputação, ranks, fronteiras e história.
+E nas bandeiras: filiação, contratos, loja, apoio territorial e reparação.
+Veja docs/faccoes-e-guildas.md ou GUIA-DAS-FACCOES.md dentro do ZIP.
 Hotbar 1-4: ferramentas | 5: comer | 6: mapa | 7: diário | 8: lanterna
 Roda do mouse: selecionar | Clique esquerdo: usar o item selecionado
 F2: criar / editar o mapa | Esc > Shaders: ligar ou desligar efeitos

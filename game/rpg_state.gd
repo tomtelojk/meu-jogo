@@ -24,6 +24,7 @@ var iron:=0
 var resources:=ResourceProgress.new()
 var construction:=ConstructionState.new()
 var relationships:=RelationshipState.new()
+var politics:=FactionState.new()
 var food := 2
 var meat := 0
 var xp := 0
@@ -40,13 +41,14 @@ var produce_times:Dictionary={}
 func level()->int:
 	return 1+xp/100
 
-func buy(item:String,owner:String="player")->Dictionary:
+func buy(item:String,owner:String="player",price_factor:float=1.0)->Dictionary:
 	if not ITEMS.has(item):return result(false,"Mercadoria desconhecida.")
 	var data:Dictionary=ITEMS[item]
+	var price:=maxi(1,ceili(float(data.price)*price_factor))
 	if owner=="player":
 		if data.kind=="tool" and tools.has(item):return result(false,"Você já possui "+data.name+".")
-		if gold<data.price:return result(false,"Faltam moedas. Venda recursos ou aceite uma encomenda.")
-		gold-=data.price
+		if gold<price:return result(false,"Faltam moedas. Venda recursos ou aceite uma encomenda.")
+		gold-=price
 		if data.kind=="tool":tools[item]=true
 		else:food+=1
 	else:
@@ -108,11 +110,11 @@ func strike_resource(resource:Dictionary,energy:float)->Dictionary:
 		changed.emit()
 	return hit
 
-func upgrade_tool(tool:String)->Dictionary:
+func upgrade_tool(tool:String,price_factor:float=1.0)->Dictionary:
 	if not tool in ["axe","pickaxe"] or not tools.has(tool):return result(false,"Compre a ferramenta primeiro.")
 	var tier:=resources.tier(tool,tools)
 	if tier>=3:return result(false,"Sua ferramenta já é de ferro.")
-	var price:=40 if tier==1 else 90
+	var price:=ceili((40 if tier==1 else 90)*price_factor)
 	if gold<price or (tier==1 and (wood<5 or stone<10)) or (tier==2 and iron<6):return result(false,"Melhoria de pedra: 40 moedas, 5 madeira, 10 pedra. Ferro: 90 moedas e 6 ferro.")
 	gold-=price
 	if tier==1:wood-=5;stone-=10
@@ -210,7 +212,7 @@ func home_rect(house:Dictionary)->Rect2:
 	return Rect2(Vector2(house.x-96,house.y-128),Vector2(192,128))
 
 func save_data()->Dictionary:
-	return {"gold":gold,"wood":wood,"stone":stone,"copper":copper,"iron":iron,"resources":resources.save_data(),"construction":construction.save_data(),"relationships":relationships.save_data(),"food":food,"meat":meat,"xp":xp,"health":health,"tools":tools.keys(),"discovered":discovered.keys(),"depleted":depleted.keys(),"houses":houses.duplicate(true),"npc_accounts":npc_accounts.duplicate(true),"contracts":contracts.duplicate(),"produce_times":produce_times.duplicate()}
+	return {"gold":gold,"wood":wood,"stone":stone,"copper":copper,"iron":iron,"resources":resources.save_data(),"construction":construction.save_data(),"relationships":relationships.save_data(),"politics":politics.save_data(),"food":food,"meat":meat,"xp":xp,"health":health,"tools":tools.keys(),"discovered":discovered.keys(),"depleted":depleted.keys(),"houses":houses.duplicate(true),"npc_accounts":npc_accounts.duplicate(true),"contracts":contracts.duplicate(),"produce_times":produce_times.duplicate()}
 
 func restore(data:Dictionary)->void:
 	for key in ["gold","wood","stone","copper","iron","food","meat","xp","health"]:
@@ -220,6 +222,7 @@ func restore(data:Dictionary)->void:
 	resources.restore(data.get("resources",{}))
 	construction.restore(data.get("construction",{}))
 	relationships.restore(data.get("relationships",{}))
+	politics.restore(data.get("politics",{}))
 	tools.clear();discovered.clear();depleted.clear();houses.clear();npc_accounts.clear();contracts.clear();produce_times.clear()
 	for key in ["tools","discovered","depleted"]:
 		var values=data.get(key,[])

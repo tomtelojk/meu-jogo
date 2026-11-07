@@ -40,6 +40,7 @@ var economy:OpenEconomy
 var gathering:ResourceGathering
 var construction:ConstructionSystem
 var social:RelationshipSystem
+var politics:FactionSystem
 var loading_journey:=false
 var building_preview:=false
 var building_point:=Vector2.ZERO
@@ -94,6 +95,7 @@ func _ready() -> void:
 	gathering=ResourceGathering.new();add_child(gathering);gathering.setup(self)
 	construction=ConstructionSystem.new();add_child(construction);construction.setup(self)
 	social=RelationshipSystem.new();add_child(social);social.setup(self)
+	politics=FactionSystem.new();add_child(politics);politics.setup(self)
 	camera.reset_smoothing()
 	if not "--test" in OS.get_cmdline_user_args() or "--hybrid" in OS.get_cmdline_user_args():
 		hybrid = HybridWorld.new()
@@ -161,8 +163,8 @@ func _process(delta: float) -> void:
 			_show_victory()
 
 func current_interaction() -> Dictionary:
-	var nearest: Dictionary = {}
-	var nearest_distance := INF
+	var nearest: Dictionary = politics.nearby_interaction() if politics!=null else {}
+	var nearest_distance:float = player.position.distance_to(nearest.position)-45.0 if not nearest.is_empty() else INF
 	for area in player.sensor.get_overlapping_areas():
 		if not area.has_meta("interaction"):
 			continue
@@ -188,6 +190,7 @@ func current_interaction() -> Dictionary:
 	return nearest
 
 func _interaction_label(item: Dictionary) -> String:
+	if item.kind=="politics_post":return item.name
 	if item.kind=="shop":return "Negociar na ferraria"
 	if item.kind=="inn":return "Estalagem e caravanas"
 	if item.kind=="house":return item.name
@@ -212,6 +215,10 @@ func interact() -> void:
 		return
 	var item := current_interaction()
 	if item.is_empty():
+		return
+	if item.kind=="politics_post":
+		if item.post_kind=="guild":politics.show_guild(item.id)
+		else:politics.show_post(item.id)
 		return
 	if item.kind=="shop":open_shop(item.id);return
 	if item.kind=="inn":open_inn(item.id);return
@@ -266,6 +273,9 @@ func open_npc(id: String, topic: String = "greeting") -> void:
 		hud.toast("%s está descansando. Volte pela manhã." % npc.definition.name)
 		return
 	var profile: Dictionary = npc.definition
+	if politics!=null and not politics.can_speak(profile):
+		_open_dialog("REPUTAÇÃO HOSTIL",profile.name,politics.reaction(profile),[{"label":"Ver facções e reparação","callback":politics.show_overview},{"label":"Continuar explorando","callback":close_dialog}],"hostile_npc")
+		return
 	if social!=null and social.near(id):rpg.relationships.visit(id,world.clock.day)
 	var known := met_npcs.has(id)
 	met_npcs[id] = true
@@ -300,6 +310,9 @@ func open_npc(id: String, topic: String = "greeting") -> void:
 	save_journey()
 	var actions: Array[Dictionary] = []
 	if social!=null:body+="\n\nAfinidade %+d · %s\n%s"%[rpg.relationships.record(id).affinity,rpg.relationships.bond_label(id),rpg.relationships.reaction(id,world.clock.day)]
+	if politics!=null:
+		body+="\n\n"+politics.reaction(profile)
+		if id in ["aurel","caio"]:body+="\n"+rpg.politics.narrative(rpg,profile.realm)
 	if topic == "greeting":
 		actions = [
 			{"label": "Sobre os dois reinos", "callback": open_npc.bind(id, "realm")},
@@ -313,6 +326,10 @@ func open_npc(id: String, topic: String = "greeting") -> void:
 		if id in ["bento","lia","iris"] or profile.role=="Mercador":
 			actions.push_front({"label":"Comprar e vender","callback":open_shop.bind(KingdomData.nearest_town(npc.position).id)})
 		if social!=null:actions.push_front({"label":"Conversar e relacionamentos","name":"npc_relationships","callback":social.show_menu.bind(id)})
+		if politics!=null:
+			for guild_id in FactionCatalog.data.guilds:
+				if FactionCatalog.guild(guild_id).master==id:actions.append({"label":"Sua guilda e o QG","name":"npc_guild","callback":politics.show_guild.bind(guild_id)})
+			actions.append({"label":"Facções, guildas e fronteiras","name":"npc_factions","callback":politics.show_overview})
 	else:
 		actions = [{"label": "Perguntar outra coisa", "callback": open_npc.bind(id, "greeting")}, {"label": "Até logo", "callback": close_dialog}]
 	_open_dialog(String(KingdomData.REALMS[profile.realm].name).to_upper(), "%s · %s" % [profile.name, profile.role], body, actions, "npc")
@@ -438,6 +455,7 @@ func apply_map(document:Dictionary) -> bool:
 	elif persistence:_load_journey()
 	world.refresh_rpg();world.ensure_region(player.position,true)
 	if social!=null:social.bind_world()
+	if politics!=null:politics.bind_world()
 	player.position=world.safe_position(player.position)
 	player.restore_surface()
 	if not "--test" in OS.get_cmdline_user_args() or "--hybrid" in OS.get_cmdline_user_args():
@@ -452,7 +470,7 @@ func apply_map(document:Dictionary) -> bool:
 	return true
 
 func show_help()->void:
-	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e usar estruturas\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Catálogo de construção\nT · Girar peça durante a prévia\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nQ/R · Girar câmera / Home · Centralizar\nCtrl+roda / PgUp / PgDn · Zoom\nEsc · Pausar, clima e modo HD-2D\n\nCompre ferramentas na ferraria e reúna madeira e pedra. B abre paredes, chão, móveis e estações, com custos e prévia verde/vermelha. A bancada transforma materiais; a forja permite ferramentas de ferro. Use E em camas e estações para designar moradores. Camas livres permitem descansar, salvar e definir um ponto de retorno. Javalis danificam estruturas que bloqueiam sua perseguição; use E para reparar com martelo. Produção avança no tempo do mundo e também durante o descanso; menus pausam o relógio. O inventário, as peças, as filas e as designações são salvos automaticamente.\n\nE em um NPC abre conversas, presentes, memórias e vínculos. J > Relações, missões e identidade acompanha afinidade, classe e facção. Amizade e ajuda abrem cenas pessoais, romance, casamento e companhia de viagem.",[{"label":"Continuar","callback":close_dialog}],"help")
+	_open_dialog("GUIA DO AVENTUREIRO","Faça seu caminho.","WASD/setas · Mover e nadar\nShift · Correr / nadar mais rápido\nE · Conversar, negociar e usar estruturas\nEspaço · Atacar\n1–4 · Equipar ferramentas\n5 · Comer / 6 · Mapa / 7 · Diário / 8 · Lanterna\nRoda do mouse · Selecionar espaço\nClique esquerdo · Usar item selecionado\nI · Inventário e provisões\nJ · Objetivos e registros\nB · Catálogo de construção\nT · Girar peça durante a prévia\nM · Mapa do continente\nF2 · Criar ou editar seu mapa\nQ/R · Girar câmera / Home · Centralizar\nCtrl+roda / PgUp / PgDn · Zoom\nEsc · Pausar, clima e modo HD-2D\n\nCompre ferramentas na ferraria e reúna madeira e pedra. B abre paredes, chão, móveis e estações, com custos e prévia verde/vermelha. A bancada transforma materiais; a forja permite ferramentas de ferro. Use E em camas e estações para designar moradores. Camas livres permitem descansar, salvar e definir um ponto de retorno. Javalis danificam estruturas que bloqueiam sua perseguição; use E para reparar com martelo. Produção avança no tempo do mundo e também durante o descanso; menus pausam o relógio. O inventário, as peças, as filas e as designações são salvos automaticamente.\n\nE em um NPC abre conversas, presentes, memórias e vínculos. J > Relações, missões e identidade acompanha afinidade, classe e facção. Amizade e ajuda abrem cenas pessoais, romance, casamento e companhia de viagem.\n\nJ > Facções, guildas e territórios mostra reputação, ranks, postos e história. E nas bandeiras abre o QG ou posto. Ajudar uma Coroa pode irritar a outra: confira os efeitos antes de entregar recursos.",[{"label":"Continuar","callback":close_dialog}],"help")
 
 func show_map() -> void:
 	if mode == "dialog" and hud.modal_kind == "map":
@@ -460,13 +478,14 @@ func show_map() -> void:
 		return
 	var map_view := ForestMinimap.new()
 	map_view.world_data = world.data
+	map_view.rpg_state=rpg
 	map_view.collected = collected
 	map_view.player_position = player.position
 	map_view.restored = complete
 	var home:Dictionary=rpg.houses.get("home_player",{})
 	if not home.is_empty():map_view.home_position=Vector2(home.x,home.y)
 	if rpg.construction.pieces.has(rpg.construction.player_bed):map_view.home_position=ConstructionCatalog.footprint(rpg.construction.pieces[rpg.construction.player_bed]).get_center()
-	_open_dialog("CADA CAMINHO, UMA DESCOBERTA", "Entre os dois reinos", "Mapa do continente · 25 vezes a área original\nQuadrados · cidades e vilarejos\nPonto claro · você\nCírculo dourado · sua casa", [{"label": "Voltar ao caminho", "callback": close_dialog}], "map", map_view)
+	_open_dialog("CADA CAMINHO, UMA DESCOBERTA", "Entre os dois reinos", "Mapa do continente · 25 vezes a área original\nQuadrados · cidades e vilarejos\nÁreas douradas/verdes · administração dos postos\nLosangos · QGs das guildas\nPonto claro · você · Círculo dourado · sua casa", [{"label":"Facções e territórios","callback":politics.show_overview},{"label": "Voltar ao caminho", "callback": close_dialog}], "map", map_view)
 
 func confirm_reset() -> void:
 	_open_dialog("UMA NOVA JORNADA", "Voltar ao primeiro passo?", "O inventário, as casas, o dinheiro e a exploração desta aventura serão reiniciados.", [
@@ -486,6 +505,7 @@ func reset_journey() -> void:
 	rpg.restore(fresh.save_data())
 	world.refresh_rpg()
 	if social!=null:social.bind_world()
+	if politics!=null:politics.bind_world()
 	for coord in world.chunks.keys():world._unload_chunk(coord)
 	collected.clear()
 	met_npcs.clear()
@@ -625,6 +645,7 @@ func apply_journey(data: Dictionary) -> bool:
 	loading_journey=false
 	if construction!=null:construction.bind_world()
 	if social!=null:social.bind_world()
+	if politics!=null:politics.bind_world()
 	return true
 
 func _load_journey() -> void:
@@ -702,49 +723,59 @@ func _notification(what: int) -> void:
 			save_journey()
 
 func open_shop(town:String,page:String="main")->void:
+	if politics!=null and not politics.trade_allowed(town):return
+	var price_factor:float=rpg.politics.trade_factor(rpg,town)
 	var actions:Array[Dictionary]=[]
 	var body:="Moedas: %d\nMadeira: %d · Pedra: %d\nEscolha o que deseja negociar."%[rpg.gold,rpg.wood,rpg.stone]
+	body+="\n\nAdministração: "+FactionCatalog.faction(FactionCatalog.town_faction(rpg,town)).get("name","")+" · preços %d%%"%roundi(price_factor*100)
 	if page=="tools":
 		for item in ["axe","pickaxe","hammer","sword"]:
 			var owned:=rpg.tools.has(item)
-			actions.append({"label":RPGState.ITEMS[item].name+(" · adquirido" if owned else " · %d moedas"%RPGState.ITEMS[item].price),"callback":buy_item.bind(town,item)})
+			actions.append({"label":RPGState.ITEMS[item].name+(" · adquirido" if owned else " · %d moedas"%ceili(RPGState.ITEMS[item].price*price_factor)),"callback":buy_item.bind(town,item)})
 		for tool in ["axe","pickaxe"]:
 			var tier:=rpg.resources.tier(tool,rpg.tools)
-			if tier>0 and tier<3:actions.append({"label":"Melhorar "+RPGState.ITEMS[tool].name+" para "+ResourceRules.TIERS[tier+1]+(" · 40 moedas, 5 madeira, 10 pedra" if tier==1 else " · 90 moedas, 6 ferro"),"callback":upgrade_tool.bind(town,tool)})
+			if tier>0 and tier<3:actions.append({"label":"Melhorar "+RPGState.ITEMS[tool].name+" para "+ResourceRules.TIERS[tier+1]+(" · %d moedas, 5 madeira, 10 pedra"%ceili(40*price_factor) if tier==1 else " · %d moedas, 6 ferro"%ceili(90*price_factor)),"callback":upgrade_tool.bind(town,tool)})
 		actions.append({"label":"Voltar ao comércio","callback":open_shop.bind(town)})
 	elif page=="sell":
 		actions=[{"label":"Vender 10 madeira · +20 moedas","callback":sell_item.bind(town,"wood",10)},{"label":"Vender 8 pedra · +24 moedas","callback":sell_item.bind(town,"stone",8)},{"label":"Vender 2 carne · +8 moedas","callback":sell_item.bind(town,"meat",2)},{"label":"Voltar","callback":open_shop.bind(town)}]
 		actions.insert(3,{"label":"Vender 3 cobre · +21 moedas","callback":sell_item.bind(town,"copper",3)})
 		actions.insert(4,{"label":"Vender 3 ferro · +36 moedas","callback":sell_item.bind(town,"iron",3)})
 	else:
-		actions=[{"label":"Comprar ferramentas e espada","callback":open_shop.bind(town,"tools")},{"label":"Comprar provisão · 5 moedas","callback":buy_item.bind(town,"bread")},{"label":"Vender materiais","callback":open_shop.bind(town,"sell")},{"label":"Entregar encomenda · 15 madeira e 8 pedra","callback":deliver_order.bind(town)},{"label":"Continuar explorando","callback":close_dialog}]
+		actions=[{"label":"Comprar ferramentas e espada","callback":open_shop.bind(town,"tools")},{"label":"Comprar provisão · %d moedas"%ceili(5*price_factor),"callback":buy_item.bind(town,"bread")},{"label":"Vender materiais","callback":open_shop.bind(town,"sell")},{"label":"Entregar encomenda · 15 madeira e 8 pedra · reputação +4 / rival -1","callback":deliver_order.bind(town)},{"label":"Continuar explorando","callback":close_dialog}]
 	_open_dialog("COMÉRCIO DOS REINOS","Ferramentas e provisões",body,actions,"shop")
 
 func buy_item(town:String,item:String)->void:
-	var result:=rpg.buy(item)
+	if politics!=null and not politics.trade_allowed(town):return
+	var result:=rpg.buy(item,"player",rpg.politics.trade_factor(rpg,town))
 	open_shop(town,"tools" if item!="bread" else "main")
 	hud.toast(result.message)
 	save_journey()
 
 func upgrade_tool(town:String,tool:String)->void:
-	var result:=rpg.upgrade_tool(tool);open_shop(town,"tools");hud.toast(result.message);save_journey()
+	if politics!=null and not politics.trade_allowed(town):return
+	var result:=rpg.upgrade_tool(tool,rpg.politics.trade_factor(rpg,town));open_shop(town,"tools");hud.toast(result.message);save_journey()
 
 func sell_item(town:String,kind:String,amount:int)->void:
+	if politics!=null and not politics.trade_allowed(town):return
 	var result:=rpg.sell(kind,amount)
 	open_shop(town,"sell")
 	hud.toast(result.message)
 	save_journey()
 
 func deliver_order(town:String)->void:
+	if politics!=null and not politics.trade_allowed(town):return
 	var result:=rpg.deliver(town,world.clock.day)
+	if result.ok:rpg.politics.change_reputation(rpg,FactionCatalog.town_faction(rpg,town),4,world.clock.day,"Encomenda de "+FactionCatalog.service_name(town),-1)
 	open_shop(town)
 	hud.toast(result.message)
 	save_journey()
 
 func open_inn(town:String)->void:
+	if politics!=null and not politics.trade_allowed(town):return
 	_open_dialog("ESTALAGEM","Descanso e caravanas","Uma cama quente recupera toda a vida. As caravanas fazem viagens entre as duas capitais e os quatro vilarejos.\n\nMoedas: %d"%rpg.gold,[{"label":"Descansar até a manhã · 5 moedas","callback":rest_inn.bind(town)},{"label":"Viajar de caravana","callback":show_caravans.bind(town)},{"label":"Continuar explorando","callback":close_dialog}],"inn")
 
 func rest_inn(town:String)->void:
+	if politics!=null and not politics.trade_allowed(town):return
 	if rpg.gold<5:hud.toast("O descanso custa 5 moedas.");return
 	rpg.gold-=5
 	rpg.health=100
@@ -763,6 +794,7 @@ func travel_to(id:String)->bool:
 	for town in KingdomData.towns():
 		if town.id==id:target=town
 	if target.is_empty() or rpg.gold<5:hud.toast("São necessárias 5 moedas para a viagem.");return false
+	if politics!=null and not politics.trade_allowed(id):return false
 	rpg.gold-=5
 	player.position=target.position+Vector2(0,384)
 	player.restore_surface()
@@ -794,9 +826,12 @@ func eat_food()->void:
 func show_journal()->void:
 	var house:Dictionary=rpg.houses.get("home_player",{})
 	var body:="SUA VIDA ENTRE OS REINOS\n\nFerramentas: %d / 4\nLugares descobertos: %d / 6\nSua casa: %s\n\nCompre machado e picareta, extraia recursos e escolha entre vender ou construir. Encomendas pagam 80 moedas por 15 madeira e 8 pedra, uma vez por dia em cada povoado.\n\nUma casa precisa de 50 madeira, 20 pedra e um martelo, em três etapas. O terreno custa 20 moedas.\n\nNos vilarejos, construtores também compram ferramentas, recolhem material e erguem suas casas. Fale com eles para acompanhar.\n\nTRADIÇÃO DO VALE (OPCIONAL)\nAs antigas sementes e a árvore ancestral continuam no vale noroeste. Este é apenas um dos caminhos da sua aventura."%[rpg.tools.size(),rpg.discovered.size(),"nenhum terreno" if house.is_empty() else RPGState.STAGES[house.stage]]
-	_open_dialog("REGISTROS DO AVENTUREIRO","Um mundo para descobrir",body,[{"label":"Abrir mapa do continente","callback":show_map},{"label":"Voltar à aventura","callback":close_dialog}],"journal")
-	if social!=null:
-		var button:=hud._button("Relações, missões e identidade",social.show_journal.bind(0),true,true);button.name="journal_relationships";hud.modal_content.add_child(button);hud.modal_content.move_child(button,3);hud.call_deferred("_layout_modal")
+	var actions:Array[Dictionary]=[]
+	if social!=null:actions.append({"label":"Relações, missões e identidade","name":"journal_relationships","callback":social.show_journal.bind(0)})
+	if politics!=null:actions.append({"label":"Facções, guildas e territórios","name":"journal_factions","callback":politics.show_overview})
+	actions.append({"label":"Abrir mapa do continente","callback":show_map})
+	actions.append({"label":"Voltar à aventura","callback":close_dialog})
+	_open_dialog("REGISTROS DO AVENTUREIRO","Um mundo para descobrir",body,actions,"journal")
 
 func can_build_at(point:Vector2)->Dictionary:
 	if not point.is_finite() or point.distance_to(player.position)>500:return {"ok":false,"message":"Escolha um terreno perto de você."}

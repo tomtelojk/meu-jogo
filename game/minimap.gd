@@ -7,6 +7,7 @@ var player_position:=WorldData.SPAWN
 var restored:=false
 var local_mode:=false
 var home_position:=Vector2(-1,-1)
+var rpg_state:RPGState
 
 func _ready()->void:
 	mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -48,10 +49,27 @@ func _draw()->void:
 		var rect:=KingdomData.building_rect(building)
 		if not region.intersects(rect):continue
 		draw_rect(Rect2((rect.position-region.position)*factor,(rect.size*factor).max(Vector2.ONE)),Color("645740"))
+	if rpg_state!=null and MapDocument.base_enabled():
+		FactionCatalog.load_data()
+		for id in FactionCatalog.data.territories:
+			var town:=FactionCatalog.town(id)
+			if town.is_empty():continue
+			var rect:=Rect2(town.position-Vector2.ONE*1150,Vector2.ONE*2300)
+			if not rect.intersects(region):continue
+			var color:=Color(FactionCatalog.faction(rpg_state.politics.control(id)).color)
+			var view:=Rect2((rect.position-region.position)*factor,rect.size*factor)
+			draw_rect(view,Color(color,0.16));draw_rect(view,Color(color,0.75),false,1)
+		for id in FactionCatalog.data.guilds:
+			if not rpg_state.politics.guild_available(id):continue
+			var point:Vector2=(FactionCatalog.headquarters(id)-region.position)*factor
+			var diamond:=PackedVector2Array([point+Vector2(0,-4),point+Vector2(4,0),point+Vector2(0,4),point+Vector2(-4,0)])
+			draw_colored_polygon(diamond,Color(FactionCatalog.guild(id).color))
 	for town in KingdomData.towns():
 		var at:Vector2=(town.position-region.position)*factor
 		if not Rect2(Vector2.ZERO,size).grow(20).has_point(at):continue
-		draw_rect(Rect2(at-Vector2(3,3),Vector2(6,6)),KingdomData.REALMS[town.realm].color)
+		var color:Color=KingdomData.REALMS[town.realm].color
+		if rpg_state!=null and not FactionCatalog.territory(town.id).is_empty():color=Color(FactionCatalog.faction(rpg_state.politics.control(town.id)).color)
+		draw_rect(Rect2(at-Vector2(3,3),Vector2(6,6)),color)
 		if not local_mode:
 			draw_string(ThemeDB.fallback_font,at+Vector2(7,-5),town.name,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff5d9"))
 	if home_position.x>=0:

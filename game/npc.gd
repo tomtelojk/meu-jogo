@@ -27,6 +27,7 @@ var home_override:=Vector2(INF,INF)
 var work_override:=Vector2(INF,INF)
 var economic_target := Vector2(INF,INF)
 var economic_activity := ""
+var enforcement_target:=Vector2(INF,INF)
 var companion_mode:=false
 var follow_target:=Vector2(INF,INF)
 var task_target:=Vector2(INF,INF)
@@ -109,6 +110,7 @@ func apply_schedule(minute: float, snap: bool = false) -> void:
 	queue_redraw()
 
 func activity() -> String:
+	if enforcement_target.is_finite():return "Perseguindo invasor procurado"
 	if state=="flee":return "Procurando abrigo"
 	if companion_mode:return "Viajando em sua companhia"
 	if economic_target.is_finite() and not sleeping and not wants_rest:return economic_activity
@@ -117,7 +119,7 @@ func activity() -> String:
 	return "Voltando para descansar" if wants_rest and not sleeping else String(current_schedule.activity)
 
 func refresh_presence() -> void:
-	sleeping = not companion_mode and wants_rest and position.distance_to(nearest_walkable(_scheduled_point())) < 10.0
+	sleeping = not enforcement_target.is_finite() and not companion_mode and wants_rest and position.distance_to(nearest_walkable(_scheduled_point())) < 10.0
 	visible = not sleeping
 	interaction_area.set_deferred("monitorable", not sleeping)
 	name_label.text = "%s · %s\n%s" % [definition.name, definition.role, activity()]
@@ -160,6 +162,7 @@ func plan_route() -> void:
 	while path_index<route.size() and position.distance_to(route[path_index])<7:path_index+=1
 
 func _target()->Vector2:
+	if enforcement_target.is_finite():return enforcement_target
 	if wants_rest:return _scheduled_point()
 	if state in ["flee","detour"] and task_target.is_finite():return task_target
 	if companion_mode and follow_target.is_finite():return follow_target
@@ -173,6 +176,7 @@ func update_brain(delta:float,nearby:Array,hostiles:Array)->void:
 	hunger=clampf(hunger+delta/480.0,0,1)
 	fatigue=clampf(fatigue+(-delta/50.0 if sleeping else delta/1800.0),0,1)
 	if sleeping:return
+	if enforcement_target.is_finite():return
 	retry_delay=maxf(0,retry_delay-delta)
 	threat_until=maxf(0,threat_until-delta)
 	if state=="blocked" and retry_delay<=0:task_target=Vector2(INF,INF);plan_route()
@@ -201,6 +205,7 @@ func _physics_process(delta:float)->void:
 	if path_index>=route.size():_arrive();_idle();return
 	var direction:=position.direction_to(route[path_index])
 	var speed:float=definition.speed*(1.35 if state=="flee" else 1.0)
+	if enforcement_target.is_finite():speed=maxf(speed,165.0)
 	if companion_mode and state!="flee":speed=maxf(speed,230.0 if position.distance_to(_target())>300 else (180.0 if position.distance_to(_target())>150 else 110.0))
 	var separation:=Vector2.ZERO
 	for other in neighbors:
@@ -219,12 +224,13 @@ func _physics_process(delta:float)->void:
 	var previous:=position
 	move_and_slide()
 	var distance:=position.distance_to(previous)
-	_animate_movement(get_real_velocity(),state=="flee" or companion_mode and speed>140,distance)
+	_animate_movement(get_real_velocity(),enforcement_target.is_finite() or state=="flee" or companion_mode and speed>140,distance)
 	stalled=stalled+delta if distance<0.15 else 0.0
 	if stalled>1.2:
 		stalled=0;retry_delay=0.5;task_target=nearest_walkable(position+Vector2(96 if personality_seed%2 else -96,64));state="detour";plan_route()
 
 func _arrive()->void:
+	if enforcement_target.is_finite():waiting=0.2;return
 	if state=="detour":task_target=Vector2(INF,INF);state="travel";plan_route();return
 	if companion_mode and state!="flee":state="following";waiting=0.5;refresh_presence();return
 	if wants_rest:
@@ -238,6 +244,7 @@ func _arrive()->void:
 	refresh_presence()
 
 func _next_task()->void:
+	if enforcement_target.is_finite():plan_route();return
 	choice_serial+=1
 	if companion_mode and state=="flee":waiting=0.5;return
 	if companion_mode:task_target=Vector2(INF,INF);plan_route();return
@@ -287,7 +294,7 @@ func restore_mind(data:Dictionary)->void:
 	choice_serial=clampi(int(data.get("serial",0)),0,1000000)
 
 func emote()->String:
-	if state=="flee":return "!"
+	if enforcement_target.is_finite() or state=="flee":return "!"
 	if state=="work":return {"Lenhador":"/","Mineiro":"*","Ferreiro":"*","Agricultora":"+","Agricultor":"+","Herbalista":"+"}.get(definition.role,"...")
 	if state=="social":return "..."
 	return ""

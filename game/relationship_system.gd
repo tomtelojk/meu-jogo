@@ -14,7 +14,7 @@ func bind_world()->void:
 
 func state()->RelationshipState:return game.rpg.relationships
 func day()->int:return game.world.clock.day
-func near(id:String)->bool:return game.world.npcs.has(id) and not game.world.npcs[id].sleeping and game.world.npcs[id].position.distance_to(game.player.position)<=150
+func near(id:String)->bool:return game.world.npcs.has(id) and not game.world.npcs[id].sleeping and game.world.npcs[id].position.distance_to(game.player.position)<=150 and (game.politics==null or game.politics.can_speak(game.world.npcs[id].definition))
 
 func sync_population()->void:
 	for id in game.world.npcs:

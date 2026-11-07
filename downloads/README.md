@@ -2,6 +2,8 @@
 
 RPG de mundo aberto 2.5D para PC de 64 bits. Não é necessário instalar o Godot.
 
+Esta versão inclui **facções e três guildas**: reputação com consequências, ranks, contratos, uniformes, lojas e QGs. Os quatro postos mudam de administração com suas ações. Guardas, moradores e preços reagem; as cartas das Coroas têm três caminhos de história. Use **J → Facções, guildas e territórios**, ou **E nas bandeiras**. [Guia completo](../docs/faccoes-e-guildas.md).
+
 - [Windows — baixar ZIP](https://github.com/tomtelojk/meu-jogo/raw/refs/heads/main/downloads/EntreReinos-Windows.zip)
 - [Linux — baixar ZIP](https://github.com/tomtelojk/meu-jogo/raw/refs/heads/main/downloads/EntreReinos-Linux.zip)
 

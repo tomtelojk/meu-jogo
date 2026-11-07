@@ -44,6 +44,22 @@ O companheiro segue rotas seguras e espera na margem enquanto você nada.
 Classe, facção, memórias, vínculos e cenas pendentes são salvos por mapa.
 GUIA-DOS-RELACIONAMENTOS.md contém os requisitos e as instruções completas.
 
+FACÇÕES, GUILDAS E FRONTEIRAS
+J > Facções, guildas e territórios mostra sua progressão e as ideologias.
+E nas bandeiras abre QGs e postos; os mestres também recebem durante o dia.
+Aurélia e Valverde têm reputação própria: Hostil, Neutro, Aliado e Herói.
+Apoios e encomendas favorecem uma Coroa e podem irritar a rival.
+Desconfiança encarece compras; aliados e heróis recebem descontos.
+Hostilidade fecha comércio e a praça da capital. Em -60, há perseguição.
+Reparação em QGs/postos usa 15 moedas e 2 provisões e recupera até 15 pontos.
+Artífices, Rotas e Vigília têm uniformes, contratos, lojas e quatro ranks.
+Filiação custa 20 moedas; visitas e combate contam após aceitar contratos.
+Um apoio diário por posto muda influência; em +60/-60, muda o controle.
+O mapa mostra administração dos quatro vilarejos e os QGs das três guildas.
+As cartas das Coroas têm três caminhos e desfechos conforme sua aliança.
+Toda a progressão é salva por mapa. O editor mantém serviços personalizados.
+GUIA-DAS-FACCOES.md contém custos, faixas, requisitos e consequências.
+
 CRIE SEU PRÓPRIO MAPA
 F2 abre o ateliê. Comece com Novo mapa vazio ou edite a base dos reinos.
 Pinte terrenos e água; coloque casas, pontes, árvores, animais e moradores.
@@ -176,6 +192,9 @@ def package(system: str, output: Path) -> Path:
     shutil.copy2(ROOT / "docs" / "visual-hd2d.md", stage / "GUIA-DO-VISUAL.md")
     shutil.copy2(ROOT / "docs" / "construcao-e-fabricacao.md", stage / "GUIA-DA-CONSTRUCAO.md")
     shutil.copy2(ROOT / "docs" / "npcs-e-relacionamentos.md", stage / "GUIA-DOS-RELACIONAMENTOS.md")
+    shutil.copy2(ROOT / "docs" / "faccoes-e-guildas.md", stage / "GUIA-DAS-FACCOES.md")
+    for image_name in ["faccoes-reputacao.png", "faccoes-guilda.png", "faccoes-territorio.png", "faccoes-mapa.png", "faccoes-historia.png"]:
+        shutil.copy2(ROOT / "docs" / image_name, stage / image_name)
     for image_name in ["coleta-queda.png", "coleta-toco.png", "hd2d-aurelia.png", "hd2d-noite.png", "hd2d-ponte.png", "hd2d-chuva.png", "construcao-catalogo.png", "construcao-previa.png", "construcao-fila.png", "construcao-assentamento.png", "relacoes-amizade.png", "relacoes-encontro.png", "relacoes-casamento.png", "relacoes-companhia.png", "relacoes-memoria.png"]:
         shutil.copy2(ROOT / "docs" / image_name, stage / image_name)
     (stage / "FONTES-ARVORES.json").unlink(missing_ok=True)

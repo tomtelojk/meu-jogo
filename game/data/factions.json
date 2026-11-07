@@ -1,0 +1,316 @@
+{
+  "version": 1,
+  "factions": {
+    "aurelia": {
+      "name": "Aurélia",
+      "ideology": "Obras públicas, ofícios e uma lei comum para todas as cidades. A Coroa quer estradas seguras e controle central das minas.",
+      "rival": "valverde",
+      "color": "cdab67",
+      "leader": "aurel",
+      "story": "Aurel quer reunir os postos sob uma carta de obras e impostos. As oficinas prosperam, mas os conselhos locais exigem voz."
+    },
+    "valverde": {
+      "name": "Valverde",
+      "ideology": "Autonomia dos povoados, cuidado dos campos e comércio livre. O Conselho rejeita tributos impostos pela outra Coroa.",
+      "rival": "aurelia",
+      "color": "8fb7a5",
+      "leader": "caio",
+      "story": "Caio propõe uma liga de conselhos e rotas livres. Os povoados ganham autonomia, mas precisam organizar juntos sua defesa."
+    }
+  },
+  "ranks": [
+    {
+      "name": "Aprendiz",
+      "marks": 0
+    },
+    {
+      "name": "Membro",
+      "marks": 30
+    },
+    {
+      "name": "Veterano",
+      "marks": 75
+    },
+    {
+      "name": "Mestre",
+      "marks": 150
+    }
+  ],
+  "guilds": {
+    "artisans": {
+      "name": "Liga dos Artífices",
+      "realm": "aurelia",
+      "master": "bento",
+      "anchor": "forge",
+      "hq": "Forja de Bento",
+      "uniform": "Avental de cobre",
+      "color": "d8a26f",
+      "ideology": "A ferramenta boa pertence a quem aprende o ofício.",
+      "missions": [
+        {
+          "id": "planks",
+          "name": "Bancos para a escola",
+          "request": "Fabrique e entregue quatro tábuas para a escola de ofícios.",
+          "rank": 0,
+          "cost": {
+            "plank": 4
+          },
+          "marks": 20,
+          "gold": 18,
+          "xp": 18
+        },
+        {
+          "id": "masonry",
+          "name": "Reforçar a oficina",
+          "request": "A sede precisa de seis blocos de pedra.",
+          "rank": 1,
+          "cost": {
+            "stone_block": 6
+          },
+          "marks": 30,
+          "gold": 32,
+          "xp": 26
+        },
+        {
+          "id": "forge",
+          "name": "Ferramentas dos aprendizes",
+          "request": "Entregue três lingotes de ferro e dois de cobre.",
+          "rank": 2,
+          "cost": {
+            "iron_ingot": 3,
+            "copper_ingot": 2
+          },
+          "marks": 40,
+          "gold": 65,
+          "xp": 40
+        }
+      ],
+      "shop": [
+        {
+          "id": "timber",
+          "name": "Lote de 8 madeiras",
+          "rank": 0,
+          "price": 12,
+          "items": {
+            "wood": 8
+          }
+        },
+        {
+          "id": "blocks",
+          "name": "4 blocos de pedra",
+          "rank": 1,
+          "price": 18,
+          "items": {
+            "stone_block": 4
+          }
+        },
+        {
+          "id": "iron",
+          "name": "2 lingotes de ferro",
+          "rank": 2,
+          "price": 35,
+          "items": {
+            "iron_ingot": 2
+          }
+        }
+      ]
+    },
+    "caravans": {
+      "name": "Companhia das Rotas",
+      "realm": "aurelia",
+      "master": "lia",
+      "anchor": "aurelia_inn",
+      "hq": "Entreposto da Taverna do Oeste",
+      "uniform": "Capa das rotas",
+      "color": "aebde3",
+      "ideology": "Uma estrada aberta vale mais que uma fronteira fechada.",
+      "missions": [
+        {
+          "id": "rations",
+          "name": "Provisões da caravana",
+          "request": "Entregue cinco provisões ao entreposto.",
+          "rank": 0,
+          "cost": {
+            "food": 5
+          },
+          "marks": 20,
+          "gold": 20,
+          "xp": 18
+        },
+        {
+          "id": "route",
+          "name": "Uma rota para Cedro",
+          "request": "Depois de aceitar, visite Cedro e leve duas provisões ao voltar.",
+          "rank": 1,
+          "cost": {
+            "food": 2
+          },
+          "visit": "cedro",
+          "marks": 30,
+          "gold": 40,
+          "xp": 30
+        },
+        {
+          "id": "bridge",
+          "name": "Carga da travessia",
+          "request": "Leve oito tábuas e quatro blocos para as caravanas.",
+          "rank": 2,
+          "cost": {
+            "plank": 8,
+            "stone_block": 4
+          },
+          "marks": 40,
+          "gold": 60,
+          "xp": 40
+        }
+      ],
+      "shop": [
+        {
+          "id": "rations",
+          "name": "4 provisões de viagem",
+          "rank": 0,
+          "price": 14,
+          "items": {
+            "food": 4
+          }
+        },
+        {
+          "id": "boards",
+          "name": "6 tábuas da caravana",
+          "rank": 1,
+          "price": 22,
+          "items": {
+            "plank": 6
+          }
+        },
+        {
+          "id": "copper",
+          "name": "3 lingotes de cobre",
+          "rank": 2,
+          "price": 32,
+          "items": {
+            "copper_ingot": 3
+          }
+        }
+      ]
+    },
+    "watch": {
+      "name": "Vigília da Travessia",
+      "realm": "valverde",
+      "master": "tomas",
+      "anchor": "barracks",
+      "hq": "Quartel da Travessia",
+      "uniform": "Tabardo da vigília",
+      "color": "88bcaa",
+      "ideology": "Proteger os viajantes vem antes das disputas das Coroas.",
+      "missions": [
+        {
+          "id": "boar",
+          "name": "Estrada sem emboscadas",
+          "request": "Afaste um javali depois de aceitar e retorne ao quartel.",
+          "rank": 0,
+          "cost": {},
+          "boars": 1,
+          "marks": 20,
+          "gold": 25,
+          "xp": 22
+        },
+        {
+          "id": "post",
+          "name": "Manutenção do posto",
+          "request": "Entregue oito pedras e quatro madeiras.",
+          "rank": 1,
+          "cost": {
+            "stone": 8,
+            "wood": 4
+          },
+          "marks": 30,
+          "gold": 22,
+          "xp": 26
+        },
+        {
+          "id": "patrol",
+          "name": "Patrulha de Porto Claro",
+          "request": "Depois de aceitar, visite Porto Claro e afaste dois javalis.",
+          "rank": 2,
+          "cost": {},
+          "visit": "porto_claro",
+          "boars": 2,
+          "marks": 40,
+          "gold": 65,
+          "xp": 40
+        }
+      ],
+      "shop": [
+        {
+          "id": "supper",
+          "name": "3 provisões do quartel",
+          "rank": 0,
+          "price": 10,
+          "items": {
+            "food": 3
+          }
+        },
+        {
+          "id": "sword",
+          "name": "Espada da vigília",
+          "rank": 1,
+          "price": 24,
+          "tool": "sword"
+        },
+        {
+          "id": "iron",
+          "name": "3 lingotes de ferro",
+          "rank": 2,
+          "price": 48,
+          "items": {
+            "iron_ingot": 3
+          }
+        }
+      ]
+    }
+  },
+  "territories": {
+    "pedra_alta": {
+      "name": "Pedra Alta",
+      "owner": "aurelia",
+      "radius": 1150
+    },
+    "ponte_velha": {
+      "name": "Ponte Velha",
+      "owner": "aurelia",
+      "radius": 1150
+    },
+    "porto_claro": {
+      "name": "Porto Claro",
+      "owner": "valverde",
+      "radius": 1150
+    },
+    "cedro": {
+      "name": "Cedro",
+      "owner": "valverde",
+      "radius": 1150
+    }
+  },
+  "support": {
+    "relief": {
+      "name": "Socorro aos moradores",
+      "cost": {
+        "food": 3
+      },
+      "influence": 14,
+      "reputation": 5,
+      "rival": -1
+    },
+    "fortify": {
+      "name": "Fortificar o posto",
+      "cost": {
+        "wood": 8,
+        "stone": 4
+      },
+      "influence": 28,
+      "reputation": 8,
+      "rival": -4
+    }
+  }
+}
